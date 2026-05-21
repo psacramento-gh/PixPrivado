@@ -1,20 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AppFrame } from "@/components/app-frame";
+import { LocaleToggle } from "@/components/locale-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -39,7 +32,8 @@ import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
 import { t } from "@/lib/i18n";
 import { decodeQrFromFile } from "@/lib/qr/decode-image";
-import { ClipboardPaste, ImageUp, Languages } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ClipboardPaste, ImageUp } from "lucide-react";
 
 type LocationFetch = {
   url: string;
@@ -48,6 +42,9 @@ type LocationFetch = {
   data?: unknown;
   error?: string;
 };
+
+const dropZoneClass =
+  "border-input hover:bg-muted/50 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-5 text-center text-sm text-muted-foreground transition-colors";
 
 export function DecoderApp() {
   const [locale, setLocale] = useState<Locale>("en");
@@ -72,6 +69,7 @@ export function DecoderApp() {
         return;
       }
       processPayload(data);
+      setCopiaCola(data);
     } catch {
       setError(t(locale, "noQrFound"));
     }
@@ -89,6 +87,7 @@ export function DecoderApp() {
         const data = await decodeQrFromFile(file);
         if (data) {
           processPayload(data);
+          setCopiaCola(data);
           return;
         }
       }
@@ -114,6 +113,7 @@ export function DecoderApp() {
   const locations = parsed && isPix ? extractLocationUrls(parsed.nodes) : [];
   const qrKind = parsed ? detectQrKind(parsed.nodes) : null;
 
+  const decodeDisabled = !copiaCola.trim();
 
   const crcBadge = () => {
     if (!parsed?.crc.present) {
@@ -127,177 +127,154 @@ export function DecoderApp() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {t(locale, "title")}
-          </h1>
-          <p className="text-muted-foreground max-w-2xl text-sm">
-            {t(locale, "subtitle")}
-          </p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <Languages className="text-muted-foreground size-4" />
-          <Label htmlFor="locale-switch" className="text-sm">
-            {locale === "en" ? "EN" : "PT"}
-          </Label>
-          <Switch
-            id="locale-switch"
-            checked={locale === "pt"}
-            onCheckedChange={(checked) => setLocale(checked ? "pt" : "en")}
-          />
-        </div>
+    <AppFrame
+      title={t(locale, "title")}
+      headerActions={
+        <>
+          <LocaleToggle locale={locale} onLocaleChange={setLocale} />
+          <ThemeToggle />
+        </>
+      }
+    >
+      <header>
+        <p className="text-sm text-muted-foreground">{t(locale, "subtitle")}</p>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ImageUp className="size-4" />
-              {t(locale, "upload")}
-            </CardTitle>
-            <CardDescription>{t(locale, "uploadHint")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="border-input hover:bg-muted/50 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-8 text-center transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                const file = e.dataTransfer.files[0];
-                if (file) void handleFile(file);
-              }}
-            >
-              <p className="text-muted-foreground text-sm">
-                {t(locale, "dropOrClick")}
-              </p>
-              <Input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="hidden"
-                onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ClipboardPaste className="size-4" />
-              {t(locale, "clipboard")}
-            </CardTitle>
-            <CardDescription>{t(locale, "clipboardHint")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              ref={pasteRef}
-              tabIndex={0}
-              className="border-input focus-visible:ring-ring flex min-h-[120px] items-center justify-center rounded-lg border border-dashed p-6 text-center text-sm outline-none focus-visible:ring-2"
-            >
-              {t(locale, "pasteZone")}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <Textarea
+          value={copiaCola}
+          onChange={(e) => setCopiaCola(e.target.value)}
+          placeholder="00020126..."
+          className="min-h-[88px] flex-1 font-mono text-xs"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !decodeDisabled) {
+              e.preventDefault();
+              processPayload(copiaCola.trim());
+            }
+          }}
+        />
+        <Button
+          type="button"
+          size="lg"
+          disabled={decodeDisabled}
+          onClick={() => processPayload(copiaCola.trim())}
+          className="shrink-0 sm:w-auto"
+        >
+          {t(locale, "decode")}
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t(locale, "copiaCola")}</CardTitle>
-          <CardDescription>{t(locale, "copiaColaHint")}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <Textarea
-            value={copiaCola}
-            onChange={(e) => setCopiaCola(e.target.value)}
-            placeholder="00020126..."
-            className="font-mono text-xs min-h-[100px]"
+      <p className="text-xs text-muted-foreground">{t(locale, "copiaColaHint")}</p>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div
+          className={dropZoneClass}
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) void handleFile(file);
+          }}
+        >
+          <ImageUp className="size-4 shrink-0" aria-hidden />
+          <span className="font-medium text-foreground">{t(locale, "upload")}</span>
+          <span className="text-xs">{t(locale, "dropOrClick")}</span>
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
           />
-          <Button
-            onClick={() => {
-              const trimmed = copiaCola.trim();
-              if (trimmed) processPayload(trimmed);
-            }}
-          >
-            {t(locale, "decode")}
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        <div
+          ref={pasteRef}
+          tabIndex={0}
+          className={cn(dropZoneClass, "outline-none focus-visible:ring-3 focus-visible:ring-ring/50")}
+        >
+          <ClipboardPaste className="size-4 shrink-0" aria-hidden />
+          <span className="font-medium text-foreground">{t(locale, "clipboard")}</span>
+          <span className="text-xs">{t(locale, "pasteZone")}</span>
+        </div>
+      </div>
 
-      {rawPayload && (
-        <>
-          {!isPix && (
-            <Alert>
-              <AlertDescription>{t(locale, "notPix")}</AlertDescription>
-            </Alert>
-          )}
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
 
-          {parsed?.error && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                {t(locale, "parseError")}: {parsed.error}
-              </AlertDescription>
-            </Alert>
-          )}
+      {rawPayload ? (
+        <div className="flex flex-col gap-6">
+          {!isPix ? (
+            <p className="text-sm text-muted-foreground" role="note">
+              {t(locale, "notPix")}
+            </p>
+          ) : null}
 
-          {summary && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">{t(locale, "summary")}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-medium">{summary}</p>
-                {qrKind && (
-                  <Badge variant="outline">{qrKind}</Badge>
-                )}
-                {isPix && crcBadge()}
-              </CardContent>
-            </Card>
-          )}
+          {parsed?.error ? (
+            <p className="text-sm text-destructive" role="alert">
+              {t(locale, "parseError")}: {parsed.error}
+            </p>
+          ) : null}
 
-          {isPix && rows.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
+          {summary ? (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xs font-medium text-muted-foreground">
+                {t(locale, "summary")}
+              </p>
+              <p className="text-base font-semibold leading-snug break-all">
+                {summary}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {qrKind ? <Badge variant="outline">{qrKind}</Badge> : null}
+                {isPix ? crcBadge() : null}
+              </div>
+            </div>
+          ) : null}
+
+          {isPix && rows.length > 0 ? (
+            <>
+              <Separator />
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-medium text-muted-foreground">
                   {t(locale, "structuredData")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t(locale, "path")}</TableHead>
-                      <TableHead>{t(locale, "tag")}</TableHead>
-                      <TableHead>{t(locale, "label")}</TableHead>
-                      <TableHead className="text-right">{t(locale, "length")}</TableHead>
-                      <TableHead>{t(locale, "value")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rows.map((row) => (
+                </p>
+                <div className="-mx-1 overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t(locale, "path")}</TableHead>
+                        <TableHead>{t(locale, "tag")}</TableHead>
+                        <TableHead>{t(locale, "label")}</TableHead>
+                        <TableHead className="text-right">
+                          {t(locale, "length")}
+                        </TableHead>
+                        <TableHead>{t(locale, "value")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {rows.map((row) => (
                         <TableRow key={row.path}>
                           <TableCell className="font-mono text-xs whitespace-nowrap">
-                            <span style={{ paddingLeft: `${row.depth * 12}px` }}>
+                            <span
+                              style={{ paddingLeft: `${row.depth * 12}px` }}
+                            >
                               {row.path}
                             </span>
                           </TableCell>
-                          <TableCell className="font-mono text-xs">{row.id}</TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {row.id}
+                          </TableCell>
                           <TableCell className="text-sm">
                             {getTagLabel(row.id, row.parentId, locale)}
                           </TableCell>
                           <TableCell className="text-right font-mono text-xs">
                             {row.length}
                           </TableCell>
-                          <TableCell className="font-mono text-xs max-w-md break-all">
+                          <TableCell className="max-w-[12rem] font-mono text-xs break-all sm:max-w-xs">
                             {row.isTemplate
                               ? "—"
                               : formatDisplayValue(
@@ -309,43 +286,41 @@ export function DecoderApp() {
                           </TableCell>
                         </TableRow>
                       ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </>
+          ) : null}
 
-          {isPix && locations.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
+          {isPix && locations.length > 0 ? (
+            <>
+              <Separator />
+              <div className="flex flex-col gap-4">
+                <p className="text-xs font-medium text-muted-foreground">
                   {t(locale, "cobrancaPayload")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
+                </p>
                 {locations.map((url) => (
                   <LocationFetcher key={url} url={url} locale={locale} />
                 ))}
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </>
+          ) : null}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t(locale, "rawPayload")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="bg-muted overflow-x-auto rounded-md p-4 font-mono text-xs break-all whitespace-pre-wrap">
-                {rawPayload}
-              </pre>
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </div>
+          <Separator />
+          <div className="flex flex-col gap-1.5">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t(locale, "rawPayload")}
+            </p>
+            <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+              {rawPayload}
+            </pre>
+          </div>
+        </div>
+      ) : null}
+    </AppFrame>
   );
 }
-
 
 function LocationFetcher({ url, locale }: { url: string; locale: Locale }) {
   const [result, setResult] = useState<LocationFetch>({
@@ -393,24 +368,30 @@ function LocationFetcher({ url, locale }: { url: string; locale: Locale }) {
 
   return (
     <div className="space-y-2">
-      <p className="font-mono text-xs break-all">{url}</p>
-      {result.status === "loading" && (
-        <p className="text-muted-foreground text-sm">
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-mono text-xs break-all text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
+      >
+        {url}
+      </a>
+      {result.status === "loading" ? (
+        <p className="text-sm text-muted-foreground">
           {t(locale, "fetchingLocation")}
         </p>
-      )}
-      {result.status === "error" && (
-        <Alert variant="destructive">
-          <AlertDescription>{result.error}</AlertDescription>
-        </Alert>
-      )}
-      {result.status === "ok" && (
+      ) : null}
+      {result.status === "error" ? (
+        <p className="text-sm text-destructive" role="alert">
+          {result.error}
+        </p>
+      ) : null}
+      {result.status === "ok" ? (
         <>
           <Badge variant="outline">HTTP {result.statusCode}</Badge>
           <LocationDataTable data={result.data} locale={locale} />
         </>
-      )}
-      <Separator />
+      ) : null}
     </div>
   );
 }
@@ -439,7 +420,9 @@ function LocationDataTable({
         {rows.map((row) => (
           <TableRow key={row.path}>
             <TableCell className="font-mono text-xs">{row.path}</TableCell>
-            <TableCell className="font-mono text-xs break-all">{row.value}</TableCell>
+            <TableCell className="font-mono text-xs break-all">
+              {row.value}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
