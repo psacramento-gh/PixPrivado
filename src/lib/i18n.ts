@@ -30,6 +30,7 @@ export const messages = {
     notPix: "Not a PIX BR Code — showing raw content only.",
     dropOrClick: "Drop an image or click to browse",
     pasteZone: "Click here and paste an image",
+    submitAnotherImage: "Submit another image with QR code",
     path: "Path",
   },
   pt: {
@@ -61,6 +62,7 @@ export const messages = {
     notPix: "Não é BR Code Pix — exibindo apenas o conteúdo bruto.",
     dropOrClick: "Solte uma imagem ou clique para selecionar",
     pasteZone: "Clique aqui e cole uma imagem",
+    submitAnotherImage: "Enviar outra imagem com QR code",
     path: "Caminho",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
