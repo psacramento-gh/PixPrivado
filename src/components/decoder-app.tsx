@@ -280,33 +280,15 @@ export function DecoderApp() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t(locale, "path")}</TableHead>
-                        <TableHead>{t(locale, "tag")}</TableHead>
                         <TableHead>{t(locale, "label")}</TableHead>
-                        <TableHead className="text-right">
-                          {t(locale, "length")}
-                        </TableHead>
                         <TableHead>{t(locale, "value")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {rows.map((row) => (
                         <TableRow key={row.path}>
-                          <TableCell className="font-mono text-xs whitespace-nowrap">
-                            <span
-                              style={{ paddingLeft: `${row.depth * 12}px` }}
-                            >
-                              {row.path}
-                            </span>
-                          </TableCell>
-                          <TableCell className="font-mono text-xs">
-                            {row.id}
-                          </TableCell>
                           <TableCell className="text-sm">
                             {getTagLabel(row.id, row.parentId, locale)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs">
-                            {row.length}
                           </TableCell>
                           <TableCell className="max-w-[12rem] font-mono text-xs break-all sm:max-w-xs">
                             {row.isTemplate
