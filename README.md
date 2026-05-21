@@ -5,7 +5,6 @@ A Next.js microapp to decode **PIX BR Code** (EMV) payloads from QR images or **
 ## Features
 
 - Upload QR image (PNG, JPEG, WebP)
-- Paste QR image from clipboard
 - Paste Copia e Cola EMV string
 - Full nested TLV table with EN / PT-BR labels
 - CRC16 validation
