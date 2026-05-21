@@ -281,9 +281,6 @@ export function DecoderApp() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t(locale, "label")}</TableHead>
-                        <TableHead className="text-right">
-                          {t(locale, "length")}
-                        </TableHead>
                         <TableHead>{t(locale, "value")}</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -292,9 +289,6 @@ export function DecoderApp() {
                         <TableRow key={row.path}>
                           <TableCell className="text-sm">
                             {getTagLabel(row.id, row.parentId, locale)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs">
-                            {row.length}
                           </TableCell>
                           <TableCell className="max-w-[12rem] font-mono text-xs break-all sm:max-w-xs">
                             {row.isTemplate
