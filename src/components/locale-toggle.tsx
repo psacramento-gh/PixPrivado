@@ -1,7 +1,6 @@
 "use client";
 
-import { Languages } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Locale } from "@/lib/brcode/labels";
 
 export function LocaleToggle({
@@ -12,15 +11,24 @@ export function LocaleToggle({
   onLocaleChange: (locale: Locale) => void;
 }) {
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="icon"
-      onClick={() => onLocaleChange(locale === "en" ? "pt" : "en")}
-      aria-label={locale === "en" ? "Switch to Portuguese" : "Switch to English"}
-      title={locale === "en" ? "PT" : "EN"}
+    <Tabs
+      value={locale}
+      onValueChange={(value) => {
+        if (value === "en" || value === "pt") {
+          onLocaleChange(value);
+        }
+      }}
+      className="gap-0"
+      aria-label="Language"
     >
-      <Languages className="size-4" />
-    </Button>
+      <TabsList className="h-8">
+        <TabsTrigger value="en" className="px-2.5 text-xs">
+          ENG
+        </TabsTrigger>
+        <TabsTrigger value="pt" className="px-2.5 text-xs">
+          PT-BR
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 }
