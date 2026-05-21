@@ -1,5 +1,5 @@
 {
-  "name": "pix-app",
+  "name": "pix-qr-decoder",
   "version": "0.1.0",
   "private": true,
   "scripts": {
