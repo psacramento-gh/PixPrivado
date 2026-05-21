@@ -32,15 +32,22 @@ import {
 } from "@/lib/brcode/labels";
 import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
-import { t } from "@/lib/i18n";
-import { decodeQrFromFile } from "@/lib/qr/decode-image";
+import { t, type MessageKey } from "@/lib/i18n";
+import {
+  decodeQrFromCropRect,
+  decodeQrFromFile,
+  loadImageDimensions,
+  type CropRect,
+} from "@/lib/qr/decode-image";
+import { useIsDesktop } from "@/lib/use-is-desktop";
+import { QrImageCrop } from "@/components/qr-image-crop";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ClipboardCopy, ImageUp } from "lucide-react";
+import { Camera, ClipboardCopy, ClipboardPaste, ImageUp } from "lucide-react";
 
 type LocationFetch = {
   url: string;
@@ -53,35 +60,125 @@ type LocationFetch = {
 const dropZoneClass =
   "border-input hover:bg-muted/50 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-5 text-center text-sm text-muted-foreground transition-colors";
 
+const IMAGE_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
+
+type ImageSession = {
+  file: File;
+  url: string;
+  width: number;
+  height: number;
+};
+
+type ImagePhase = "none" | "loading" | "crop" | "done";
+
+function isImageFile(file: File): boolean {
+  if (file.type.startsWith("video/")) return false;
+  if (file.type.startsWith("image/")) return true;
+  return /\.(png|jpe?g|webp|gif)$/i.test(file.name);
+}
+
 export function DecoderApp() {
   const [locale, setLocale] = useState<Locale>("en");
   const [rawPayload, setRawPayload] = useState("");
   const [copiaCola, setCopiaCola] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [imageSubmitted, setImageSubmitted] = useState(false);
+  const [imagePhase, setImagePhase] = useState<ImagePhase>("none");
+  const [imageSession, setImageSession] = useState<ImageSession | null>(null);
+  const [cropHintKey, setCropHintKey] = useState<MessageKey>("cropSelectArea");
+  const [decodingImage, setDecodingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const isDesktop = useIsDesktop();
 
   const processPayload = useCallback((payload: string) => {
     setRawPayload(payload);
     setError(null);
   }, []);
 
-  const handleFile = async (file: File | null) => {
-    if (!file) return;
-    setError(null);
-    try {
-      const data = await decodeQrFromFile(file);
-      if (!data) {
-        setError(t(locale, "noQrFound"));
+  const clearImageSession = useCallback(() => {
+    setImageSession((prev) => {
+      if (prev?.url) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }, []);
+
+  const beginImageFile = useCallback(
+    async (file: File | null) => {
+      if (!file) return;
+      if (!isImageFile(file)) {
+        setError(t(locale, "invalidImageFile"));
         return;
       }
-      processPayload(data);
-      setCopiaCola(data);
-      setImageSubmitted(true);
-    } catch {
-      setError(t(locale, "noQrFound"));
-    }
-  };
+      setError(null);
+      clearImageSession();
+      setImagePhase("loading");
+      setDecodingImage(true);
+      const url = URL.createObjectURL(file);
+      try {
+        const dims = await loadImageDimensions(file);
+        setImageSession({ file, url, ...dims });
+        const data = await decodeQrFromFile(file);
+        if (data) {
+          processPayload(data);
+          setCopiaCola(data);
+          setImageSubmitted(true);
+          setImagePhase("done");
+          return;
+        }
+        setCropHintKey("cropSelectArea");
+        setImagePhase("crop");
+      } catch {
+        setCropHintKey("cropSelectArea");
+        setImagePhase("crop");
+      } finally {
+        setDecodingImage(false);
+      }
+    },
+    [clearImageSession, locale, processPayload],
+  );
+
+  const handleCropDecode = useCallback(
+    async (rect: CropRect) => {
+      if (!imageSession) return;
+      setDecodingImage(true);
+      setError(null);
+      try {
+        const data = await decodeQrFromCropRect(imageSession.file, rect);
+        if (!data) {
+          setError(t(locale, "cropAdjustRetry"));
+          return;
+        }
+        processPayload(data);
+        setCopiaCola(data);
+        setImageSubmitted(true);
+        setImagePhase("done");
+      } catch {
+        setError(t(locale, "cropAdjustRetry"));
+      } finally {
+        setDecodingImage(false);
+      }
+    },
+    [imageSession, locale, processPayload],
+  );
+
+  const pickAnotherImage = useCallback(() => {
+    clearImageSession();
+    setImagePhase("none");
+    setRawPayload("");
+    setCopiaCola("");
+    setError(null);
+    setImageSubmitted(false);
+    setDecodingImage(false);
+  }, [clearImageSession]);
+
+  const openCropAgain = useCallback(() => {
+    setRawPayload("");
+    setCopiaCola("");
+    setError(null);
+    setCropHintKey("cropSelectArea");
+    setImagePhase("crop");
+  }, []);
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
@@ -91,14 +188,34 @@ export function DecoderApp() {
   const qrKind = parsed ? detectQrKind(parsed.nodes) : null;
 
   const decodeDisabled = !copiaCola.trim();
-  const showImageInput = !imageSubmitted || !rawPayload;
+  const showUploadTabs =
+    imagePhase !== "crop" &&
+    imagePhase !== "loading" &&
+    (!imageSubmitted || !rawPayload);
+  const showCropStep = imagePhase === "crop" && imageSession !== null;
+  const showResults = Boolean(rawPayload) && imagePhase !== "crop";
 
-  const resetForAnotherImage = () => {
-    setRawPayload("");
-    setCopiaCola("");
-    setError(null);
-    setImageSubmitted(false);
-  };
+  useEffect(() => () => clearImageSession(), [clearImageSession]);
+
+  useEffect(() => {
+    if (!isDesktop || !showUploadTabs) return;
+    const onPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            void beginImageFile(file);
+          }
+          break;
+        }
+      }
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [beginImageFile, isDesktop, showUploadTabs]);
 
   const crcBadge = () => {
     if (!parsed?.crc.present) {
@@ -126,7 +243,27 @@ export function DecoderApp() {
         <p className="text-sm text-muted-foreground">{t(locale, "subtitle")}</p>
       </header>
 
-      {showImageInput ? (
+      {imagePhase === "loading" ? (
+        <p className="text-sm text-muted-foreground" role="status">
+          {t(locale, "decodingImage")}
+        </p>
+      ) : null}
+
+      {showCropStep && imageSession ? (
+        <QrImageCrop
+          imageUrl={imageSession.url}
+          naturalWidth={imageSession.width}
+          naturalHeight={imageSession.height}
+          locale={locale}
+          hintKey={cropHintKey}
+          error={error}
+          decoding={decodingImage}
+          onCancel={pickAnotherImage}
+          onDecode={(rect) => void handleCropDecode(rect)}
+        />
+      ) : null}
+
+      {showUploadTabs ? (
         <Tabs defaultValue="upload" className="w-full">
           <TabsList className="flex w-full">
             <TabsTrigger value="upload" className="flex-1 gap-1.5">
@@ -139,7 +276,7 @@ export function DecoderApp() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="mt-3">
+          <TabsContent value="upload" className="mt-3 flex flex-col gap-3">
             <div
               className={dropZoneClass}
               onClick={() => fileInputRef.current?.click()}
@@ -147,7 +284,7 @@ export function DecoderApp() {
               onDrop={(e) => {
                 e.preventDefault();
                 const file = e.dataTransfer.files[0];
-                if (file) void handleFile(file);
+                if (file) void beginImageFile(file);
               }}
             >
               <ImageUp className="size-4 shrink-0" aria-hidden />
@@ -158,11 +295,73 @@ export function DecoderApp() {
               <Input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
+                accept={IMAGE_ACCEPT}
                 className="hidden"
-                onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
+                onChange={(e) => {
+                  void beginImageFile(e.target.files?.[0] ?? null);
+                  e.target.value = "";
+                }}
               />
             </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 gap-1.5"
+                onClick={() => cameraInputRef.current?.click()}
+              >
+                <Camera className="size-4 shrink-0" aria-hidden />
+                {t(locale, "takePhoto")}
+              </Button>
+              {isDesktop ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 gap-1.5"
+                  onClick={async () => {
+                    try {
+                      const items = await navigator.clipboard.read();
+                      for (const item of items) {
+                        const type = item.types.find((t) =>
+                          t.startsWith("image/"),
+                        );
+                        if (!type) continue;
+                        const blob = await item.getType(type);
+                        const file = new File(
+                          [blob],
+                          `pasted.${type.split("/")[1] ?? "png"}`,
+                          { type },
+                        );
+                        void beginImageFile(file);
+                        return;
+                      }
+                      setError(t(locale, "invalidImageFile"));
+                    } catch {
+                      setError(t(locale, "pasteImageHint"));
+                    }
+                  }}
+                >
+                  <ClipboardPaste className="size-4 shrink-0" aria-hidden />
+                  {t(locale, "pasteImage")}
+                </Button>
+              ) : null}
+            </div>
+            {isDesktop ? (
+              <p className="text-xs text-muted-foreground">
+                {t(locale, "pasteImageHint")}
+              </p>
+            ) : null}
+            <Input
+              ref={cameraInputRef}
+              type="file"
+              accept={IMAGE_ACCEPT}
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                void beginImageFile(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="copia-cola" className="mt-3 flex flex-col gap-3">
@@ -200,18 +399,33 @@ export function DecoderApp() {
         </Tabs>
       ) : null}
 
-      {error ? (
+      {error && !showCropStep ? (
         <p className="text-sm text-destructive" role="alert">
           {error}
         </p>
       ) : null}
 
-      {rawPayload ? (
+      {showResults ? (
         <div className="flex flex-col gap-6">
-          {imageSubmitted ? (
-            <Button type="button" variant="outline" onClick={resetForAnotherImage}>
-              {t(locale, "submitAnotherImage")}
-            </Button>
+          {imageSubmitted && imageSession ? (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                className="sm:flex-1"
+                onClick={openCropAgain}
+              >
+                {t(locale, "cropAgain")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="sm:flex-1"
+                onClick={pickAnotherImage}
+              >
+                {t(locale, "submitAnotherImage")}
+              </Button>
+            </div>
           ) : null}
 
           {!isPix ? (

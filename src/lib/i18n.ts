@@ -26,6 +26,18 @@ export const messages = {
     notPix: "Not a PIX BR Code — showing raw content only.",
     dropOrClick: "Drop an image or click to browse",
     submitAnotherImage: "Submit another image with QR code",
+    cropSelectArea:
+      "No QR code found in the full image. Drag the square to frame the QR code, then decode.",
+    cropAdjustRetry:
+      "No QR code found in that area. Adjust the crop and try again.",
+    decodeCrop: "Decode selection",
+    decodingImage: "Reading image…",
+    pickAnotherImage: "Choose another image",
+    cropAgain: "Crop again",
+    takePhoto: "Take photo",
+    pasteImage: "Paste image",
+    pasteImageHint: "Or press Ctrl+V / ⌘V with an image on the clipboard",
+    invalidImageFile: "Please choose an image file (PNG, JPEG, WebP, or GIF).",
     path: "Path",
   },
   pt: {
@@ -53,6 +65,20 @@ export const messages = {
     notPix: "Não é BR Code Pix — exibindo apenas o conteúdo bruto.",
     dropOrClick: "Solte uma imagem ou clique para selecionar",
     submitAnotherImage: "Enviar outra imagem com QR code",
+    cropSelectArea:
+      "Nenhum QR Code na imagem inteira. Ajuste o quadrado sobre o QR Code e decodifique.",
+    cropAdjustRetry:
+      "Nenhum QR Code nessa área. Ajuste o recorte e tente novamente.",
+    decodeCrop: "Decodificar seleção",
+    decodingImage: "Lendo imagem…",
+    pickAnotherImage: "Escolher outra imagem",
+    cropAgain: "Recortar novamente",
+    takePhoto: "Tirar foto",
+    pasteImage: "Colar imagem",
+    pasteImageHint:
+      "Ou pressione Ctrl+V / ⌘V com uma imagem na área de transferência",
+    invalidImageFile:
+      "Selecione um arquivo de imagem (PNG, JPEG, WebP ou GIF).",
     path: "Caminho",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
