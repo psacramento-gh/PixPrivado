@@ -51,6 +51,7 @@ export function DecoderApp() {
   const [rawPayload, setRawPayload] = useState("");
   const [copiaCola, setCopiaCola] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [imageSubmitted, setImageSubmitted] = useState(false);
   const pasteRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,6 +71,7 @@ export function DecoderApp() {
       }
       processPayload(data);
       setCopiaCola(data);
+      setImageSubmitted(true);
     } catch {
       setError(t(locale, "noQrFound"));
     }
@@ -88,6 +90,7 @@ export function DecoderApp() {
         if (data) {
           processPayload(data);
           setCopiaCola(data);
+          setImageSubmitted(true);
           return;
         }
       }
@@ -114,6 +117,14 @@ export function DecoderApp() {
   const qrKind = parsed ? detectQrKind(parsed.nodes) : null;
 
   const decodeDisabled = !copiaCola.trim();
+  const showImageInput = !imageSubmitted || !rawPayload;
+
+  const resetForAnotherImage = () => {
+    setRawPayload("");
+    setCopiaCola("");
+    setError(null);
+    setImageSubmitted(false);
+  };
 
   const crcBadge = () => {
     if (!parsed?.crc.present) {
@@ -140,65 +151,82 @@ export function DecoderApp() {
         <p className="text-sm text-muted-foreground">{t(locale, "subtitle")}</p>
       </header>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <Textarea
-          value={copiaCola}
-          onChange={(e) => setCopiaCola(e.target.value)}
-          placeholder="00020126..."
-          className="min-h-[88px] flex-1 font-mono text-xs"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !decodeDisabled) {
-              e.preventDefault();
-              processPayload(copiaCola.trim());
-            }
-          }}
-        />
-        <Button
-          type="button"
-          size="lg"
-          disabled={decodeDisabled}
-          onClick={() => processPayload(copiaCola.trim())}
-          className="shrink-0 sm:w-auto"
-        >
-          {t(locale, "decode")}
-        </Button>
-      </div>
+      {showImageInput ? (
+        <>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <Textarea
+              value={copiaCola}
+              onChange={(e) => setCopiaCola(e.target.value)}
+              placeholder="00020126..."
+              className="min-h-[88px] flex-1 font-mono text-xs"
+              onKeyDown={(e) => {
+                if (
+                  e.key === "Enter" &&
+                  (e.metaKey || e.ctrlKey) &&
+                  !decodeDisabled
+                ) {
+                  e.preventDefault();
+                  processPayload(copiaCola.trim());
+                }
+              }}
+            />
+            <Button
+              type="button"
+              size="lg"
+              disabled={decodeDisabled}
+              onClick={() => processPayload(copiaCola.trim())}
+              className="shrink-0 sm:w-auto"
+            >
+              {t(locale, "decode")}
+            </Button>
+          </div>
 
-      <p className="text-xs text-muted-foreground">{t(locale, "copiaColaHint")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t(locale, "copiaColaHint")}
+          </p>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div
-          className={dropZoneClass}
-          onClick={() => fileInputRef.current?.click()}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file) void handleFile(file);
-          }}
-        >
-          <ImageUp className="size-4 shrink-0" aria-hidden />
-          <span className="font-medium text-foreground">{t(locale, "upload")}</span>
-          <span className="text-xs">{t(locale, "dropOrClick")}</span>
-          <Input
-            ref={fileInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            className="hidden"
-            onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
-          />
-        </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div
+              className={dropZoneClass}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (file) void handleFile(file);
+              }}
+            >
+              <ImageUp className="size-4 shrink-0" aria-hidden />
+              <span className="font-medium text-foreground">
+                {t(locale, "upload")}
+              </span>
+              <span className="text-xs">{t(locale, "dropOrClick")}</span>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
 
-        <div
-          ref={pasteRef}
-          tabIndex={0}
-          className={cn(dropZoneClass, "outline-none focus-visible:ring-3 focus-visible:ring-ring/50")}
-        >
-          <ClipboardPaste className="size-4 shrink-0" aria-hidden />
-          <span className="font-medium text-foreground">{t(locale, "clipboard")}</span>
-          <span className="text-xs">{t(locale, "pasteZone")}</span>
-        </div>
-      </div>
+            <div
+              ref={pasteRef}
+              tabIndex={0}
+              className={cn(
+                dropZoneClass,
+                "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+              )}
+            >
+              <ClipboardPaste className="size-4 shrink-0" aria-hidden />
+              <span className="font-medium text-foreground">
+                {t(locale, "clipboard")}
+              </span>
+              <span className="text-xs">{t(locale, "pasteZone")}</span>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       {error ? (
         <p className="text-sm text-destructive" role="alert">
@@ -208,6 +236,12 @@ export function DecoderApp() {
 
       {rawPayload ? (
         <div className="flex flex-col gap-6">
+          {imageSubmitted ? (
+            <Button type="button" variant="outline" onClick={resetForAnotherImage}>
+              {t(locale, "submitAnotherImage")}
+            </Button>
+          ) : null}
+
           {!isPix ? (
             <p className="text-sm text-muted-foreground" role="note">
               {t(locale, "notPix")}
