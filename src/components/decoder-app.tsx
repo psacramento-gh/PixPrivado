@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -32,8 +33,7 @@ import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
 import { t } from "@/lib/i18n";
 import { decodeQrFromFile } from "@/lib/qr/decode-image";
-import { cn } from "@/lib/utils";
-import { ClipboardPaste, ImageUp } from "lucide-react";
+import { ImageUp } from "lucide-react";
 
 type LocationFetch = {
   url: string;
@@ -52,7 +52,6 @@ export function DecoderApp() {
   const [copiaCola, setCopiaCola] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [imageSubmitted, setImageSubmitted] = useState(false);
-  const pasteRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processPayload = useCallback((payload: string) => {
@@ -76,38 +75,6 @@ export function DecoderApp() {
       setError(t(locale, "noQrFound"));
     }
   };
-
-  const handlePaste = useCallback(
-    async (event: ClipboardEvent) => {
-      const items = event.clipboardData?.items;
-      if (!items?.length) return;
-      for (const item of items) {
-        if (!item.type.startsWith("image/")) continue;
-        event.preventDefault();
-        const file = item.getAsFile();
-        if (!file) continue;
-        const data = await decodeQrFromFile(file);
-        if (data) {
-          processPayload(data);
-          setCopiaCola(data);
-          setImageSubmitted(true);
-          return;
-        }
-      }
-      const text = event.clipboardData?.getData("text/plain")?.trim();
-      if (text?.startsWith("000201")) {
-        event.preventDefault();
-        setCopiaCola(text);
-        processPayload(text);
-      }
-    },
-    [processPayload],
-  );
-
-  useEffect(() => {
-    window.addEventListener("paste", handlePaste);
-    return () => window.removeEventListener("paste", handlePaste);
-  }, [handlePaste]);
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
@@ -152,40 +119,17 @@ export function DecoderApp() {
       </header>
 
       {showImageInput ? (
-        <>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <Textarea
-              value={copiaCola}
-              onChange={(e) => setCopiaCola(e.target.value)}
-              placeholder="00020126..."
-              className="min-h-[88px] flex-1 font-mono text-xs"
-              onKeyDown={(e) => {
-                if (
-                  e.key === "Enter" &&
-                  (e.metaKey || e.ctrlKey) &&
-                  !decodeDisabled
-                ) {
-                  e.preventDefault();
-                  processPayload(copiaCola.trim());
-                }
-              }}
-            />
-            <Button
-              type="button"
-              size="lg"
-              disabled={decodeDisabled}
-              onClick={() => processPayload(copiaCola.trim())}
-              className="shrink-0 sm:w-auto"
-            >
-              {t(locale, "decode")}
-            </Button>
-          </div>
+        <Tabs defaultValue="upload" className="w-full">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="upload" className="flex-1 sm:flex-none">
+              {t(locale, "upload")}
+            </TabsTrigger>
+            <TabsTrigger value="copia-cola" className="flex-1 sm:flex-none">
+              {t(locale, "copiaCola")}
+            </TabsTrigger>
+          </TabsList>
 
-          <p className="text-xs text-muted-foreground">
-            {t(locale, "copiaColaHint")}
-          </p>
-
-          <div className="grid gap-3 sm:grid-cols-2">
+          <TabsContent value="upload" className="mt-3">
             <div
               className={dropZoneClass}
               onClick={() => fileInputRef.current?.click()}
@@ -209,23 +153,41 @@ export function DecoderApp() {
                 onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
               />
             </div>
+          </TabsContent>
 
-            <div
-              ref={pasteRef}
-              tabIndex={0}
-              className={cn(
-                dropZoneClass,
-                "outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-              )}
-            >
-              <ClipboardPaste className="size-4 shrink-0" aria-hidden />
-              <span className="font-medium text-foreground">
-                {t(locale, "clipboard")}
-              </span>
-              <span className="text-xs">{t(locale, "pasteZone")}</span>
+          <TabsContent value="copia-cola" className="mt-3 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <Textarea
+                value={copiaCola}
+                onChange={(e) => setCopiaCola(e.target.value)}
+                placeholder="00020126..."
+                className="min-h-[88px] flex-1 font-mono text-xs"
+                onKeyDown={(e) => {
+                  if (
+                    e.key === "Enter" &&
+                    (e.metaKey || e.ctrlKey) &&
+                    !decodeDisabled
+                  ) {
+                    e.preventDefault();
+                    processPayload(copiaCola.trim());
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                size="lg"
+                disabled={decodeDisabled}
+                onClick={() => processPayload(copiaCola.trim())}
+                className="shrink-0 sm:w-auto"
+              >
+                {t(locale, "decode")}
+              </Button>
             </div>
-          </div>
-        </>
+            <p className="text-xs text-muted-foreground">
+              {t(locale, "copiaColaHint")}
+            </p>
+          </TabsContent>
+        </Tabs>
       ) : null}
 
       {error ? (

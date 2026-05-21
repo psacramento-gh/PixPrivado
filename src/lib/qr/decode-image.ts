@@ -9,20 +9,6 @@ export async function decodeQrFromFile(file: File): Promise<string | null> {
   }
 }
 
-export async function decodeQrFromClipboardItem(
-  item: ClipboardItem,
-): Promise<string | null> {
-  const imageType = item.types.find((t) => t.startsWith("image/"));
-  if (!imageType) return null;
-  const blob = await item.getType(imageType);
-  const bitmap = await createImageBitmap(blob);
-  try {
-    return decodeQrFromImageSource(bitmap, bitmap.width, bitmap.height);
-  } finally {
-    bitmap.close();
-  }
-}
-
 function decodeQrFromImageSource(
   source: ImageBitmap | HTMLImageElement | HTMLCanvasElement,
   width: number,
