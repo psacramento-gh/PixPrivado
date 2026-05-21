@@ -33,7 +33,7 @@ import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
 import { t } from "@/lib/i18n";
 import { decodeQrFromFile } from "@/lib/qr/decode-image";
-import { ImageUp } from "lucide-react";
+import { ClipboardCopy, ImageUp } from "lucide-react";
 
 type LocationFetch = {
   url: string;
@@ -121,10 +121,12 @@ export function DecoderApp() {
       {showImageInput ? (
         <Tabs defaultValue="upload" className="w-full">
           <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="upload" className="flex-1 sm:flex-none">
+            <TabsTrigger value="upload" className="flex-1 gap-1.5 sm:flex-none">
+              <ImageUp className="size-4 shrink-0" aria-hidden />
               {t(locale, "upload")}
             </TabsTrigger>
-            <TabsTrigger value="copia-cola" className="flex-1 sm:flex-none">
+            <TabsTrigger value="copia-cola" className="flex-1 gap-1.5 sm:flex-none">
+              <ClipboardCopy className="size-4 shrink-0" aria-hidden />
               {t(locale, "copiaCola")}
             </TabsTrigger>
           </TabsList>
