@@ -43,6 +43,8 @@ type LocationFetch = {
   error?: string;
 };
 
+type SubmissionSource = "image" | "text";
+
 const dropZoneClass =
   "border-input hover:bg-muted/50 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-5 text-center text-sm text-muted-foreground transition-colors";
 
@@ -51,14 +53,19 @@ export function DecoderApp() {
   const [rawPayload, setRawPayload] = useState("");
   const [copiaCola, setCopiaCola] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [imageSubmitted, setImageSubmitted] = useState(false);
+  const [submissionSource, setSubmissionSource] =
+    useState<SubmissionSource | null>(null);
   const pasteRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const processPayload = useCallback((payload: string) => {
-    setRawPayload(payload);
-    setError(null);
-  }, []);
+  const processPayload = useCallback(
+    (payload: string, source: SubmissionSource) => {
+      setRawPayload(payload);
+      setSubmissionSource(source);
+      setError(null);
+    },
+    [],
+  );
 
   const handleFile = async (file: File | null) => {
     if (!file) return;
@@ -69,9 +76,8 @@ export function DecoderApp() {
         setError(t(locale, "noQrFound"));
         return;
       }
-      processPayload(data);
+      processPayload(data, "image");
       setCopiaCola(data);
-      setImageSubmitted(true);
     } catch {
       setError(t(locale, "noQrFound"));
     }
@@ -88,9 +94,8 @@ export function DecoderApp() {
         if (!file) continue;
         const data = await decodeQrFromFile(file);
         if (data) {
-          processPayload(data);
+          processPayload(data, "image");
           setCopiaCola(data);
-          setImageSubmitted(true);
           return;
         }
       }
@@ -98,7 +103,7 @@ export function DecoderApp() {
       if (text?.startsWith("000201")) {
         event.preventDefault();
         setCopiaCola(text);
-        processPayload(text);
+        processPayload(text, "text");
       }
     },
     [processPayload],
@@ -117,13 +122,13 @@ export function DecoderApp() {
   const qrKind = parsed ? detectQrKind(parsed.nodes) : null;
 
   const decodeDisabled = !copiaCola.trim();
-  const showImageInput = !imageSubmitted || !rawPayload;
+  const showInput = !rawPayload;
 
-  const resetForAnotherImage = () => {
+  const resetForAnother = () => {
     setRawPayload("");
     setCopiaCola("");
     setError(null);
-    setImageSubmitted(false);
+    setSubmissionSource(null);
   };
 
   const crcBadge = () => {
@@ -151,7 +156,7 @@ export function DecoderApp() {
         <p className="text-sm text-muted-foreground">{t(locale, "subtitle")}</p>
       </header>
 
-      {showImageInput ? (
+      {showInput ? (
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             <Textarea
@@ -166,7 +171,7 @@ export function DecoderApp() {
                   !decodeDisabled
                 ) {
                   e.preventDefault();
-                  processPayload(copiaCola.trim());
+                  processPayload(copiaCola.trim(), "text");
                 }
               }}
             />
@@ -174,7 +179,7 @@ export function DecoderApp() {
               type="button"
               size="lg"
               disabled={decodeDisabled}
-              onClick={() => processPayload(copiaCola.trim())}
+              onClick={() => processPayload(copiaCola.trim(), "text")}
               className="shrink-0 sm:w-auto"
             >
               {t(locale, "decode")}
@@ -236,9 +241,14 @@ export function DecoderApp() {
 
       {rawPayload ? (
         <div className="flex flex-col gap-6">
-          {imageSubmitted ? (
-            <Button type="button" variant="outline" onClick={resetForAnotherImage}>
-              {t(locale, "submitAnotherImage")}
+          {submissionSource ? (
+            <Button type="button" variant="outline" onClick={resetForAnother}>
+              {t(
+                locale,
+                submissionSource === "image"
+                  ? "submitAnotherImage"
+                  : "submitAnotherCopiaCola",
+              )}
             </Button>
           ) : null}
 

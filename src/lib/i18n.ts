@@ -31,6 +31,7 @@ export const messages = {
     dropOrClick: "Drop an image or click to browse",
     pasteZone: "Click here and paste an image",
     submitAnotherImage: "Submit another image with QR code",
+    submitAnotherCopiaCola: "Submit another Copia e Cola code",
     path: "Path",
   },
   pt: {
@@ -63,6 +64,7 @@ export const messages = {
     dropOrClick: "Solte uma imagem ou clique para selecionar",
     pasteZone: "Clique aqui e cole uma imagem",
     submitAnotherImage: "Enviar outra imagem com QR code",
+    submitAnotherCopiaCola: "Enviar outro código Copia e Cola",
     path: "Caminho",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
