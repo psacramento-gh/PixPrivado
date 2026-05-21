@@ -276,35 +276,37 @@ export function DecoderApp() {
                 <p className="text-xs font-medium text-muted-foreground">
                   {t(locale, "structuredData")}
                 </p>
-                <div className="-mx-1 overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t(locale, "label")}</TableHead>
-                        <TableHead>{t(locale, "value")}</TableHead>
+                <Table className="table-fixed w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[34%] max-w-28 whitespace-normal align-top text-xs sm:max-w-none sm:w-[38%] sm:text-sm">
+                        {t(locale, "label")}
+                      </TableHead>
+                      <TableHead className="whitespace-normal align-top text-xs sm:text-sm">
+                        {t(locale, "value")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((row) => (
+                      <TableRow key={row.path}>
+                        <TableCell className="w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal text-muted-foreground sm:max-w-none sm:w-[38%] sm:text-sm">
+                          {getTagLabel(row.id, row.parentId, locale)}
+                        </TableCell>
+                        <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
+                          {row.isTemplate
+                            ? "—"
+                            : formatDisplayValue(
+                                row.id,
+                                row.value,
+                                row.parentId,
+                                locale,
+                              )}
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rows.map((row) => (
-                        <TableRow key={row.path}>
-                          <TableCell className="text-sm">
-                            {getTagLabel(row.id, row.parentId, locale)}
-                          </TableCell>
-                          <TableCell className="max-w-[12rem] font-mono text-xs break-all sm:max-w-xs">
-                            {row.isTemplate
-                              ? "—"
-                              : formatDisplayValue(
-                                  row.id,
-                                  row.value,
-                                  row.parentId,
-                                  locale,
-                                )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </>
           ) : null}
