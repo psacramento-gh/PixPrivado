@@ -26,6 +26,7 @@ import {
 } from "@/lib/brcode/analyze";
 import {
   formatDisplayValue,
+  getTagDescription,
   getTagLabel,
   type Locale,
 } from "@/lib/brcode/labels";
@@ -33,6 +34,12 @@ import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
 import { t } from "@/lib/i18n";
 import { decodeQrFromFile } from "@/lib/qr/decode-image";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ClipboardCopy, ImageUp } from "lucide-react";
 
 type LocationFetch = {
@@ -105,6 +112,7 @@ export function DecoderApp() {
   };
 
   return (
+    <TooltipProvider>
     <AppFrame
       title={t(locale, "title")}
       headerActions={
@@ -255,7 +263,11 @@ export function DecoderApp() {
                     {rows.map((row) => (
                       <TableRow key={row.path}>
                         <TableCell className="w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal text-muted-foreground sm:max-w-none sm:w-[38%] sm:text-sm">
-                          {getTagLabel(row.id, row.parentId, locale)}
+                          <StructuredDataLabel
+                            id={row.id}
+                            parentId={row.parentId}
+                            locale={locale}
+                          />
                         </TableCell>
                         <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
                           {row.isTemplate
@@ -301,6 +313,34 @@ export function DecoderApp() {
         </div>
       ) : null}
     </AppFrame>
+    </TooltipProvider>
+  );
+}
+
+function StructuredDataLabel({
+  id,
+  parentId,
+  locale,
+}: {
+  id: string;
+  parentId: string | null;
+  locale: Locale;
+}) {
+  const label = getTagLabel(id, parentId, locale);
+  const description = getTagDescription(id, parentId, locale);
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        type="button"
+        className="cursor-help text-left underline decoration-dotted decoration-muted-foreground/60 underline-offset-2 hover:decoration-muted-foreground"
+      >
+        {label}
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[min(20rem,90vw)]">
+        {description}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
