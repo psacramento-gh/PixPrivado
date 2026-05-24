@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
       {
         error: result.error,
         url: buildDehashedResultsPageUrl(query),
-        webUrl: result.webUrl,
       },
       { status: result.status ?? 502 },
     );
@@ -31,7 +30,6 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     url: buildDehashedResultsPageUrl(query),
-    webUrl: result.webUrl,
     total: result.total,
   });
 }
