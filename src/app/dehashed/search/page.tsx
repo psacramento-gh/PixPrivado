@@ -64,10 +64,26 @@ export default async function DehashedSearchPage({
       </div>
 
       {!result.ok ? (
-        <p className="text-sm text-destructive" role="alert">
-          {result.error}
-          {result.status ? ` (HTTP ${result.status})` : null}
-        </p>
+        <div className="flex flex-col gap-2" role="alert">
+          <p className="text-sm text-destructive">
+            {result.error}
+            {result.status ? ` (HTTP ${result.status})` : null}
+          </p>
+          {result.status === 503 ? (
+            <ul className="list-inside list-disc text-sm text-muted-foreground">
+              <li>
+                Branch URLs like <span className="font-mono text-xs">…git-…vercel.app</span>{" "}
+                are <strong>Preview</strong> — the variable must be enabled for Preview, not
+                Production only.
+              </li>
+              <li>
+                Vercel → Project → Settings → Environment Variables →{" "}
+                <span className="font-mono text-xs">DEHASHED_API_KEY</span> → check Preview
+                and Production → Save → Redeploy.
+              </li>
+            </ul>
+          ) : null}
+        </div>
       ) : (
         <>
           <p className="text-sm text-muted-foreground">

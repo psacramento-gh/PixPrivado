@@ -48,7 +48,8 @@ export async function searchDehashed(
       ok: false,
       query: trimmed,
       webUrl,
-      error: "Dehashed API is not configured on the server",
+      error:
+        "DEHASHED_API_KEY is not available in this deployment. On Vercel, add it for Preview (branch deploys) and Production, then redeploy.",
       status: 503,
     };
   }
