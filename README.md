@@ -27,3 +27,10 @@ npx vercel
 ```
 
 All QR decoding runs in the browser. Location fetches use `/api/location` on the server to avoid CORS when loading cobrança JSON from PSP domains.
+
+Dehashed integration uses `/api/dehashed` with `DEHASHED_API_KEY` (v2 API). Clicks run a minimal API search (1 result) then open the Dehashed web UI with the same query. Supported PIX keys: CPF, CNPJ, email, and phone (not random EVP keys).
+
+```bash
+cp .env.example .env.local
+# set DEHASHED_API_KEY=...
+```

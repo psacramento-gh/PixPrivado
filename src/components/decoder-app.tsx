@@ -40,6 +40,11 @@ import {
   type CropRect,
 } from "@/lib/qr/decode-image";
 import { useIsDesktop } from "@/lib/use-is-desktop";
+import { DehashedValueLink } from "@/components/dehashed-value-link";
+import {
+  buildDehashedQueryForRow,
+  rowHasDehashedLink,
+} from "@/lib/dehashed/searchable-rows";
 import { QrImageCrop } from "@/components/qr-image-crop";
 import {
   Tooltip,
