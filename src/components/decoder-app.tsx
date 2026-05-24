@@ -172,7 +172,7 @@ export function DecoderApp() {
     [imageSession, locale, processPayload],
   );
 
-  const pickAnotherImage = useCallback(() => {
+  const resetDecoder = useCallback(() => {
     clearImageSession();
     setImagePhase("none");
     setRawPayload("");
@@ -180,6 +180,7 @@ export function DecoderApp() {
     setError(null);
     setImageSubmitted(false);
     setDecodingImage(false);
+    clearPersistedDecoderState();
   }, [clearImageSession]);
 
   const openCropAgain = useCallback(() => {
@@ -213,8 +214,9 @@ export function DecoderApp() {
       setLocale(persisted.locale);
       setRawPayload(persisted.rawPayload);
       setCopiaCola(persisted.copiaCola);
-      setImageSubmitted(persisted.imageSubmitted);
-      setImagePhase(persisted.imageSubmitted ? "done" : "none");
+      // Image bytes are not persisted; only the decoded payload survives navigation.
+      setImageSubmitted(false);
+      setImagePhase("none");
       setError(null);
     }
     setRestoreDone(true);
@@ -292,7 +294,7 @@ export function DecoderApp() {
           hintKey={cropHintKey}
           error={error}
           decoding={decodingImage}
-          onCancel={pickAnotherImage}
+          onCancel={resetDecoder}
           onDecode={(rect) => void handleCropDecode(rect)}
         />
       ) : null}
@@ -441,7 +443,7 @@ export function DecoderApp() {
 
       {showResults ? (
         <div className="flex flex-col gap-6">
-          {imageSubmitted && imageSession ? (
+          {imageSession ? (
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="button"
@@ -455,12 +457,21 @@ export function DecoderApp() {
                 type="button"
                 variant="outline"
                 className="sm:flex-1"
-                onClick={pickAnotherImage}
+                onClick={resetDecoder}
               >
                 {t(locale, "submitAnotherImage")}
               </Button>
             </div>
-          ) : null}
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={resetDecoder}
+            >
+              {t(locale, "decodeAnother")}
+            </Button>
+          )}
 
           {!isPix ? (
             <p className="text-sm text-muted-foreground" role="note">
