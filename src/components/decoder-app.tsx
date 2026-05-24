@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  clearPersistedDecoderState,
+  loadPersistedDecoderState,
+  savePersistedDecoderState,
+} from "@/lib/decoder-persist";
 import { AppFrame } from "@/components/app-frame";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -83,6 +88,7 @@ function isImageFile(file: File): boolean {
 }
 
 export function DecoderApp() {
+  const [restoreDone, setRestoreDone] = useState(false);
   const [locale, setLocale] = useState<Locale>("en");
   const [rawPayload, setRawPayload] = useState("");
   const [copiaCola, setCopiaCola] = useState("");
@@ -201,6 +207,33 @@ export function DecoderApp() {
   const showResults = Boolean(rawPayload) && imagePhase !== "crop";
 
   useEffect(() => () => clearImageSession(), [clearImageSession]);
+
+  useEffect(() => {
+    const persisted = loadPersistedDecoderState();
+    if (persisted) {
+      setLocale(persisted.locale);
+      setRawPayload(persisted.rawPayload);
+      setCopiaCola(persisted.copiaCola);
+      setImageSubmitted(persisted.imageSubmitted);
+      setImagePhase(persisted.imageSubmitted ? "done" : "none");
+      setError(null);
+    }
+    setRestoreDone(true);
+  }, []);
+
+  useEffect(() => {
+    if (!restoreDone) return;
+    if (!rawPayload.trim()) {
+      clearPersistedDecoderState();
+      return;
+    }
+    savePersistedDecoderState({
+      rawPayload,
+      copiaCola,
+      imageSubmitted,
+      locale,
+    });
+  }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale]);
 
   useEffect(() => {
     if (!isDesktop || !showUploadTabs) return;
