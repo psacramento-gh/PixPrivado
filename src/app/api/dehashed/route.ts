@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Dehashed-Api-Key": apiKey,
+        "DeHashed-Api-Key": apiKey,
         Accept: "application/json",
       },
       body: JSON.stringify({
