@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   clearPersistedDecoderState,
   loadPersistedDecoderState,
+  loadPersistedImageSession,
   savePersistedDecoderState,
+  savePersistedImageSession,
 } from "@/lib/decoder-persist";
 import { AppFrame } from "@/components/app-frame";
 import { AppHeaderActions } from "@/components/app-header-actions";
@@ -214,10 +216,14 @@ export function DecoderApp() {
       setLocale(persisted.locale);
       setRawPayload(persisted.rawPayload);
       setCopiaCola(persisted.copiaCola);
-      // Image bytes are not persisted; only the decoded payload survives navigation.
-      setImageSubmitted(false);
-      setImagePhase("none");
+      setImageSubmitted(persisted.imageSubmitted);
+      setImagePhase(persisted.imageSubmitted ? "done" : "none");
       setError(null);
+      if (persisted.imageSubmitted) {
+        void loadPersistedImageSession().then((session) => {
+          if (session) setImageSession(session);
+        });
+      }
     }
     setRestoreDone(true);
   }, []);
@@ -235,6 +241,11 @@ export function DecoderApp() {
       locale,
     });
   }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale]);
+
+  useEffect(() => {
+    if (!restoreDone || !imageSubmitted || !imageSession) return;
+    void savePersistedImageSession(imageSession);
+  }, [restoreDone, imageSubmitted, imageSession]);
 
   useEffect(() => {
     if (!isDesktop || !showUploadTabs) return;
@@ -443,13 +454,14 @@ export function DecoderApp() {
 
       {showResults ? (
         <div className="flex flex-col gap-6">
-          {imageSession ? (
+          {imageSubmitted ? (
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="button"
                 variant="outline"
                 className="sm:flex-1"
                 onClick={openCropAgain}
+                disabled={!imageSession}
               >
                 {t(locale, "cropAgain")}
               </Button>
@@ -462,16 +474,7 @@ export function DecoderApp() {
                 {t(locale, "submitAnotherImage")}
               </Button>
             </div>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={resetDecoder}
-            >
-              {t(locale, "decodeAnother")}
-            </Button>
-          )}
+          ) : null}
 
           {!isPix ? (
             <p className="text-sm text-muted-foreground" role="note">
