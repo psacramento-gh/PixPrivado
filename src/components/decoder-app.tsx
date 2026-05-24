@@ -7,8 +7,7 @@ import {
   savePersistedDecoderState,
 } from "@/lib/decoder-persist";
 import { AppFrame } from "@/components/app-frame";
-import { LocaleToggle } from "@/components/locale-toggle";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AppHeaderActions } from "@/components/app-header-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -271,10 +270,7 @@ export function DecoderApp() {
     <AppFrame
       title={t(locale, "title")}
       headerActions={
-        <>
-          <LocaleToggle locale={locale} onLocaleChange={setLocale} />
-          <ThemeToggle />
-        </>
+        <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }
     >
       <header>
