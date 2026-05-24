@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
 import { searchDehashed } from "@/lib/dehashed/api-search";
 import { entryRows } from "@/lib/dehashed/format-entry";
 import {
@@ -43,24 +42,6 @@ export default async function DehashedSearchPage({
         </Link>
         <h1 className="text-lg font-semibold">Dehashed results</h1>
         <p className="font-mono text-xs break-all text-muted-foreground">{result.query}</p>
-      </div>
-
-      <div className="rounded-lg border bg-muted/30 p-4 text-sm">
-        <p>
-          Results below use your server <strong>DEHASHED_API_KEY</strong>. The Dehashed
-          website link requires a separate browser login at{" "}
-          <span className="font-mono text-xs">app.dehashed.com</span> — the API key does
-          not sign you in there.
-        </p>
-        <a
-          href={result.webUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 font-medium underline underline-offset-4"
-        >
-          Open same query on Dehashed
-          <ExternalLink className="size-3.5" aria-hidden />
-        </a>
       </div>
 
       {!result.ok ? (

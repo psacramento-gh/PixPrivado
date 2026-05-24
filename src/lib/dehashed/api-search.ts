@@ -1,6 +1,5 @@
 import { isAllowedDehashedQuery } from "./build-query";
 import { DEHASHED_API_URL } from "./constants";
-import { buildDehashedWebSearchUrl } from "./web-url";
 
 const DEFAULT_SIZE = 50;
 const SEARCH_TIMEOUT_MS = 15_000;
@@ -11,7 +10,6 @@ export type DehashedSearchResult =
   | {
       ok: true;
       query: string;
-      webUrl: string;
       total: number;
       entries: DehashedEntry[];
       balance?: number;
@@ -19,7 +17,6 @@ export type DehashedSearchResult =
   | {
       ok: false;
       query: string;
-      webUrl: string;
       error: string;
       status?: number;
     };
@@ -36,10 +33,9 @@ export async function searchDehashed(
   size = DEFAULT_SIZE,
 ): Promise<DehashedSearchResult> {
   const trimmed = query.trim();
-  const webUrl = buildDehashedWebSearchUrl(trimmed);
 
   if (!trimmed || !isAllowedDehashedQuery(trimmed)) {
-    return { ok: false, query: trimmed, webUrl, error: "Invalid or disallowed query" };
+    return { ok: false, query: trimmed, error: "Invalid or disallowed query" };
   }
 
   const apiKey = process.env.DEHASHED_API_KEY?.trim();
@@ -47,7 +43,6 @@ export async function searchDehashed(
     return {
       ok: false,
       query: trimmed,
-      webUrl,
       error:
         "DEHASHED_API_KEY is not available in this deployment. On Vercel, add it for Preview (branch deploys) and Production, then redeploy.",
       status: 503,
@@ -87,7 +82,6 @@ export async function searchDehashed(
       return {
         ok: false,
         query: trimmed,
-        webUrl,
         error: message,
         status: response.status,
       };
@@ -105,7 +99,6 @@ export async function searchDehashed(
     return {
       ok: true,
       query: trimmed,
-      webUrl,
       total,
       entries: parseEntries(data),
       balance,
@@ -114,7 +107,6 @@ export async function searchDehashed(
     return {
       ok: false,
       query: trimmed,
-      webUrl,
       error: "Could not reach the Dehashed API",
     };
   } finally {
