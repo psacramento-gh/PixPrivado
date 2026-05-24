@@ -6,16 +6,12 @@ const IMAGE_STORAGE_KEY = "pix-decoder:last-image";
 export type RestoredImageSession = {
   file: File;
   url: string;
-  width: number;
-  height: number;
 };
 
 type PersistedImageSession = {
   dataUrl: string;
   name: string;
   type: string;
-  width: number;
-  height: number;
 };
 
 export type PersistedDecoderState = {
@@ -66,8 +62,6 @@ export function clearPersistedDecoderState(): void {
 
 export async function savePersistedImageSession(session: {
   file: File;
-  width: number;
-  height: number;
 }): Promise<void> {
   if (typeof window === "undefined") return;
   try {
@@ -76,8 +70,6 @@ export async function savePersistedImageSession(session: {
       dataUrl,
       name: session.file.name,
       type: session.file.type || "image/png",
-      width: session.width,
-      height: session.height,
     };
     sessionStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify(payload));
   } catch {
@@ -91,11 +83,7 @@ export async function loadPersistedImageSession(): Promise<RestoredImageSession 
     const raw = sessionStorage.getItem(IMAGE_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<PersistedImageSession>;
-    if (
-      typeof parsed.dataUrl !== "string" ||
-      typeof parsed.width !== "number" ||
-      typeof parsed.height !== "number"
-    ) {
+    if (typeof parsed.dataUrl !== "string") {
       return null;
     }
     const response = await fetch(parsed.dataUrl);
@@ -107,8 +95,6 @@ export async function loadPersistedImageSession(): Promise<RestoredImageSession 
     return {
       file,
       url,
-      width: parsed.width,
-      height: parsed.height,
     };
   } catch {
     return null;

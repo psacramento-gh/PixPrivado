@@ -38,20 +38,14 @@ import {
 } from "@/lib/brcode/labels";
 import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
-import { t, type MessageKey } from "@/lib/i18n";
-import {
-  decodeQrFromCropRect,
-  decodeQrFromFile,
-  loadImageDimensions,
-  type CropRect,
-} from "@/lib/qr/decode-image";
+import { t } from "@/lib/i18n";
+import { decodeQrFromFile } from "@/lib/qr/decode-image";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import {
   buildDehashedQueryForRow,
   rowHasDehashedLink,
 } from "@/lib/dehashed/searchable-rows";
-import { QrImageCrop } from "@/components/qr-image-crop";
 import {
   Tooltip,
   TooltipContent,
@@ -76,11 +70,9 @@ const IMAGE_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
 type ImageSession = {
   file: File;
   url: string;
-  width: number;
-  height: number;
 };
 
-type ImagePhase = "none" | "loading" | "crop" | "done";
+type ImagePhase = "none" | "loading" | "done";
 
 function isImageFile(file: File): boolean {
   if (file.type.startsWith("video/")) return false;
@@ -97,8 +89,6 @@ export function DecoderApp() {
   const [imageSubmitted, setImageSubmitted] = useState(false);
   const [imagePhase, setImagePhase] = useState<ImagePhase>("none");
   const [imageSession, setImageSession] = useState<ImageSession | null>(null);
-  const [cropHintKey, setCropHintKey] = useState<MessageKey>("cropSelectArea");
-  const [decodingImage, setDecodingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const isDesktop = useIsDesktop();
@@ -125,11 +115,9 @@ export function DecoderApp() {
       setError(null);
       clearImageSession();
       setImagePhase("loading");
-      setDecodingImage(true);
       const url = URL.createObjectURL(file);
       try {
-        const dims = await loadImageDimensions(file);
-        setImageSession({ file, url, ...dims });
+        setImageSession({ file, url });
         const data = await decodeQrFromFile(file);
         if (data) {
           processPayload(data);
@@ -138,40 +126,18 @@ export function DecoderApp() {
           setImagePhase("done");
           return;
         }
-        setCropHintKey("cropSelectArea");
-        setImagePhase("crop");
+        URL.revokeObjectURL(url);
+        setImageSession(null);
+        setImagePhase("none");
+        setError(t(locale, "noQrFound"));
       } catch {
-        setCropHintKey("cropSelectArea");
-        setImagePhase("crop");
-      } finally {
-        setDecodingImage(false);
+        URL.revokeObjectURL(url);
+        setImageSession(null);
+        setImagePhase("none");
+        setError(t(locale, "noQrFound"));
       }
     },
     [clearImageSession, locale, processPayload],
-  );
-
-  const handleCropDecode = useCallback(
-    async (rect: CropRect) => {
-      if (!imageSession) return;
-      setDecodingImage(true);
-      setError(null);
-      try {
-        const data = await decodeQrFromCropRect(imageSession.file, rect);
-        if (!data) {
-          setError(t(locale, "cropAdjustRetry"));
-          return;
-        }
-        processPayload(data);
-        setCopiaCola(data);
-        setImageSubmitted(true);
-        setImagePhase("done");
-      } catch {
-        setError(t(locale, "cropAdjustRetry"));
-      } finally {
-        setDecodingImage(false);
-      }
-    },
-    [imageSession, locale, processPayload],
   );
 
   const resetDecoder = useCallback(() => {
@@ -181,17 +147,8 @@ export function DecoderApp() {
     setCopiaCola("");
     setError(null);
     setImageSubmitted(false);
-    setDecodingImage(false);
     clearPersistedDecoderState();
   }, [clearImageSession]);
-
-  const openCropAgain = useCallback(() => {
-    setRawPayload("");
-    setCopiaCola("");
-    setError(null);
-    setCropHintKey("cropSelectArea");
-    setImagePhase("crop");
-  }, []);
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
@@ -202,11 +159,8 @@ export function DecoderApp() {
 
   const decodeDisabled = !copiaCola.trim();
   const showUploadTabs =
-    imagePhase !== "crop" &&
-    imagePhase !== "loading" &&
-    (!imageSubmitted || !rawPayload);
-  const showCropStep = imagePhase === "crop" && imageSession !== null;
-  const showResults = Boolean(rawPayload) && imagePhase !== "crop";
+    imagePhase !== "loading" && (!imageSubmitted || !rawPayload);
+  const showResults = Boolean(rawPayload) && imagePhase !== "loading";
 
   useEffect(() => () => clearImageSession(), [clearImageSession]);
 
@@ -294,20 +248,6 @@ export function DecoderApp() {
         <p className="text-sm text-muted-foreground" role="status">
           {t(locale, "decodingImage")}
         </p>
-      ) : null}
-
-      {showCropStep && imageSession ? (
-        <QrImageCrop
-          imageUrl={imageSession.url}
-          naturalWidth={imageSession.width}
-          naturalHeight={imageSession.height}
-          locale={locale}
-          hintKey={cropHintKey}
-          error={error}
-          decoding={decodingImage}
-          onCancel={resetDecoder}
-          onDecode={(rect) => void handleCropDecode(rect)}
-        />
       ) : null}
 
       {showUploadTabs ? (
@@ -446,7 +386,7 @@ export function DecoderApp() {
         </Tabs>
       ) : null}
 
-      {error && !showCropStep ? (
+      {error ? (
         <p className="text-sm text-destructive" role="alert">
           {error}
         </p>
@@ -455,25 +395,13 @@ export function DecoderApp() {
       {showResults ? (
         <div className="flex flex-col gap-6">
           {imageSubmitted ? (
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                className="sm:flex-1"
-                onClick={openCropAgain}
-                disabled={!imageSession}
-              >
-                {t(locale, "cropAgain")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="sm:flex-1"
-                onClick={resetDecoder}
-              >
-                {t(locale, "submitAnotherImage")}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={resetDecoder}
+            >
+              {t(locale, "submitAnotherImage")}
+            </Button>
           ) : null}
 
           {!isPix ? (
