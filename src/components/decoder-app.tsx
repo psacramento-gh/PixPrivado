@@ -40,6 +40,11 @@ import {
   type CropRect,
 } from "@/lib/qr/decode-image";
 import { useIsDesktop } from "@/lib/use-is-desktop";
+import { DehashedValueLink } from "@/components/dehashed-value-link";
+import {
+  buildDehashedQueryForRow,
+  rowHasDehashedLink,
+} from "@/lib/dehashed/searchable-rows";
 import { QrImageCrop } from "@/components/qr-image-crop";
 import {
   Tooltip,
@@ -484,14 +489,15 @@ export function DecoderApp() {
                           />
                         </TableCell>
                         <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
-                          {row.isTemplate
-                            ? "—"
-                            : formatDisplayValue(
-                                row.id,
-                                row.value,
-                                row.parentId,
-                                locale,
-                              )}
+                          {row.isTemplate ? (
+                            "—"
+                          ) : (
+                            <StructuredDataValue
+                              row={row}
+                              rows={rows}
+                              locale={locale}
+                            />
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -529,6 +535,38 @@ export function DecoderApp() {
     </AppFrame>
     </TooltipProvider>
   );
+}
+
+function StructuredDataValue({
+  row,
+  rows,
+  locale,
+}: {
+  row: {
+    id: string;
+    parentId: string | null;
+    value: string;
+  };
+  rows: Array<{ id: string; parentId: string | null; value: string }>;
+  locale: Locale;
+}) {
+  const displayValue = formatDisplayValue(
+    row.id,
+    row.value,
+    row.parentId,
+    locale,
+  );
+
+  if (!rowHasDehashedLink(row, rows)) {
+    return <>{displayValue}</>;
+  }
+
+  const query = buildDehashedQueryForRow(row, rows);
+  if (!query) {
+    return <>{displayValue}</>;
+  }
+
+  return <DehashedValueLink displayValue={displayValue} query={query} />;
 }
 
 function StructuredDataLabel({
