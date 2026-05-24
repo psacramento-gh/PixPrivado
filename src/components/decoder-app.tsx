@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   clearPersistedDecoderState,
   loadPersistedDecoderState,
+  loadPersistedImageSession,
   savePersistedDecoderState,
+  savePersistedImageSession,
 } from "@/lib/decoder-persist";
 import { AppFrame } from "@/components/app-frame";
-import { LocaleToggle } from "@/components/locale-toggle";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AppHeaderActions } from "@/components/app-header-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -173,7 +174,7 @@ export function DecoderApp() {
     [imageSession, locale, processPayload],
   );
 
-  const pickAnotherImage = useCallback(() => {
+  const resetDecoder = useCallback(() => {
     clearImageSession();
     setImagePhase("none");
     setRawPayload("");
@@ -181,6 +182,7 @@ export function DecoderApp() {
     setError(null);
     setImageSubmitted(false);
     setDecodingImage(false);
+    clearPersistedDecoderState();
   }, [clearImageSession]);
 
   const openCropAgain = useCallback(() => {
@@ -217,6 +219,11 @@ export function DecoderApp() {
       setImageSubmitted(persisted.imageSubmitted);
       setImagePhase(persisted.imageSubmitted ? "done" : "none");
       setError(null);
+      if (persisted.imageSubmitted) {
+        void loadPersistedImageSession().then((session) => {
+          if (session) setImageSession(session);
+        });
+      }
     }
     setRestoreDone(true);
   }, []);
@@ -234,6 +241,11 @@ export function DecoderApp() {
       locale,
     });
   }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale]);
+
+  useEffect(() => {
+    if (!restoreDone || !imageSubmitted || !imageSession) return;
+    void savePersistedImageSession(imageSession);
+  }, [restoreDone, imageSubmitted, imageSession]);
 
   useEffect(() => {
     if (!isDesktop || !showUploadTabs) return;
@@ -271,10 +283,7 @@ export function DecoderApp() {
     <AppFrame
       title={t(locale, "title")}
       headerActions={
-        <>
-          <LocaleToggle locale={locale} onLocaleChange={setLocale} />
-          <ThemeToggle />
-        </>
+        <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }
     >
       <header>
@@ -296,7 +305,7 @@ export function DecoderApp() {
           hintKey={cropHintKey}
           error={error}
           decoding={decodingImage}
-          onCancel={pickAnotherImage}
+          onCancel={resetDecoder}
           onDecode={(rect) => void handleCropDecode(rect)}
         />
       ) : null}
@@ -445,13 +454,14 @@ export function DecoderApp() {
 
       {showResults ? (
         <div className="flex flex-col gap-6">
-          {imageSubmitted && imageSession ? (
+          {imageSubmitted ? (
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="button"
                 variant="outline"
                 className="sm:flex-1"
                 onClick={openCropAgain}
+                disabled={!imageSession}
               >
                 {t(locale, "cropAgain")}
               </Button>
@@ -459,7 +469,7 @@ export function DecoderApp() {
                 type="button"
                 variant="outline"
                 className="sm:flex-1"
-                onClick={pickAnotherImage}
+                onClick={resetDecoder}
               >
                 {t(locale, "submitAnotherImage")}
               </Button>

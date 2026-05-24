@@ -1,6 +1,22 @@
 import type { Locale } from "@/lib/brcode/labels";
 
 const STORAGE_KEY = "pix-decoder:last-decode";
+const IMAGE_STORAGE_KEY = "pix-decoder:last-image";
+
+export type RestoredImageSession = {
+  file: File;
+  url: string;
+  width: number;
+  height: number;
+};
+
+type PersistedImageSession = {
+  dataUrl: string;
+  name: string;
+  type: string;
+  width: number;
+  height: number;
+};
 
 export type PersistedDecoderState = {
   rawPayload: string;
@@ -42,7 +58,71 @@ export function clearPersistedDecoderState(): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(IMAGE_STORAGE_KEY);
   } catch {
     // Ignore.
   }
+}
+
+export async function savePersistedImageSession(session: {
+  file: File;
+  width: number;
+  height: number;
+}): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const dataUrl = await readFileAsDataUrl(session.file);
+    const payload: PersistedImageSession = {
+      dataUrl,
+      name: session.file.name,
+      type: session.file.type || "image/png",
+      width: session.width,
+      height: session.height,
+    };
+    sessionStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore quota / serialization errors.
+  }
+}
+
+export async function loadPersistedImageSession(): Promise<RestoredImageSession | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(IMAGE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PersistedImageSession>;
+    if (
+      typeof parsed.dataUrl !== "string" ||
+      typeof parsed.width !== "number" ||
+      typeof parsed.height !== "number"
+    ) {
+      return null;
+    }
+    const response = await fetch(parsed.dataUrl);
+    const blob = await response.blob();
+    const file = new File([blob], parsed.name ?? "qr-image.png", {
+      type: parsed.type ?? blob.type,
+    });
+    const url = URL.createObjectURL(file);
+    return {
+      file,
+      url,
+      width: parsed.width,
+      height: parsed.height,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") resolve(reader.result);
+      else reject(new Error("Failed to read image"));
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Failed to read image"));
+    reader.readAsDataURL(file);
+  });
 }

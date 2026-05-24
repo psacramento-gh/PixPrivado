@@ -39,6 +39,18 @@ export const messages = {
     pasteImageHint: "Or press Ctrl+V / ⌘V with an image on the clipboard",
     invalidImageFile: "Please choose an image file (PNG, JPEG, WebP, or GIF).",
     path: "Path",
+    backToDecoder: "Back to PIX decoder",
+    dehashedSubtitle: "Breach data lookup for a value from your decoded PIX payload.",
+    dehashedMissingQuery: "Missing search query.",
+    dehashedResults: "Dehashed results",
+    dehashedNoEntries: "No entries returned.",
+    dehashedShowing: "Showing {shown} of {total} result(s).",
+    dehashedBalance: "API balance: {balance}.",
+    dehashedEntry: "Entry {index}",
+    dehashedPreviewHint:
+      "Branch URLs like …git-…vercel.app are Preview — the variable must be enabled for Preview, not Production only.",
+    dehashedEnvHint:
+      "Vercel → Project → Settings → Environment Variables → DEHASHED_API_KEY → check Preview and Production → Save → Redeploy.",
   },
   pt: {
     title: "Decodificador QR Pix",
@@ -80,11 +92,34 @@ export const messages = {
     invalidImageFile:
       "Selecione um arquivo de imagem (PNG, JPEG, WebP ou GIF).",
     path: "Caminho",
+    backToDecoder: "Voltar ao decodificador PIX",
+    dehashedSubtitle:
+      "Consulta de vazamentos para um valor do payload PIX decodificado.",
+    dehashedMissingQuery: "Consulta de busca ausente.",
+    dehashedResults: "Resultados Dehashed",
+    dehashedNoEntries: "Nenhuma entrada retornada.",
+    dehashedShowing: "Exibindo {shown} de {total} resultado(s).",
+    dehashedBalance: "Saldo da API: {balance}.",
+    dehashedEntry: "Entrada {index}",
+    dehashedPreviewHint:
+      "URLs de branch como …git-…vercel.app são Preview — a variável precisa estar habilitada em Preview, não só em Production.",
+    dehashedEnvHint:
+      "Vercel → Projeto → Settings → Environment Variables → DEHASHED_API_KEY → marque Preview e Production → Salvar → Redeploy.",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
 export type MessageKey = keyof (typeof messages)["en"];
 
-export function t(locale: Locale, key: MessageKey): string {
-  return messages[locale][key];
+export function t(
+  locale: Locale,
+  key: MessageKey,
+  params?: Record<string, string | number>,
+): string {
+  let text: string = messages[locale][key];
+  if (params) {
+    for (const [name, value] of Object.entries(params)) {
+      text = text.replaceAll(`{${name}}`, String(value));
+    }
+  }
+  return text;
 }
