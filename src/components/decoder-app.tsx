@@ -24,12 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  buildSummary,
-  detectQrKind,
-  extractLocationUrls,
-  hasPixGui,
-} from "@/lib/brcode/analyze";
+import { extractLocationUrls, hasPixGui } from "@/lib/brcode/analyze";
 import {
   formatDisplayValue,
   getTagDescription,
@@ -152,10 +147,8 @@ export function DecoderApp() {
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
-  const summary = parsed && isPix ? buildSummary(parsed.nodes, locale) : null;
   const rows = parsed ? flattenNodes(parsed.nodes) : [];
   const locations = parsed && isPix ? extractLocationUrls(parsed.nodes) : [];
-  const qrKind = parsed ? detectQrKind(parsed.nodes) : null;
 
   const decodeDisabled = !copiaCola.trim();
   const showUploadTabs =
@@ -220,17 +213,6 @@ export function DecoderApp() {
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
   }, [beginImageFile, isDesktop, showUploadTabs]);
-
-  const crcBadge = () => {
-    if (!parsed?.crc.present) {
-      return <Badge variant="secondary">{t(locale, "crcMissing")}</Badge>;
-    }
-    return (
-      <Badge variant={parsed.crc.valid ? "default" : "destructive"}>
-        {parsed.crc.valid ? t(locale, "crcValid") : t(locale, "crcInvalid")}
-      </Badge>
-    );
-  };
 
   return (
     <TooltipProvider>
@@ -414,21 +396,6 @@ export function DecoderApp() {
             <p className="text-sm text-destructive" role="alert">
               {t(locale, "parseError")}: {parsed.error}
             </p>
-          ) : null}
-
-          {summary ? (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-xs font-medium text-muted-foreground">
-                {t(locale, "summary")}
-              </p>
-              <p className="text-base font-semibold leading-snug break-all">
-                {summary}
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                {qrKind ? <Badge variant="outline">{qrKind}</Badge> : null}
-                {isPix ? crcBadge() : null}
-              </div>
-            </div>
           ) : null}
 
           {isPix && rows.length > 0 ? (
