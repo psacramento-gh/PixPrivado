@@ -1,43 +1,70 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   denormalizeQrCorners,
   type NormalizedQrCorners,
   type QrCorners,
   type QrPoint,
 } from "@/lib/qr/decode-image";
+import { computeQrCropRect, mapPointIntoCrop } from "@/lib/qr/crop-region";
 import { loadOrientedBitmapFromUrl } from "@/lib/qr/load-oriented-bitmap";
 
-const MAX_DISPLAY_HEIGHT = 288; // max-h-72
+const MAX_PREVIEW_HEIGHT_PX = 420;
 
-function scaleCorners(corners: QrCorners, scaleX: number, scaleY: number): QrPoint[] {
-  const { topLeft, topRight, bottomRight, bottomLeft } = corners;
-  return [topLeft, topRight, bottomRight, bottomLeft].map((p) => ({
-    x: p.x * scaleX,
-    y: p.y * scaleY,
-  }));
+function cornersToPoints(corners: QrCorners): QrPoint[] {
+  return [
+    corners.topLeft,
+    corners.topRight,
+    corners.bottomRight,
+    corners.bottomLeft,
+  ];
 }
 
-function drawHighlight(
+function drawCroppedHighlight(
   ctx: CanvasRenderingContext2D,
   bitmap: ImageBitmap,
-  normalizedCorners: NormalizedQrCorners,
-  displayWidth: number,
-  displayHeight: number,
+  corners: QrCorners,
+  containerWidth: number,
 ) {
-  const naturalWidth = bitmap.width;
-  const naturalHeight = bitmap.height;
-  const corners = denormalizeQrCorners(
-    normalizedCorners,
-    naturalWidth,
-    naturalHeight,
-  );
-  const scaleX = displayWidth / naturalWidth;
-  const scaleY = displayHeight / naturalHeight;
-  const pts = scaleCorners(corners, scaleX, scaleY);
+  const crop = computeQrCropRect(corners, bitmap.width, bitmap.height);
+  const aspect = crop.height / crop.width;
+  let displayWidth = Math.max(1, Math.floor(containerWidth));
+  let displayHeight = Math.max(1, Math.round(displayWidth * aspect));
 
-  ctx.drawImage(bitmap, 0, 0, displayWidth, displayHeight);
+  const heightCapped = displayHeight > MAX_PREVIEW_HEIGHT_PX;
+  if (heightCapped) {
+    displayHeight = MAX_PREVIEW_HEIGHT_PX;
+    displayWidth = Math.max(1, Math.round(displayHeight / aspect));
+  }
+
+  const dpr =
+    typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+
+  const canvas = ctx.canvas;
+  canvas.width = Math.round(displayWidth * dpr);
+  canvas.height = Math.round(displayHeight * dpr);
+  canvas.style.width = `${displayWidth}px`;
+  canvas.style.height = `${displayHeight}px`;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, displayWidth, displayHeight);
+
+  ctx.drawImage(
+    bitmap,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
+    0,
+    0,
+    displayWidth,
+    displayHeight,
+  );
+
+  const pts = cornersToPoints(corners).map((p) =>
+    mapPointIntoCrop(p, crop, displayWidth, displayHeight),
+  );
 
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.45)";
@@ -51,7 +78,7 @@ function drawHighlight(
   ctx.fill("evenodd");
   ctx.restore();
 
-  const strokeWidth = Math.max(2, displayWidth * 0.004);
+  const strokeWidth = Math.max(2, displayWidth * 0.006);
   const primary = getComputedStyle(document.documentElement)
     .getPropertyValue("--primary")
     .trim();
@@ -67,19 +94,6 @@ function drawHighlight(
   ctx.stroke();
 }
 
-function computeDisplaySize(bitmap: ImageBitmap): {
-  width: number;
-  height: number;
-} {
-  const maxWidth =
-    typeof window !== "undefined" ? Math.min(bitmap.width, window.innerWidth - 48) : bitmap.width;
-  const scale = Math.min(1, MAX_DISPLAY_HEIGHT / bitmap.height, maxWidth / bitmap.width);
-  return {
-    width: Math.max(1, Math.round(bitmap.width * scale)),
-    height: Math.max(1, Math.round(bitmap.height * scale)),
-  };
-}
-
 type QrImagePreviewProps = {
   url: string;
   normalizedCorners: NormalizedQrCorners;
@@ -91,37 +105,53 @@ export function QrImagePreview({
   normalizedCorners,
   caption,
 }: QrImagePreviewProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bitmapRef = useRef<ImageBitmap | null>(null);
+  const cornersRef = useRef<QrCorners | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+
+  const redraw = useCallback(() => {
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    const bitmap = bitmapRef.current;
+    const corners = cornersRef.current;
+    if (!container || !canvas || !bitmap || !corners) return;
+
+    const width = container.clientWidth;
+    if (width < 1) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    drawCroppedHighlight(ctx, bitmap, corners, width);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     let bitmap: ImageBitmap | null = null;
 
     setStatus("loading");
+    bitmapRef.current = null;
+    cornersRef.current = null;
 
     void (async () => {
       try {
         bitmap = await loadOrientedBitmapFromUrl(url);
         if (cancelled) return;
 
-        const { width, height } = computeDisplaySize(bitmap);
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+        cornersRef.current = denormalizeQrCorners(
+          normalizedCorners,
+          bitmap.width,
+          bitmap.height,
+        );
+        bitmapRef.current = bitmap;
+        bitmap = null;
 
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          setStatus("error");
-          return;
-        }
-
-        drawHighlight(ctx, bitmap, normalizedCorners, width, height);
-        if (!cancelled) setStatus("ready");
+        setStatus("ready");
+        requestAnimationFrame(() => redraw());
       } catch {
         if (!cancelled) setStatus("error");
-      } finally {
         bitmap?.close();
       }
     })();
@@ -129,34 +159,51 @@ export function QrImagePreview({
     return () => {
       cancelled = true;
       bitmap?.close();
+      bitmapRef.current?.close();
+      bitmapRef.current = null;
+      cornersRef.current = null;
     };
-  }, [url, normalizedCorners]);
+  }, [url, normalizedCorners, redraw]);
+
+  useEffect(() => {
+    if (status !== "ready") return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      redraw();
+    });
+    observer.observe(container);
+    redraw();
+
+    return () => observer.disconnect();
+  }, [status, redraw]);
 
   return (
-    <figure className="flex flex-col gap-2">
+    <figure className="flex w-full flex-col gap-2">
       <figcaption className="text-xs font-medium text-muted-foreground">
         {caption}
       </figcaption>
-      <div className="w-fit max-w-full overflow-hidden rounded-lg border bg-muted/30">
+      <div
+        ref={containerRef}
+        className="flex w-full justify-center overflow-hidden rounded-lg border bg-muted/30"
+      >
         <canvas
           ref={canvasRef}
-          className={
-            status === "ready"
-              ? "block max-h-72 max-w-full"
-              : "hidden"
-          }
+          className={status === "ready" ? "block max-w-full" : "hidden"}
           role="img"
           aria-label={caption}
         />
         {status === "loading" ? (
           <div
-            className="h-40 w-56 max-w-full animate-pulse bg-muted/50"
+            className="aspect-[4/3] w-full animate-pulse bg-muted/50"
             aria-busy="true"
             aria-label={caption}
           />
         ) : null}
         {status === "error" ? (
-          <p className="px-3 py-2 text-xs text-muted-foreground" role="status">
+          <p className="px-3 py-6 text-center text-xs text-muted-foreground" role="status">
             {caption}
           </p>
         ) : null}
