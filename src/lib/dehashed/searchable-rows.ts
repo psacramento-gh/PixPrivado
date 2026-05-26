@@ -51,16 +51,27 @@ export function rowHasDehashedLink(row: FlatRow, allRows: FlatRow[]): boolean {
   return buildDehashedQueryForRow(row, allRows) !== null;
 }
 
-export function isPixKeyRow(row: FlatRow, allRows: FlatRow[]): boolean {
-  if (row.id !== "01" || !row.value.trim()) return false;
+function isPixMerchantAccountChildRow(row: FlatRow, allRows: FlatRow[]): boolean {
+  if (!row.value.trim()) return false;
   if (!isMerchantAccountParent(row.parentId) || !row.parentId) return false;
   return isPixMerchantAccount(allRows, row.parentId);
 }
 
-export function getPixKeyKindForRow(
+/** Badge kind for PIX Key (01) or Merchant CNPJ (04) in the structured EMV table. */
+export function getStructuredValueBadgeKind(
   row: FlatRow,
   allRows: FlatRow[],
 ): PixKeyKind | null {
-  if (!isPixKeyRow(row, allRows)) return null;
-  return classifyPixKey(row.value);
+  if (!isPixMerchantAccountChildRow(row, allRows)) return null;
+
+  if (row.id === "01") {
+    return classifyPixKey(row.value);
+  }
+
+  if (row.id === "04") {
+    const digits = row.value.replace(/\D/g, "");
+    return digits.length === 14 ? "cnpj" : "unsupported";
+  }
+
+  return null;
 }

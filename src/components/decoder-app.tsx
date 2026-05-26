@@ -38,7 +38,7 @@ import { useIsDesktop } from "@/lib/use-is-desktop";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import {
   buildDehashedQueryForRow,
-  getPixKeyKindForRow,
+  getStructuredValueBadgeKind,
   rowHasDehashedLink,
 } from "@/lib/dehashed/searchable-rows";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
@@ -514,7 +514,7 @@ function StructuredDataValue({
     row.parentId,
     locale,
   );
-  const pixKeyKind = getPixKeyKindForRow(row, rows);
+  const badgeKind = getStructuredValueBadgeKind(row, rows);
 
   let valueNode: ReactNode = displayValue;
   if (rowHasDehashedLink(row, rows)) {
@@ -524,14 +524,14 @@ function StructuredDataValue({
     }
   }
 
-  if (!pixKeyKind) {
+  if (!badgeKind) {
     return <>{valueNode}</>;
   }
 
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
       {valueNode}
-      <PixKeyTypeBadge kind={pixKeyKind} locale={locale} />
+      <PixKeyTypeBadge kind={badgeKind} locale={locale} />
     </span>
   );
 }
