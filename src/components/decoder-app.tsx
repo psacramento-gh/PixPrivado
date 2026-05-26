@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   clearPersistedDecoderState,
   loadPersistedDecoderBundle,
@@ -38,8 +38,10 @@ import { useIsDesktop } from "@/lib/use-is-desktop";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import {
   buildDehashedQueryForRow,
+  getStructuredValueBadgeKind,
   rowHasDehashedLink,
 } from "@/lib/dehashed/searchable-rows";
+import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
 import {
   Tooltip,
   TooltipContent,
@@ -514,17 +516,26 @@ function StructuredDataValue({
     row.parentId,
     locale,
   );
+  const badgeKind = getStructuredValueBadgeKind(row, rows);
 
-  if (!rowHasDehashedLink(row, rows)) {
-    return <>{displayValue}</>;
+  let valueNode: ReactNode = displayValue;
+  if (rowHasDehashedLink(row, rows)) {
+    const query = buildDehashedQueryForRow(row, rows);
+    if (query) {
+      valueNode = <DehashedValueLink displayValue={displayValue} query={query} />;
+    }
   }
 
-  const query = buildDehashedQueryForRow(row, rows);
-  if (!query) {
-    return <>{displayValue}</>;
+  if (!badgeKind) {
+    return <>{valueNode}</>;
   }
 
-  return <DehashedValueLink displayValue={displayValue} query={query} />;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      {valueNode}
+      <PixKeyTypeBadge kind={badgeKind} locale={locale} />
+    </span>
+  );
 }
 
 function StructuredDataLabel({
