@@ -1,4 +1,5 @@
 import jsQR from "jsqr";
+import { loadOrientedBitmap } from "@/lib/qr/load-oriented-bitmap";
 
 /** Upper bounds tried for full-image decode (highest first). */
 const FULL_DECODE_MAX_DIMS = [2560, 2048, 1536, 1024] as const;
@@ -22,21 +23,6 @@ export type QrDecodeResult = {
   naturalWidth: number;
   naturalHeight: number;
 };
-
-async function loadImageFromFile(file: File): Promise<HTMLImageElement> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = new Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error("Failed to load image"));
-      img.src = url;
-    });
-    return img;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
 
 function fullDecodeMaxDims(width: number, height: number): number[] {
   const long = Math.max(width, height);
@@ -105,14 +91,18 @@ export function denormalizeQrCorners(
 export async function decodeQrFromFile(
   file: File,
 ): Promise<QrDecodeResult | null> {
-  const img = await loadImageFromFile(file);
-  const w = img.naturalWidth;
-  const h = img.naturalHeight;
-  for (const maxDim of fullDecodeMaxDims(w, h)) {
-    const result = decodeQrFromImageSource(img, w, h, maxDim);
-    if (result) return result;
+  const bitmap = await loadOrientedBitmap(file);
+  try {
+    const w = bitmap.width;
+    const h = bitmap.height;
+    for (const maxDim of fullDecodeMaxDims(w, h)) {
+      const result = decodeQrFromImageSource(bitmap, w, h, maxDim);
+      if (result) return result;
+    }
+    return null;
+  } finally {
+    bitmap.close();
   }
-  return null;
 }
 
 function decodeQrFromImageSource(
