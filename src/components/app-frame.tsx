@@ -29,7 +29,7 @@ export function AppFrame({
     <div className="flex min-h-dvh justify-center bg-background p-4">
       <Card className="flex w-full max-w-2xl min-h-[calc(100dvh-2rem)] flex-col gap-0 shadow-sm">
         <CardHeader className="items-center border-border border-b">
-          <CardTitle className="flex justify-center font-heading text-lg font-medium leading-none tracking-tight">
+          <CardTitle className="flex min-h-8 items-center gap-2 text-lg leading-none tracking-tight">
             <AppTitleLink
               title={title}
               ariaLabel={titleAriaLabel}
