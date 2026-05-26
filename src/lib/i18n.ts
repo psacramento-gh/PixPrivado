@@ -41,6 +41,12 @@ export const messages = {
       "Branch URLs like …git-…vercel.app are Preview — the variable must be enabled for Preview, not Production only.",
     dehashedEnvHint:
       "Vercel → Project → Settings → Environment Variables → DEHASHED_API_KEY → check Preview and Production → Save → Redeploy.",
+    pixKeyTypeEmail: "Email",
+    pixKeyTypePhone: "Phone",
+    pixKeyTypeCpf: "CPF",
+    pixKeyTypeCnpj: "CNPJ",
+    pixKeyTypeEvp: "EVP",
+    pixKeyTypeUnknown: "Unknown",
   },
   pt: {
     title: "Decodificador QR Pix",
@@ -85,6 +91,12 @@ export const messages = {
       "URLs de branch como …git-…vercel.app são Preview — a variável precisa estar habilitada em Preview, não só em Production.",
     dehashedEnvHint:
       "Vercel → Projeto → Settings → Environment Variables → DEHASHED_API_KEY → marque Preview e Production → Salvar → Redeploy.",
+    pixKeyTypeEmail: "E-mail",
+    pixKeyTypePhone: "Telefone",
+    pixKeyTypeCpf: "CPF",
+    pixKeyTypeCnpj: "CNPJ",
+    pixKeyTypeEvp: "EVP",
+    pixKeyTypeUnknown: "Desconhecido",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 

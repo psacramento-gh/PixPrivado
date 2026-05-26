@@ -1,5 +1,6 @@
 import { PIX_GUI } from "./constants";
 import { buildMerchantCnpjQuery, buildMerchantNameQuery, buildPixKeyQuery } from "./build-query";
+import { classifyPixKey, type PixKeyKind } from "./classify-pix-key";
 
 export type FlatRow = {
   id: string;
@@ -48,4 +49,18 @@ export function buildDehashedQueryForRow(
 
 export function rowHasDehashedLink(row: FlatRow, allRows: FlatRow[]): boolean {
   return buildDehashedQueryForRow(row, allRows) !== null;
+}
+
+export function isPixKeyRow(row: FlatRow, allRows: FlatRow[]): boolean {
+  if (row.id !== "01" || !row.value.trim()) return false;
+  if (!isMerchantAccountParent(row.parentId) || !row.parentId) return false;
+  return isPixMerchantAccount(allRows, row.parentId);
+}
+
+export function getPixKeyKindForRow(
+  row: FlatRow,
+  allRows: FlatRow[],
+): PixKeyKind | null {
+  if (!isPixKeyRow(row, allRows)) return null;
+  return classifyPixKey(row.value);
 }
