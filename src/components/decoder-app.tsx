@@ -3,10 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   clearPersistedDecoderState,
-  loadPersistedDecoderState,
-  loadPersistedImageSession,
-  savePersistedDecoderState,
-  savePersistedImageSession,
+  loadPersistedDecoderBundle,
+  savePersistedDecoderBundle,
 } from "@/lib/decoder-persist";
 import { AppFrame } from "@/components/app-frame";
 import { AppHeaderActions } from "@/components/app-header-actions";
@@ -34,7 +32,8 @@ import {
 import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
 import { t } from "@/lib/i18n";
-import { decodeQrFromFile } from "@/lib/qr/decode-image";
+import { decodeQrFromFile, type NormalizedQrCorners } from "@/lib/qr/decode-image";
+import { QrImagePreview } from "@/components/qr-image-preview";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import {
@@ -65,6 +64,7 @@ const IMAGE_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
 type ImageSession = {
   file: File;
   url: string;
+  normalizedCorners: NormalizedQrCorners;
 };
 
 type ImagePhase = "none" | "loading" | "done";
@@ -112,11 +112,15 @@ export function DecoderApp() {
       setImagePhase("loading");
       const url = URL.createObjectURL(file);
       try {
-        setImageSession({ file, url });
-        const data = await decodeQrFromFile(file);
-        if (data) {
-          processPayload(data);
-          setCopiaCola(data);
+        const decoded = await decodeQrFromFile(file);
+        if (decoded) {
+          processPayload(decoded.data);
+          setCopiaCola(decoded.data);
+          setImageSession({
+            file,
+            url,
+            normalizedCorners: decoded.normalizedCorners,
+          });
           setImageSubmitted(true);
           setImagePhase("done");
           return;
@@ -155,24 +159,31 @@ export function DecoderApp() {
     imagePhase !== "loading" && (!imageSubmitted || !rawPayload);
   const showResults = Boolean(rawPayload) && imagePhase !== "loading";
 
-  useEffect(() => () => clearImageSession(), [clearImageSession]);
-
   useEffect(() => {
-    const persisted = loadPersistedDecoderState();
-    if (persisted) {
-      setLocale(persisted.locale);
-      setRawPayload(persisted.rawPayload);
-      setCopiaCola(persisted.copiaCola);
-      setImageSubmitted(persisted.imageSubmitted);
-      setImagePhase(persisted.imageSubmitted ? "done" : "none");
-      setError(null);
-      if (persisted.imageSubmitted) {
-        void loadPersistedImageSession().then((session) => {
-          if (session) setImageSession(session);
-        });
+    let cancelled = false;
+
+    void (async () => {
+      const bundle = await loadPersistedDecoderBundle();
+      if (cancelled) return;
+
+      if (bundle) {
+        setLocale(bundle.locale);
+        setRawPayload(bundle.rawPayload);
+        setCopiaCola(bundle.copiaCola);
+        setImageSubmitted(bundle.imageSubmitted);
+        setImagePhase(bundle.imageSubmitted ? "done" : "none");
+        setError(null);
+        if (bundle.imageSession) {
+          setImageSession(bundle.imageSession);
+        }
       }
-    }
-    setRestoreDone(true);
+
+      setRestoreDone(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -181,18 +192,17 @@ export function DecoderApp() {
       clearPersistedDecoderState();
       return;
     }
-    savePersistedDecoderState({
-      rawPayload,
-      copiaCola,
-      imageSubmitted,
-      locale,
-    });
-  }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale]);
-
-  useEffect(() => {
-    if (!restoreDone || !imageSubmitted || !imageSession) return;
-    void savePersistedImageSession(imageSession);
-  }, [restoreDone, imageSubmitted, imageSession]);
+    if (imageSubmitted && !imageSession) return;
+    void savePersistedDecoderBundle(
+      {
+        rawPayload,
+        copiaCola,
+        imageSubmitted,
+        locale,
+      },
+      imageSubmitted ? imageSession : null,
+    );
+  }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale, imageSession]);
 
   useEffect(() => {
     if (!isDesktop || !showUploadTabs) return;
@@ -376,6 +386,14 @@ export function DecoderApp() {
 
       {showResults ? (
         <div className="flex flex-col gap-6">
+          {imageSubmitted && imageSession ? (
+            <QrImagePreview
+              url={imageSession.url}
+              normalizedCorners={imageSession.normalizedCorners}
+              caption={t(locale, "decodedFromImage")}
+            />
+          ) : null}
+
           {imageSubmitted ? (
             <Button
               type="button"
