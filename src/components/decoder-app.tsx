@@ -3,10 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   clearPersistedDecoderState,
-  loadPersistedDecoderState,
-  loadPersistedImageSession,
-  savePersistedDecoderState,
-  savePersistedImageSession,
+  loadPersistedDecoderBundle,
+  savePersistedDecoderBundle,
 } from "@/lib/decoder-persist";
 import { AppFrame } from "@/components/app-frame";
 import { AppHeaderActions } from "@/components/app-header-actions";
@@ -161,24 +159,31 @@ export function DecoderApp() {
     imagePhase !== "loading" && (!imageSubmitted || !rawPayload);
   const showResults = Boolean(rawPayload) && imagePhase !== "loading";
 
-  useEffect(() => () => clearImageSession(), [clearImageSession]);
-
   useEffect(() => {
-    const persisted = loadPersistedDecoderState();
-    if (persisted) {
-      setLocale(persisted.locale);
-      setRawPayload(persisted.rawPayload);
-      setCopiaCola(persisted.copiaCola);
-      setImageSubmitted(persisted.imageSubmitted);
-      setImagePhase(persisted.imageSubmitted ? "done" : "none");
-      setError(null);
-      if (persisted.imageSubmitted) {
-        void loadPersistedImageSession().then((session) => {
-          if (session) setImageSession(session);
-        });
+    let cancelled = false;
+
+    void (async () => {
+      const bundle = await loadPersistedDecoderBundle();
+      if (cancelled) return;
+
+      if (bundle) {
+        setLocale(bundle.locale);
+        setRawPayload(bundle.rawPayload);
+        setCopiaCola(bundle.copiaCola);
+        setImageSubmitted(bundle.imageSubmitted);
+        setImagePhase(bundle.imageSubmitted ? "done" : "none");
+        setError(null);
+        if (bundle.imageSession) {
+          setImageSession(bundle.imageSession);
+        }
       }
-    }
-    setRestoreDone(true);
+
+      setRestoreDone(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -187,18 +192,17 @@ export function DecoderApp() {
       clearPersistedDecoderState();
       return;
     }
-    savePersistedDecoderState({
-      rawPayload,
-      copiaCola,
-      imageSubmitted,
-      locale,
-    });
-  }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale]);
-
-  useEffect(() => {
-    if (!restoreDone || !imageSubmitted || !imageSession) return;
-    void savePersistedImageSession(imageSession);
-  }, [restoreDone, imageSubmitted, imageSession]);
+    if (imageSubmitted && !imageSession) return;
+    void savePersistedDecoderBundle(
+      {
+        rawPayload,
+        copiaCola,
+        imageSubmitted,
+        locale,
+      },
+      imageSubmitted ? imageSession : null,
+    );
+  }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale, imageSession]);
 
   useEffect(() => {
     if (!isDesktop || !showUploadTabs) return;
