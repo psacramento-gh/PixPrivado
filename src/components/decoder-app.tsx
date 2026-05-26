@@ -43,11 +43,10 @@ import {
 } from "@/lib/dehashed/searchable-rows";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Camera, ClipboardCopy, ClipboardPaste, ImageUp } from "lucide-react";
 
 type LocationFetch = {
@@ -227,7 +226,6 @@ export function DecoderApp() {
   }, [beginImageFile, isDesktop, showUploadTabs]);
 
   return (
-    <TooltipProvider>
     <AppFrame
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
@@ -493,7 +491,6 @@ export function DecoderApp() {
         </div>
       ) : null}
     </AppFrame>
-    </TooltipProvider>
   );
 }
 
@@ -551,17 +548,25 @@ function StructuredDataLabel({
   const description = getTagDescription(id, parentId, locale);
 
   return (
-    <Tooltip>
-      <TooltipTrigger
+    <Popover>
+      <PopoverTrigger
         type="button"
+        openOnHover
+        delay={0}
+        closeDelay={100}
+        aria-label={description}
         className="cursor-help text-left underline decoration-dotted decoration-muted-foreground/60 underline-offset-2 hover:decoration-muted-foreground"
       >
         {label}
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[min(20rem,90vw)]">
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        initialFocus={false}
+        className="w-fit max-w-[min(20rem,90vw)] gap-0 border-0 bg-foreground p-0 px-3 py-1.5 text-xs text-background shadow-md ring-0"
+      >
         {description}
-      </TooltipContent>
-    </Tooltip>
+      </PopoverContent>
+    </Popover>
   );
 }
 
