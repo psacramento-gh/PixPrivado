@@ -228,6 +228,8 @@ export function DecoderApp() {
     <TooltipProvider>
     <AppFrame
       title={t(locale, "title")}
+      titleAriaLabel={t(locale, "titleHomeAria")}
+      onTitleNavigateHome={resetDecoder}
       headerActions={
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }

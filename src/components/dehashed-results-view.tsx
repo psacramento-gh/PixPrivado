@@ -32,6 +32,7 @@ export function DehashedResultsView({ query, result }: DehashedResultsViewProps)
   return (
     <AppFrame
       title={t(locale, "title")}
+      titleAriaLabel={t(locale, "titleHomeAria")}
       headerActions={
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }
