@@ -32,8 +32,7 @@ function drawCroppedHighlight(
   let displayWidth = Math.max(1, Math.floor(containerWidth));
   let displayHeight = Math.max(1, Math.round(displayWidth * aspect));
 
-  const heightCapped = displayHeight > MAX_PREVIEW_HEIGHT_PX;
-  if (heightCapped) {
+  if (displayHeight > MAX_PREVIEW_HEIGHT_PX) {
     displayHeight = MAX_PREVIEW_HEIGHT_PX;
     displayWidth = Math.max(1, Math.round(displayHeight / aspect));
   }
@@ -67,7 +66,7 @@ function drawCroppedHighlight(
   );
 
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillStyle = "rgba(0,0,0,0.68)";
   ctx.beginPath();
   ctx.rect(0, 0, displayWidth, displayHeight);
   ctx.moveTo(pts[0]!.x, pts[0]!.y);
