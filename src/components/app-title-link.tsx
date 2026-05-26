@@ -19,8 +19,8 @@ export function AppTitleLink({
       aria-label={ariaLabel}
       onClick={() => onNavigateHome?.()}
       className={cn(
-        "flex min-h-8 items-center gap-2 text-lg leading-none tracking-tight",
-        "rounded-sm text-foreground outline-none transition-opacity",
+        "inline-flex items-center gap-2 text-inherit no-underline",
+        "rounded-sm outline-none transition-opacity",
         "hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       )}
     >
