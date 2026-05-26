@@ -3,6 +3,7 @@ import type { Locale } from "./brcode/labels";
 export const messages = {
   en: {
     title: "PIX QR Decoder",
+    titleHomeAria: "PIX QR Decoder — start a new submission",
     subtitle: "Decode BR Code payloads from QR images or Copia e Cola text.",
     language: "Language",
     upload: "Upload image",
@@ -44,6 +45,7 @@ export const messages = {
   },
   pt: {
     title: "Decodificador QR Pix",
+    titleHomeAria: "Decodificador QR Pix — iniciar nova decodificação",
     subtitle: "Decodifique payloads BR Code de imagens QR ou texto Copia e Cola.",
     language: "Idioma",
     upload: "Enviar imagem",
