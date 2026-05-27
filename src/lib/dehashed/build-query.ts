@@ -30,12 +30,16 @@ export function buildAllFieldsPhraseQuery(value: string): string {
 }
 
 /**
- * Prefix match across all fields; requires `wildcard: true` on the Dehashed API.
- * Unquoted (Dehashed web “All” style). Quotes + * are treated as a literal phrase, not a prefix.
+ * Prefix match on the name field; requires `wildcard: true` on the Dehashed API.
+ * Multi-word values use name:"phrase*" so tokens like "de" are not matched alone
+ * across all fields (which yields millions of unrelated hits).
  */
-export function buildAllFieldsPrefixQuery(value: string): string {
+export function buildNamePrefixQuery(value: string): string {
   const normalized = value.trim().replace(/\s+/g, " ").toLowerCase();
-  return `${normalized}*`;
+  if (/\s/.test(normalized)) {
+    return `name:"${normalized.replace(/"/g, '\\"')}*"`;
+  }
+  return `name:${normalized}*`;
 }
 
 /** Tag 59 is often truncated when the display name hits the 25-character EMV limit. */
@@ -75,8 +79,8 @@ export function buildMerchantCnpjQuery(raw: string): string | null {
 
 /**
  * EMV tag 59 (Merchant Name): mostly display names, but may hold CPF/CNPJ,
- * email, or phone. Names use all-fields phrase search; clear identifiers use
- * the same field-specific queries as PIX key (01).
+ * email, or phone. Truncated names use name-field prefix search; shorter names
+ * use all-fields phrase search; identifiers use PIX key field queries.
  */
 export function buildMerchantNameQuery(raw: string): string | null {
   const trimmed = raw.trim();
@@ -86,7 +90,7 @@ export function buildMerchantNameQuery(raw: string): string | null {
   if (identifierQuery) return identifierQuery;
 
   if (isLikelyTruncatedMerchantName(trimmed)) {
-    return buildAllFieldsPrefixQuery(trimmed);
+    return buildNamePrefixQuery(trimmed);
   }
 
   return buildAllFieldsPhraseQuery(trimmed);
@@ -98,17 +102,21 @@ function isAllowedAllFieldsPhraseQuery(query: string): boolean {
   return false;
 }
 
-function isAllowedAllFieldsWildcardQuery(query: string): boolean {
-  if (!query.endsWith("*") || query.length < 4 || query.includes('"')) return false;
-  const body = query.slice(0, -1);
-  if (!body || body.includes(":")) return false;
-  if (!/^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(body)) return false;
-  return body.length >= 2 && body.length <= 500;
+function isAllowedNameWildcardQuery(query: string): boolean {
+  const single = /^name:([^\s"\\]{2,200})\*$/.exec(query);
+  if (single) {
+    return /^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(single[1]);
+  }
+  const phrase = /^name:"([^"]{2,500})\*"$/.exec(query);
+  if (phrase) {
+    return /^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(phrase[1]);
+  }
+  return false;
 }
 
 /** Whether the Dehashed API request must set `wildcard: true` for this query. */
 export function queryRequiresWildcard(query: string): boolean {
-  return isAllowedAllFieldsWildcardQuery(query);
+  return isAllowedNameWildcardQuery(query);
 }
 
 /** Allowed queries the API route will forward (abuse guard). */
@@ -116,10 +124,11 @@ export function isAllowedDehashedQuery(query: string): boolean {
   if (!query || query.length > 512) return false;
   if (/^email:[^\s&]+@[^\s&]+\.[^\s&]+$/.test(query)) return true;
   if (/^phone:\+?\d{10,15}$/.test(query)) return true;
-  if (/^name:(.+)$/.test(query)) return true;
+  if (isAllowedNameWildcardQuery(query)) return true;
+  if (/^name:"[^"]{1,500}"$/.test(query)) return true;
+  if (/^name:[^\s"\\]{2,200}$/.test(query)) return true;
   if (/^\d{11}$/.test(query)) return true;
   if (/^\d{14}$/.test(query)) return true;
   if (isAllowedAllFieldsPhraseQuery(query)) return true;
-  if (isAllowedAllFieldsWildcardQuery(query)) return true;
   return false;
 }
