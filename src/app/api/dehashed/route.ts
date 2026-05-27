@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid or disallowed query" }, { status: 400 });
   }
 
-  const result = await searchDehashed(query, 1);
+  const result = await searchDehashed(query, { size: 1 });
 
   if (!result.ok) {
     return NextResponse.json(
