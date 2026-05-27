@@ -49,18 +49,16 @@ export function distinctiveNameTokens(raw: string): string[] {
 }
 
 /**
- * Truncated merchant name search without API wildcards: implicit AND on name: tokens.
- * Example: ROMOALDO CLOVIS DE ALBUQU → name:romoaldo name:clovis
+ * Truncated merchant name search without wildcards (v2 wildcard is unreliable).
+ * Uses a single name:"…" phrase; the API rejects repeated name: clauses (HTTP 400).
+ * Example: ROMOALDO CLOVIS DE ALBUQU → name:"romoaldo clovis"
  */
 export function buildTruncatedMerchantNameQuery(raw: string): string {
   const tokens = distinctiveNameTokens(raw);
   if (tokens.length === 0) {
     return buildAllFieldsPhraseQuery(raw);
   }
-  if (tokens.length === 1) {
-    return `name:${tokens[0]}`;
-  }
-  return tokens.map((t) => `name:${t}`).join(" ");
+  return buildNameQuery(tokens.join(" "));
 }
 
 /** Tag 59 is often truncated when the display name hits the 25-character EMV limit. */
@@ -100,7 +98,7 @@ export function buildMerchantCnpjQuery(raw: string): string | null {
 
 /**
  * EMV tag 59 (Merchant Name): mostly display names, but may hold CPF/CNPJ,
- * email, or phone. Truncated names use name-field AND token search (no wildcards);
+ * email, or phone. Truncated names use a name-field phrase of distinctive tokens;
  * shorter names use all-fields phrase search; identifiers use PIX key field queries.
  */
 export function buildMerchantNameQuery(raw: string): string | null {
@@ -127,21 +125,11 @@ function isAllowedNameToken(term: string): boolean {
   return /^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(term);
 }
 
-function isAllowedNameAndQuery(query: string): boolean {
-  const parts = query.split(" ");
-  if (parts.length < 2 || parts.length > 10) return false;
-  return parts.every((part) => {
-    const match = /^name:([^\s"\\]{2,200})$/.exec(part);
-    return Boolean(match && isAllowedNameToken(match[1]));
-  });
-}
-
 /** Allowed queries the API route will forward (abuse guard). */
 export function isAllowedDehashedQuery(query: string): boolean {
   if (!query || query.length > 512) return false;
   if (/^email:[^\s&]+@[^\s&]+\.[^\s&]+$/.test(query)) return true;
   if (/^phone:\+?\d{10,15}$/.test(query)) return true;
-  if (isAllowedNameAndQuery(query)) return true;
   if (/^name:"[^"]{1,500}"$/.test(query)) return true;
   if (/^name:[^\s"\\]{2,200}$/.test(query) && isAllowedNameToken(query.slice(5))) return true;
   if (/^\d{11}$/.test(query)) return true;
