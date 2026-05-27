@@ -38,6 +38,10 @@ export const messages = {
     dehashedShowing: "Showing {shown} of {total} result(s).",
     dehashedBalance: "API balance: {balance}.",
     dehashedEntry: "Entry {index}",
+    dehashedPage: "Page {page} of {pages}",
+    dehashedPrevious: "Previous",
+    dehashedNext: "Next",
+    dehashedPagination: "Results pagination",
     dehashedPreviewHint:
       "Branch URLs like …git-…vercel.app are Preview — the variable must be enabled for Preview, not Production only.",
     dehashedEnvHint:
@@ -89,6 +93,10 @@ export const messages = {
     dehashedShowing: "Exibindo {shown} de {total} resultado(s).",
     dehashedBalance: "Saldo da API: {balance}.",
     dehashedEntry: "Entrada {index}",
+    dehashedPage: "Página {page} de {pages}",
+    dehashedPrevious: "Anterior",
+    dehashedNext: "Próxima",
+    dehashedPagination: "Paginação dos resultados",
     dehashedPreviewHint:
       "URLs de branch como …git-…vercel.app são Preview — a variável precisa estar habilitada em Preview, não só em Production.",
     dehashedEnvHint:

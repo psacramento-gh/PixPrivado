@@ -1,7 +1,5 @@
 import { isAllowedDehashedQuery } from "./build-query";
-import { DEHASHED_API_URL } from "./constants";
-
-const DEFAULT_SIZE = 50;
+import { DEHASHED_API_URL, DEHASHED_PAGE_SIZE } from "./constants";
 const SEARCH_TIMEOUT_MS = 15_000;
 
 export type DehashedEntry = Record<string, unknown>;
@@ -11,6 +9,8 @@ export type DehashedSearchResult =
       ok: true;
       query: string;
       total: number;
+      page: number;
+      pageSize: number;
       entries: DehashedEntry[];
       balance?: number;
     }
@@ -30,8 +30,10 @@ function parseEntries(data: unknown): DehashedEntry[] {
 
 export async function searchDehashed(
   query: string,
-  size = DEFAULT_SIZE,
+  options: { page?: number; size?: number } = {},
 ): Promise<DehashedSearchResult> {
+  const page = Math.max(1, Math.floor(options.page ?? 1));
+  const size = Math.min(Math.max(options.size ?? DEHASHED_PAGE_SIZE, 1), 100);
   const trimmed = query.trim();
 
   if (!trimmed || !isAllowedDehashedQuery(trimmed)) {
@@ -62,8 +64,8 @@ export async function searchDehashed(
       },
       body: JSON.stringify({
         query: trimmed,
-        page: 1,
-        size: Math.min(Math.max(size, 1), 100),
+        page,
+        size,
         wildcard: false,
         regex: false,
         de_dupe: true,
@@ -100,6 +102,8 @@ export async function searchDehashed(
       ok: true,
       query: trimmed,
       total,
+      page,
+      pageSize: size,
       entries: parseEntries(data),
       balance,
     };
