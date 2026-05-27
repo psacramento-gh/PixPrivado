@@ -418,12 +418,22 @@ export function DecoderApp() {
             </p>
           ) : null}
 
+          <Separator />
+          <div className="flex flex-col gap-1.5">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t(locale, "rawPayload")}
+            </p>
+            <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+              {rawPayload}
+            </pre>
+          </div>
+
           {isPix && rows.length > 0 ? (
             <>
               <Separator />
               <div className="flex flex-col gap-2">
                 <p className="text-xs font-medium text-muted-foreground">
-                  {t(locale, "structuredData")}
+                  {t(locale, "structuredView")}
                 </p>
                 <Table className="table-fixed w-full">
                   <TableHeader>
@@ -478,16 +488,6 @@ export function DecoderApp() {
               </div>
             </>
           ) : null}
-
-          <Separator />
-          <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              {t(locale, "rawPayload")}
-            </p>
-            <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
-              {rawPayload}
-            </pre>
-          </div>
         </div>
       ) : null}
     </AppFrame>
