@@ -489,7 +489,7 @@ export function DecoderApp() {
             </>
           ) : null}
 
-          <div className="flex flex-col gap-2 pb-4 sm:flex-row sm:justify-end">
+          <div className="flex flex-col gap-2 pb-4 sm:flex-row sm:justify-start">
             <Button
               type="button"
               size="lg"
