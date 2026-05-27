@@ -413,6 +413,17 @@ export function DecoderApp() {
             />
           ) : null}
 
+          <div className="pb-4">
+            <Button
+              type="button"
+              size="lg"
+              className="w-full sm:w-auto"
+              onClick={resetDecoder}
+            >
+              {t(locale, "submitAnotherImage")}
+            </Button>
+          </div>
+
           {!isPix ? (
             <p className="text-sm text-muted-foreground" role="note">
               {t(locale, "notPix")}
@@ -488,10 +499,6 @@ export function DecoderApp() {
               </div>
             </>
           ) : null}
-
-          <Button type="button" variant="outline" onClick={resetDecoder}>
-            {t(locale, "submitAnotherImage")}
-          </Button>
         </div>
         ) : null}
       </DecoderPhaseTransition>
