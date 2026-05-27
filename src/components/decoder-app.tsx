@@ -489,9 +489,16 @@ export function DecoderApp() {
             </>
           ) : null}
 
-          <Button type="button" variant="outline" onClick={resetDecoder}>
-            {t(locale, "submitAnotherImage")}
-          </Button>
+          <div className="flex flex-col gap-2 pb-4 sm:flex-row sm:justify-start">
+            <Button
+              type="button"
+              size="lg"
+              className="w-full shrink-0 sm:w-auto"
+              onClick={resetDecoder}
+            >
+              {t(locale, "submitAnotherImage")}
+            </Button>
+          </div>
         </div>
         ) : null}
       </DecoderPhaseTransition>
