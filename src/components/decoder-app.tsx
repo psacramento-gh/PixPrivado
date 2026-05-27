@@ -116,6 +116,17 @@ export function DecoderApp() {
     });
   }, []);
 
+  /** Copia e Cola decode — not an image submission; clears stale image state. */
+  const processTextPayload = useCallback(
+    (payload: string) => {
+      clearImageSession();
+      setImageSubmitted(false);
+      setImagePhase("none");
+      processPayload(payload);
+    },
+    [clearImageSession, processPayload],
+  );
+
   const clearDecodingPreview = useCallback(() => {
     setDecodingPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
@@ -197,11 +208,15 @@ export function DecoderApp() {
         setLocale(bundle.locale);
         setRawPayload(bundle.rawPayload);
         setCopiaCola(bundle.copiaCola);
-        setImageSubmitted(bundle.imageSubmitted);
-        setImagePhase(bundle.imageSubmitted ? "done" : "none");
         setError(null);
         if (bundle.imageSession) {
           setImageSession(bundle.imageSession);
+          setImageSubmitted(true);
+          setImagePhase("done");
+        } else {
+          setImageSession(null);
+          setImageSubmitted(false);
+          setImagePhase("none");
         }
       }
 
@@ -219,15 +234,15 @@ export function DecoderApp() {
       clearPersistedDecoderState();
       return;
     }
-    if (imageSubmitted && !imageSession) return;
+    const persistImageSubmitted = imageSubmitted && imageSession !== null;
     void savePersistedDecoderBundle(
       {
         rawPayload,
         copiaCola,
-        imageSubmitted,
+        imageSubmitted: persistImageSubmitted,
         locale,
       },
-      imageSubmitted ? imageSession : null,
+      persistImageSubmitted ? imageSession : null,
     );
   }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale, imageSession]);
 
@@ -380,7 +395,7 @@ export function DecoderApp() {
                   !decodeDisabled
                 ) {
                   e.preventDefault();
-                  processPayload(copiaCola.trim());
+                  processTextPayload(copiaCola.trim());
                 }
               }}
             />
@@ -392,7 +407,7 @@ export function DecoderApp() {
                 type="button"
                 size="lg"
                 disabled={decodeDisabled}
-                onClick={() => processPayload(copiaCola.trim())}
+                onClick={() => processTextPayload(copiaCola.trim())}
                 className="w-full shrink-0 sm:w-auto"
               >
                 {t(locale, "decode")}
@@ -419,15 +434,9 @@ export function DecoderApp() {
             />
           ) : null}
 
-          {imageSubmitted ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={resetDecoder}
-            >
-              {t(locale, "submitAnotherImage")}
-            </Button>
-          ) : null}
+          <Button type="button" variant="outline" onClick={resetDecoder}>
+            {t(locale, "submitAnotherImage")}
+          </Button>
 
           {!isPix ? (
             <p className="text-sm text-muted-foreground" role="note">
@@ -441,19 +450,15 @@ export function DecoderApp() {
             </p>
           ) : null}
 
-          {imageSubmitted ? (
-            <>
-              <Separator />
-              <div className="flex flex-col gap-1.5">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t(locale, "rawPayload")}
-                </p>
-                <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
-                  {rawPayload}
-                </pre>
-              </div>
-            </>
-          ) : null}
+          <Separator />
+          <div className="flex flex-col gap-1.5">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t(locale, "rawPayload")}
+            </p>
+            <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+              {rawPayload}
+            </pre>
+          </div>
 
           {isPix && rows.length > 0 ? (
             <>
