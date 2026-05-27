@@ -52,6 +52,7 @@ export const messages = {
     pixKeyTypeCnpj: "CNPJ",
     pixKeyTypeEvp: "EVP",
     pixKeyTypeUnknown: "Unknown",
+    about: "About",
   },
   pt: {
     title: "Decodificador QR Pix",
@@ -107,6 +108,7 @@ export const messages = {
     pixKeyTypeCnpj: "CNPJ",
     pixKeyTypeEvp: "EVP",
     pixKeyTypeUnknown: "Desconhecido",
+    about: "Sobre",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 

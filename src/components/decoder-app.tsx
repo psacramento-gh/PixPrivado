@@ -35,6 +35,7 @@ import { t } from "@/lib/i18n";
 import { decodeQrFromFile, type NormalizedQrCorners } from "@/lib/qr/decode-image";
 import { QrImagePreview } from "@/components/qr-image-preview";
 import { useIsDesktop } from "@/lib/use-is-desktop";
+import { useAppLocale } from "@/lib/use-app-locale";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import {
   buildDehashedQueryForRow,
@@ -78,7 +79,7 @@ function isImageFile(file: File): boolean {
 
 export function DecoderApp() {
   const [restoreDone, setRestoreDone] = useState(false);
-  const [locale, setLocale] = useState<Locale>("en");
+  const [locale, setLocale] = useAppLocale();
   const [rawPayload, setRawPayload] = useState("");
   const [copiaCola, setCopiaCola] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -230,6 +231,7 @@ export function DecoderApp() {
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
       onTitleNavigateHome={resetDecoder}
+      aboutLinkLabel={t(locale, "about")}
       headerActions={
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }

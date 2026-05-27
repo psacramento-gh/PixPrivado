@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AppTitleLink } from "@/components/app-title-link";
 import {
@@ -12,22 +13,32 @@ import {
 const footerLinkClass =
   "font-medium text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground";
 
+/** Shared shell width for decoder, About, Dehashed, and other AppFrame screens. */
+export const APP_FRAME_MAX_WIDTH_CLASS = "max-w-2xl";
+
 export function AppFrame({
   title,
   titleAriaLabel,
   onTitleNavigateHome,
   headerActions,
+  aboutLinkLabel,
   children,
 }: {
   title: string;
   titleAriaLabel: string;
   onTitleNavigateHome?: () => void;
   headerActions?: ReactNode;
+  aboutLinkLabel?: string;
   children: ReactNode;
 }) {
   return (
     <div className="flex min-h-dvh justify-center bg-background p-4">
-      <Card className="flex w-full max-w-2xl min-h-[calc(100dvh-2rem)] flex-col gap-0 shadow-sm">
+      <Card
+        className={cn(
+          "flex w-full min-h-[calc(100dvh-2rem)] flex-col gap-0 shadow-sm",
+          APP_FRAME_MAX_WIDTH_CLASS,
+        )}
+      >
         <CardHeader className="items-center border-border border-b">
           <CardTitle className="col-start-1 row-start-1 flex min-h-8 items-center gap-2 self-center rounded-sm text-lg leading-none tracking-tight focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
             <AppTitleLink
@@ -59,6 +70,18 @@ export function AppFrame({
             >
               BCB Pix
             </a>
+            {aboutLinkLabel ? (
+              <>
+                {" "}
+                ·{" "}
+                <Link
+                  href="/about"
+                  className={cn(footerLinkClass, "shrink-0 whitespace-nowrap")}
+                >
+                  {aboutLinkLabel}
+                </Link>
+              </>
+            ) : null}
           </p>
         </footer>
       </Card>

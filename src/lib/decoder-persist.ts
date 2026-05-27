@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/brcode/labels";
+import { writeLocalePreference } from "@/lib/locale-preference";
 import type { NormalizedQrCorners } from "@/lib/qr/decode-image";
 
 const STORAGE_KEY = "pix-decoder:last-decode";
@@ -96,6 +97,7 @@ export async function savePersistedDecoderBundle(
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    writeLocalePreference(bundle.locale);
     sessionStorage.removeItem(LEGACY_IMAGE_SESSION_KEY);
   } catch {
     // Ignore quota / private mode errors.
