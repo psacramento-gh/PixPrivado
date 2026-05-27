@@ -346,36 +346,36 @@ export function DecoderApp() {
           </TabsContent>
 
           <TabsContent value="copia-cola" className="mt-3 flex flex-col gap-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <Textarea
-                value={copiaCola}
-                onChange={(e) => setCopiaCola(e.target.value)}
-                placeholder="00020126..."
-                className="min-h-[88px] flex-1 font-mono text-xs"
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Enter" &&
-                    (e.metaKey || e.ctrlKey) &&
-                    !decodeDisabled
-                  ) {
-                    e.preventDefault();
-                    processPayload(copiaCola.trim());
-                  }
-                }}
-              />
+            <Textarea
+              value={copiaCola}
+              onChange={(e) => setCopiaCola(e.target.value)}
+              placeholder="00020126..."
+              className="min-h-[88px] font-mono text-xs"
+              onKeyDown={(e) => {
+                if (
+                  e.key === "Enter" &&
+                  (e.metaKey || e.ctrlKey) &&
+                  !decodeDisabled
+                ) {
+                  e.preventDefault();
+                  processPayload(copiaCola.trim());
+                }
+              }}
+            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                {t(locale, "copiaColaHint")}
+              </p>
               <Button
                 type="button"
                 size="lg"
                 disabled={decodeDisabled}
                 onClick={() => processPayload(copiaCola.trim())}
-                className="shrink-0 sm:w-auto"
+                className="w-full shrink-0 sm:w-auto"
               >
                 {t(locale, "decode")}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t(locale, "copiaColaHint")}
-            </p>
           </TabsContent>
         </Tabs>
       ) : null}
