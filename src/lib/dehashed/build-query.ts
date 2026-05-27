@@ -29,13 +29,13 @@ export function buildAllFieldsPhraseQuery(value: string): string {
   return escapePhraseTerm(value.trim());
 }
 
-/** Prefix match across all fields; requires `wildcard: true` on the Dehashed API. */
+/**
+ * Prefix match across all fields; requires `wildcard: true` on the Dehashed API.
+ * Unquoted (Dehashed web “All” style). Quotes + * are treated as a literal phrase, not a prefix.
+ */
 export function buildAllFieldsPrefixQuery(value: string): string {
-  const trimmed = value.trim();
-  if (/\s/.test(trimmed)) {
-    return `"${trimmed.replace(/"/g, '\\"')}*"`;
-  }
-  return `${trimmed}*`;
+  const normalized = value.trim().replace(/\s+/g, " ").toLowerCase();
+  return `${normalized}*`;
 }
 
 /** Tag 59 is often truncated when the display name hits the 25-character EMV limit. */
@@ -99,9 +99,11 @@ function isAllowedAllFieldsPhraseQuery(query: string): boolean {
 }
 
 function isAllowedAllFieldsWildcardQuery(query: string): boolean {
-  if (/^"[^"*\\]{2,500}\*"$/.test(query)) return true;
-  if (/^[^\s"\\*]{2,200}\*$/.test(query)) return true;
-  return false;
+  if (!query.endsWith("*") || query.length < 4 || query.includes('"')) return false;
+  const body = query.slice(0, -1);
+  if (!body || body.includes(":")) return false;
+  if (!/^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(body)) return false;
+  return body.length >= 2 && body.length <= 500;
 }
 
 /** Whether the Dehashed API request must set `wildcard: true` for this query. */
