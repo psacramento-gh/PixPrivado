@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppFrame } from "@/components/app-frame";
@@ -22,6 +21,7 @@ import { entryRows } from "@/lib/dehashed/format-entry";
 import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { useAppLocale } from "@/lib/use-app-locale";
 
 type DehashedResultsViewProps = {
   query: string;
@@ -166,12 +166,13 @@ function DehashedOkResults({
 }
 
 export function DehashedResultsView({ query, result }: DehashedResultsViewProps) {
-  const [locale, setLocale] = useState<Locale>("en");
+  const [locale, setLocale] = useAppLocale();
 
   return (
     <AppFrame
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
+      aboutLinkLabel={t(locale, "about")}
       headerActions={
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }
