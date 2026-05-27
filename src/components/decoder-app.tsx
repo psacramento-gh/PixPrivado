@@ -33,6 +33,11 @@ import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
 import { t } from "@/lib/i18n";
 import { decodeQrFromFile, type NormalizedQrCorners } from "@/lib/qr/decode-image";
+import {
+  DecoderPhaseTransition,
+  type DecoderPhase,
+} from "@/components/decoder-phase-transition";
+import { QrDecodeOverlay } from "@/components/qr-decode-overlay";
 import { QrImagePreview } from "@/components/qr-image-preview";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { useAppLocale } from "@/lib/use-app-locale";
@@ -71,6 +76,12 @@ type ImageSession = {
 
 type ImagePhase = "none" | "loading" | "done";
 
+function getDecoderPhase(imagePhase: ImagePhase, rawPayload: string): DecoderPhase {
+  if (imagePhase === "loading") return "decoding-qr";
+  if (rawPayload.trim()) return "results";
+  return "input";
+}
+
 function isImageFile(file: File): boolean {
   if (file.type.startsWith("video/")) return false;
   if (file.type.startsWith("image/")) return true;
@@ -86,6 +97,9 @@ export function DecoderApp() {
   const [imageSubmitted, setImageSubmitted] = useState(false);
   const [imagePhase, setImagePhase] = useState<ImagePhase>("none");
   const [imageSession, setImageSession] = useState<ImageSession | null>(null);
+  const [decodingPreviewUrl, setDecodingPreviewUrl] = useState<string | null>(
+    null,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const isDesktop = useIsDesktop();
@@ -102,6 +116,13 @@ export function DecoderApp() {
     });
   }, []);
 
+  const clearDecodingPreview = useCallback(() => {
+    setDecodingPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
+
   const beginImageFile = useCallback(
     async (file: File | null) => {
       if (!file) return;
@@ -111,8 +132,10 @@ export function DecoderApp() {
       }
       setError(null);
       clearImageSession();
+      clearDecodingPreview();
       setImagePhase("loading");
       const url = URL.createObjectURL(file);
+      setDecodingPreviewUrl(url);
       try {
         const decoded = await decodeQrFromFile(file);
         if (decoded) {
@@ -123,25 +146,29 @@ export function DecoderApp() {
             url,
             normalizedCorners: decoded.normalizedCorners,
           });
+          setDecodingPreviewUrl(null);
           setImageSubmitted(true);
           setImagePhase("done");
           return;
         }
         URL.revokeObjectURL(url);
+        setDecodingPreviewUrl(null);
         setImageSession(null);
         setImagePhase("none");
         setError(t(locale, "noQrFound"));
       } catch {
         URL.revokeObjectURL(url);
+        setDecodingPreviewUrl(null);
         setImageSession(null);
         setImagePhase("none");
         setError(t(locale, "noQrFound"));
       }
     },
-    [clearImageSession, locale, processPayload],
+    [clearDecodingPreview, clearImageSession, locale, processPayload],
   );
 
   const resetDecoder = useCallback(() => {
+    clearDecodingPreview();
     clearImageSession();
     setImagePhase("none");
     setRawPayload("");
@@ -149,7 +176,7 @@ export function DecoderApp() {
     setError(null);
     setImageSubmitted(false);
     clearPersistedDecoderState();
-  }, [clearImageSession]);
+  }, [clearDecodingPreview, clearImageSession]);
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
@@ -157,9 +184,7 @@ export function DecoderApp() {
   const locations = parsed && isPix ? extractLocationUrls(parsed.nodes) : [];
 
   const decodeDisabled = !copiaCola.trim();
-  const showUploadTabs =
-    imagePhase !== "loading" && (!imageSubmitted || !rawPayload);
-  const showResults = Boolean(rawPayload) && imagePhase !== "loading";
+  const phase = getDecoderPhase(imagePhase, rawPayload);
 
   useEffect(() => {
     let cancelled = false;
@@ -207,7 +232,7 @@ export function DecoderApp() {
   }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale, imageSession]);
 
   useEffect(() => {
-    if (!isDesktop || !showUploadTabs) return;
+    if (!isDesktop || phase !== "input") return;
     const onPaste = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
       if (!items) return;
@@ -224,7 +249,7 @@ export function DecoderApp() {
     };
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [beginImageFile, isDesktop, showUploadTabs]);
+  }, [beginImageFile, isDesktop, phase]);
 
   return (
     <AppFrame
@@ -240,13 +265,8 @@ export function DecoderApp() {
         <p className="text-sm text-muted-foreground">{t(locale, "subtitle")}</p>
       </header>
 
-      {imagePhase === "loading" ? (
-        <p className="text-sm text-muted-foreground" role="status">
-          {t(locale, "decodingImage")}
-        </p>
-      ) : null}
-
-      {showUploadTabs ? (
+      <DecoderPhaseTransition phase={phase}>
+        {phase === "input" ? (
         <Tabs defaultValue="upload" className="w-full">
           <TabsList className="flex w-full">
             <TabsTrigger value="upload" className="flex-1 gap-1.5">
@@ -380,15 +400,16 @@ export function DecoderApp() {
             </div>
           </TabsContent>
         </Tabs>
-      ) : null}
+        ) : null}
 
-      {error ? (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      ) : null}
+        {phase === "decoding-qr" ? (
+          <QrDecodeOverlay
+            previewUrl={decodingPreviewUrl}
+            statusLabel={t(locale, "decodingImage")}
+          />
+        ) : null}
 
-      {showResults ? (
+        {phase === "results" ? (
         <div className="flex flex-col gap-6">
           {imageSubmitted && imageSession ? (
             <QrImagePreview
@@ -495,6 +516,13 @@ export function DecoderApp() {
             </>
           ) : null}
         </div>
+        ) : null}
+      </DecoderPhaseTransition>
+
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
       ) : null}
     </AppFrame>
   );

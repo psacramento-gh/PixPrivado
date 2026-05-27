@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppFrame } from "@/components/app-frame";
 import { AppHeaderActions } from "@/components/app-header-actions";

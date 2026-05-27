@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 
