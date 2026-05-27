@@ -383,36 +383,15 @@ export function DecoderApp() {
           </TabsContent>
 
           <TabsContent value="copia-cola" className="mt-3 flex flex-col gap-3">
-            <Textarea
+            <CopiaColaInputSection
               value={copiaCola}
-              onChange={(e) => setCopiaCola(e.target.value)}
-              placeholder="00020126..."
-              className="min-h-[88px] font-mono text-xs"
-              onKeyDown={(e) => {
-                if (
-                  e.key === "Enter" &&
-                  (e.metaKey || e.ctrlKey) &&
-                  !decodeDisabled
-                ) {
-                  e.preventDefault();
-                  processTextPayload(copiaCola.trim());
-                }
-              }}
+              onChange={setCopiaCola}
+              locale={locale}
+              decodeDisabled={decodeDisabled}
+              onDecode={() => processTextPayload(copiaCola.trim())}
+              onPasteError={(message) => setError(message)}
+              onPasteSuccess={() => setError(null)}
             />
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-muted-foreground">
-                {t(locale, "copiaColaHint")}
-              </p>
-              <Button
-                type="button"
-                size="lg"
-                disabled={decodeDisabled}
-                onClick={() => processTextPayload(copiaCola.trim())}
-                className="w-full shrink-0 sm:w-auto"
-              >
-                {t(locale, "decode")}
-              </Button>
-            </div>
           </TabsContent>
         </Tabs>
         ) : null}
@@ -451,14 +430,7 @@ export function DecoderApp() {
           ) : null}
 
           <Separator />
-          <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              {t(locale, "rawPayload")}
-            </p>
-            <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
-              {rawPayload}
-            </pre>
-          </div>
+          <RawPayloadSection payload={rawPayload} locale={locale} />
 
           {isPix && rows.length > 0 ? (
             <>
@@ -530,6 +502,185 @@ export function DecoderApp() {
         </p>
       ) : null}
     </AppFrame>
+  );
+}
+
+function CopiaColaInputSection({
+  value,
+  onChange,
+  locale,
+  decodeDisabled,
+  onDecode,
+  onPasteError,
+  onPasteSuccess,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  locale: Locale;
+  decodeDisabled: boolean;
+  onDecode: () => void;
+  onPasteError: (message: string) => void;
+  onPasteSuccess: () => void;
+}) {
+  const [pasted, setPasted] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
+
+  const handlePasteFromClipboard = useCallback(async () => {
+    let text: string;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      onPasteError(t(locale, "pasteCodeFailed"));
+      return;
+    }
+
+    const trimmed = text.trim();
+    if (!trimmed) {
+      onPasteError(t(locale, "pasteCodeFailed"));
+      return;
+    }
+
+    onChange(trimmed);
+    onPasteSuccess();
+    textareaRef.current?.focus();
+    setPasted(true);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => setPasted(false), 2000);
+  }, [locale, onChange, onPasteError, onPasteSuccess]);
+
+  return (
+    <>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium text-muted-foreground">
+            {t(locale, "copiaCola")}
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            className="h-auto shrink-0 py-0.5"
+            onClick={() => void handlePasteFromClipboard()}
+            aria-label={t(locale, "pasteCode")}
+          >
+            <ClipboardPaste className="size-3.5 shrink-0" aria-hidden />
+            {pasted ? t(locale, "pasteCodePasted") : t(locale, "pasteCode")}
+          </Button>
+        </div>
+        <Textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="00020126..."
+          className="min-h-[88px] font-mono text-xs"
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              (e.metaKey || e.ctrlKey) &&
+              !decodeDisabled
+            ) {
+              e.preventDefault();
+              onDecode();
+            }
+          }}
+        />
+        <span className="sr-only" aria-live="polite">
+          {pasted ? t(locale, "pasteCodePasted") : ""}
+        </span>
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-muted-foreground">
+          {t(locale, "copiaColaHint")}
+        </p>
+        <Button
+          type="button"
+          size="lg"
+          disabled={decodeDisabled}
+          onClick={onDecode}
+          className="w-full shrink-0 sm:w-auto"
+        >
+          {t(locale, "decode")}
+        </Button>
+      </div>
+    </>
+  );
+}
+
+function RawPayloadSection({
+  payload,
+  locale,
+}: {
+  payload: string;
+  locale: Locale;
+}) {
+  const [copied, setCopied] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    let success = false;
+    try {
+      await navigator.clipboard.writeText(payload);
+      success = true;
+    } catch {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = payload;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        success = document.execCommand("copy");
+        document.body.removeChild(textarea);
+      } catch {
+        success = false;
+      }
+    }
+    if (!success) return;
+
+    setCopied(true);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => setCopied(false), 2000);
+  }, [payload]);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-medium text-muted-foreground">
+          {t(locale, "rawPayload")}
+        </p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          className="h-auto shrink-0 py-0.5"
+          onClick={() => void handleCopy()}
+          aria-label={t(locale, "copyPayload")}
+        >
+          <ClipboardCopy className="size-3.5 shrink-0" aria-hidden />
+          {copied ? t(locale, "copyPayloadCopied") : t(locale, "copyPayload")}
+        </Button>
+      </div>
+      <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+        {payload}
+      </pre>
+      <span className="sr-only" aria-live="polite">
+        {copied ? t(locale, "copyPayloadCopied") : ""}
+      </span>
+    </div>
   );
 }
 
