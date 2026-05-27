@@ -451,14 +451,7 @@ export function DecoderApp() {
           ) : null}
 
           <Separator />
-          <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              {t(locale, "rawPayload")}
-            </p>
-            <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
-              {rawPayload}
-            </pre>
-          </div>
+          <RawPayloadSection payload={rawPayload} locale={locale} />
 
           {isPix && rows.length > 0 ? (
             <>
@@ -530,6 +523,77 @@ export function DecoderApp() {
         </p>
       ) : null}
     </AppFrame>
+  );
+}
+
+function RawPayloadSection({
+  payload,
+  locale,
+}: {
+  payload: string;
+  locale: Locale;
+}) {
+  const [copied, setCopied] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    let success = false;
+    try {
+      await navigator.clipboard.writeText(payload);
+      success = true;
+    } catch {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = payload;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        success = document.execCommand("copy");
+        document.body.removeChild(textarea);
+      } catch {
+        success = false;
+      }
+    }
+    if (!success) return;
+
+    setCopied(true);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => setCopied(false), 2000);
+  }, [payload]);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-medium text-muted-foreground">
+          {t(locale, "rawPayload")}
+        </p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          className="h-auto shrink-0 py-0.5"
+          onClick={() => void handleCopy()}
+          aria-label={t(locale, "copyPayload")}
+        >
+          <ClipboardCopy className="size-3.5 shrink-0" aria-hidden />
+          {copied ? t(locale, "copyPayloadCopied") : t(locale, "copyPayload")}
+        </Button>
+      </div>
+      <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+        {payload}
+      </pre>
+      <span className="sr-only" aria-live="polite">
+        {copied ? t(locale, "copyPayloadCopied") : ""}
+      </span>
+    </div>
   );
 }
 
