@@ -13,12 +13,14 @@ import {
 const footerLinkClass =
   "font-medium text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground";
 
+/** Shared shell width for decoder, About, Dehashed, and other AppFrame screens. */
+export const APP_FRAME_MAX_WIDTH_CLASS = "max-w-2xl";
+
 export function AppFrame({
   title,
   titleAriaLabel,
   onTitleNavigateHome,
   headerActions,
-  maxWidthClass = "max-w-2xl",
   aboutLinkLabel,
   children,
 }: {
@@ -26,7 +28,6 @@ export function AppFrame({
   titleAriaLabel: string;
   onTitleNavigateHome?: () => void;
   headerActions?: ReactNode;
-  maxWidthClass?: string;
   aboutLinkLabel?: string;
   children: ReactNode;
 }) {
@@ -35,7 +36,7 @@ export function AppFrame({
       <Card
         className={cn(
           "flex w-full min-h-[calc(100dvh-2rem)] flex-col gap-0 shadow-sm",
-          maxWidthClass,
+          APP_FRAME_MAX_WIDTH_CLASS,
         )}
       >
         <CardHeader className="items-center border-border border-b">

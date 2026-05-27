@@ -19,7 +19,6 @@ export function AboutView() {
     <AppFrame
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
-      maxWidthClass="max-w-3xl"
       aboutLinkLabel={t(locale, "about")}
       headerActions={
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
