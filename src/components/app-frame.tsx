@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { cn } from "@/lib/utils";
 import { AppTitleLink } from "@/components/app-title-link";
 import {
@@ -35,7 +35,7 @@ export function AppFrame({
     <div className="flex min-h-dvh justify-center bg-background p-4">
       <Card
         className={cn(
-          "flex w-full min-h-[calc(100dvh-2rem)] flex-col gap-0 shadow-sm",
+          "app-frame-shell flex w-full min-h-[calc(100dvh-2rem)] flex-col gap-0 shadow-sm",
           APP_FRAME_MAX_WIDTH_CLASS,
         )}
       >
@@ -54,7 +54,7 @@ export function AppFrame({
           ) : null}
         </CardHeader>
         <CardContent className="flex flex-1 flex-col pt-4">
-          <main className="flex flex-1 flex-col gap-6">{children}</main>
+          <main className="app-frame-main flex flex-1 flex-col gap-6">{children}</main>
         </CardContent>
         <footer
           role="contentinfo"

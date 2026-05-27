@@ -135,3 +135,102 @@
     @apply font-sans;
   }
 }
+
+/* Shared shell morph between decoder, Dehashed, and About. */
+.app-frame-shell {
+  view-transition-name: app-frame;
+}
+
+.app-frame-main {
+  view-transition-name: app-frame-content;
+}
+
+::view-transition-old(app-frame),
+::view-transition-new(app-frame) {
+  animation-duration: 0.28s;
+  animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+::view-transition-old(app-frame-content),
+::view-transition-new(app-frame-content) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+@keyframes qr-decode-scan {
+  0% {
+    top: 10%;
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    top: 82%;
+    opacity: 0.35;
+  }
+}
+
+.qr-decode-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--primary) 85%, transparent);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 45%, transparent);
+  animation: qr-decode-scan 1.35s ease-in-out infinite;
+}
+
+.qr-decode-corner {
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-color: var(--primary);
+  border-style: solid;
+  opacity: 0.9;
+}
+
+.qr-decode-corner-tl {
+  top: 0;
+  left: 0;
+  border-width: 2px 0 0 2px;
+  border-radius: 2px 0 0 0;
+}
+
+.qr-decode-corner-tr {
+  top: 0;
+  right: 0;
+  border-width: 2px 2px 0 0;
+  border-radius: 0 2px 0 0;
+}
+
+.qr-decode-corner-bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 2px 2px;
+  border-radius: 0 0 0 2px;
+}
+
+.qr-decode-corner-br {
+  right: 0;
+  bottom: 0;
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 2px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qr-decode-scan-line {
+    animation: none;
+    top: 50%;
+    opacity: 0.7;
+  }
+}
