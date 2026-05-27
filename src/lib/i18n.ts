@@ -10,6 +10,10 @@ export const messages = {
     uploadHint: "PNG, JPEG, or WebP",
     copiaCola: "Copia e Cola",
     copiaColaHint: "Paste the EMV payload string",
+    pasteCode: "Paste code",
+    pasteCodePasted: "Pasted",
+    pasteCodeFailed:
+      "Could not read from the clipboard. Paste manually or allow clipboard access.",
     decode: "Decode",
     structuredView: "Structured view",
     rawPayload: "Raw payload",
@@ -65,6 +69,10 @@ export const messages = {
     uploadHint: "PNG, JPEG ou WebP",
     copiaCola: "Copia e Cola",
     copiaColaHint: "Cole a string EMV do payload",
+    pasteCode: "Colar código",
+    pasteCodePasted: "Colado",
+    pasteCodeFailed:
+      "Não foi possível ler a área de transferência. Cole manualmente ou permita o acesso.",
     decode: "Decodificar",
     structuredView: "Visualização estruturada",
     rawPayload: "Payload bruto",
