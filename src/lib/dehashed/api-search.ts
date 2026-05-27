@@ -1,4 +1,4 @@
-import { isAllowedDehashedQuery, queryRequiresWildcard } from "./build-query";
+import { isAllowedDehashedQuery } from "./build-query";
 import { DEHASHED_API_URL, DEHASHED_PAGE_SIZE } from "./constants";
 const SEARCH_TIMEOUT_MS = 15_000;
 
@@ -66,7 +66,7 @@ export async function searchDehashed(
         query: trimmed,
         page,
         size,
-        wildcard: queryRequiresWildcard(trimmed),
+        wildcard: false,
         regex: false,
         de_dupe: true,
       }),

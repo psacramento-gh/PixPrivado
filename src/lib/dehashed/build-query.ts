@@ -3,6 +3,9 @@ import { classifyPixKey, normalizePhoneForSearch } from "./classify-pix-key";
 /** EMV tag 59 (Merchant Name) max length in PIX BR Codes. */
 export const MERCHANT_NAME_MAX_LENGTH = 25;
 
+/** Portuguese name particles; excluded from AND queries to reduce noise. */
+const NAME_STOP_WORDS = new Set(["de", "da", "do", "dos", "das", "e"]);
+
 /** Quote multi-word values for Dehashed exact-phrase matching. */
 function escapePhraseTerm(value: string): string {
   const trimmed = value.trim();
@@ -30,16 +33,34 @@ export function buildAllFieldsPhraseQuery(value: string): string {
 }
 
 /**
- * Prefix match on the name field; requires `wildcard: true` on the Dehashed API.
- * Multi-word values use name:"phrase*" so tokens like "de" are not matched alone
- * across all fields (which yields millions of unrelated hits).
+ * Distinctive tokens for truncated merchant names (Dehashed v2 wildcard is unreliable).
+ * Drops stop words and an incomplete final token at the EMV 25-character limit.
  */
-export function buildNamePrefixQuery(value: string): string {
-  const normalized = value.trim().replace(/\s+/g, " ").toLowerCase();
-  if (/\s/.test(normalized)) {
-    return `name:"${normalized.replace(/"/g, '\\"')}*"`;
+export function distinctiveNameTokens(raw: string): string[] {
+  const normalized = raw.trim().replace(/\s+/g, " ").toLowerCase();
+  let tokens = normalized.split(" ").filter((t) => t && !NAME_STOP_WORDS.has(t));
+
+  if (normalized.length >= MERCHANT_NAME_MAX_LENGTH && tokens.length > 1) {
+    const last = tokens[tokens.length - 1];
+    if (last.length < 7) tokens = tokens.slice(0, -1);
   }
-  return `name:${normalized}*`;
+
+  return tokens.filter((t) => t.length >= 3);
+}
+
+/**
+ * Truncated merchant name search without API wildcards: implicit AND on name: tokens.
+ * Example: ROMOALDO CLOVIS DE ALBUQU → name:romoaldo name:clovis
+ */
+export function buildTruncatedMerchantNameQuery(raw: string): string {
+  const tokens = distinctiveNameTokens(raw);
+  if (tokens.length === 0) {
+    return buildAllFieldsPhraseQuery(raw);
+  }
+  if (tokens.length === 1) {
+    return `name:${tokens[0]}`;
+  }
+  return tokens.map((t) => `name:${t}`).join(" ");
 }
 
 /** Tag 59 is often truncated when the display name hits the 25-character EMV limit. */
@@ -79,8 +100,8 @@ export function buildMerchantCnpjQuery(raw: string): string | null {
 
 /**
  * EMV tag 59 (Merchant Name): mostly display names, but may hold CPF/CNPJ,
- * email, or phone. Truncated names use name-field prefix search; shorter names
- * use all-fields phrase search; identifiers use PIX key field queries.
+ * email, or phone. Truncated names use name-field AND token search (no wildcards);
+ * shorter names use all-fields phrase search; identifiers use PIX key field queries.
  */
 export function buildMerchantNameQuery(raw: string): string | null {
   const trimmed = raw.trim();
@@ -90,7 +111,7 @@ export function buildMerchantNameQuery(raw: string): string | null {
   if (identifierQuery) return identifierQuery;
 
   if (isLikelyTruncatedMerchantName(trimmed)) {
-    return buildNamePrefixQuery(trimmed);
+    return buildTruncatedMerchantNameQuery(trimmed);
   }
 
   return buildAllFieldsPhraseQuery(trimmed);
@@ -102,21 +123,17 @@ function isAllowedAllFieldsPhraseQuery(query: string): boolean {
   return false;
 }
 
-function isAllowedNameWildcardQuery(query: string): boolean {
-  const single = /^name:([^\s"\\]{2,200})\*$/.exec(query);
-  if (single) {
-    return /^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(single[1]);
-  }
-  const phrase = /^name:"([^"]{2,500})\*"$/.exec(query);
-  if (phrase) {
-    return /^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(phrase[1]);
-  }
-  return false;
+function isAllowedNameToken(term: string): boolean {
+  return /^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(term);
 }
 
-/** Whether the Dehashed API request must set `wildcard: true` for this query. */
-export function queryRequiresWildcard(query: string): boolean {
-  return isAllowedNameWildcardQuery(query);
+function isAllowedNameAndQuery(query: string): boolean {
+  const parts = query.split(" ");
+  if (parts.length < 2 || parts.length > 10) return false;
+  return parts.every((part) => {
+    const match = /^name:([^\s"\\]{2,200})$/.exec(part);
+    return Boolean(match && isAllowedNameToken(match[1]));
+  });
 }
 
 /** Allowed queries the API route will forward (abuse guard). */
@@ -124,9 +141,9 @@ export function isAllowedDehashedQuery(query: string): boolean {
   if (!query || query.length > 512) return false;
   if (/^email:[^\s&]+@[^\s&]+\.[^\s&]+$/.test(query)) return true;
   if (/^phone:\+?\d{10,15}$/.test(query)) return true;
-  if (isAllowedNameWildcardQuery(query)) return true;
+  if (isAllowedNameAndQuery(query)) return true;
   if (/^name:"[^"]{1,500}"$/.test(query)) return true;
-  if (/^name:[^\s"\\]{2,200}$/.test(query)) return true;
+  if (/^name:[^\s"\\]{2,200}$/.test(query) && isAllowedNameToken(query.slice(5))) return true;
   if (/^\d{11}$/.test(query)) return true;
   if (/^\d{14}$/.test(query)) return true;
   if (isAllowedAllFieldsPhraseQuery(query)) return true;
