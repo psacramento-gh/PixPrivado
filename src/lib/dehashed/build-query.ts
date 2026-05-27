@@ -1,6 +1,7 @@
 import { classifyPixKey, normalizePhoneForSearch } from "./classify-pix-key";
 
-function escapeNameTerm(value: string): string {
+/** Quote multi-word values for Dehashed exact-phrase matching. */
+function escapePhraseTerm(value: string): string {
   const trimmed = value.trim();
   if (/\s/.test(trimmed)) {
     return `"${trimmed.replace(/"/g, '\\"')}"`;
@@ -17,7 +18,12 @@ export function buildPhoneQuery(raw: string): string {
 }
 
 export function buildNameQuery(name: string): string {
-  return `name:${escapeNameTerm(name)}`;
+  return `name:${escapePhraseTerm(name)}`;
+}
+
+/** Search across all Dehashed fields (web UI “All” category). */
+export function buildAllFieldsPhraseQuery(value: string): string {
+  return escapePhraseTerm(value.trim());
 }
 
 export function buildCpfQuery(cpf: string): string {
@@ -50,10 +56,25 @@ export function buildMerchantCnpjQuery(raw: string): string | null {
   return buildCnpjQuery(digits);
 }
 
+/**
+ * EMV tag 59 (Merchant Name): mostly display names, but may hold CPF/CNPJ,
+ * email, or phone. Names use all-fields phrase search; clear identifiers use
+ * the same field-specific queries as PIX key (01).
+ */
 export function buildMerchantNameQuery(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
-  return buildNameQuery(trimmed);
+
+  const identifierQuery = buildPixKeyQuery(trimmed);
+  if (identifierQuery) return identifierQuery;
+
+  return buildAllFieldsPhraseQuery(trimmed);
+}
+
+function isAllowedAllFieldsPhraseQuery(query: string): boolean {
+  if (/^"[^"]{1,500}"$/.test(query)) return true;
+  if (/^[^\s"\\]{2,200}$/.test(query)) return true;
+  return false;
 }
 
 /** Allowed queries the API route will forward (abuse guard). */
@@ -64,5 +85,6 @@ export function isAllowedDehashedQuery(query: string): boolean {
   if (/^name:(.+)$/.test(query)) return true;
   if (/^\d{11}$/.test(query)) return true;
   if (/^\d{14}$/.test(query)) return true;
+  if (isAllowedAllFieldsPhraseQuery(query)) return true;
   return false;
 }
