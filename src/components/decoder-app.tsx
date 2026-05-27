@@ -489,11 +489,11 @@ export function DecoderApp() {
             </>
           ) : null}
 
-          <div className="border-t border-border pt-6">
+          <div className="flex flex-col gap-2 pb-4 sm:flex-row sm:justify-end">
             <Button
               type="button"
               size="lg"
-              className="w-full sm:w-auto"
+              className="w-full shrink-0 sm:w-auto"
               onClick={resetDecoder}
             >
               {t(locale, "submitAnotherImage")}
