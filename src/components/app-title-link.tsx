@@ -19,16 +19,19 @@ export function AppTitleLink({
       aria-label={ariaLabel}
       onClick={() => onNavigateHome?.()}
       className={cn(
-        "inline-flex items-center gap-2 text-inherit no-underline",
-        "rounded-sm outline-none transition-opacity",
-        "hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        // Participate in CardTitle flex layout like the pre-link icon + text row.
+        "contents text-inherit no-underline",
+        "[&_svg]:transition-opacity hover:[&_svg]:opacity-80",
+        "hover:[&_span]:opacity-80",
+        "focus-visible:[&_svg]:opacity-80 focus-visible:[&_span]:opacity-80",
+        "focus-visible:outline-none",
       )}
     >
       <QrCode
         className="size-5 shrink-0 text-muted-foreground"
         aria-hidden
       />
-      {title}
+      <span>{title}</span>
     </Link>
   );
 }
