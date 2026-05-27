@@ -1,5 +1,8 @@
 import { classifyPixKey, normalizePhoneForSearch } from "./classify-pix-key";
 
+/** EMV tag 59 (Merchant Name) max length in PIX BR Codes. */
+export const MERCHANT_NAME_MAX_LENGTH = 25;
+
 /** Quote multi-word values for Dehashed exact-phrase matching. */
 function escapePhraseTerm(value: string): string {
   const trimmed = value.trim();
@@ -24,6 +27,20 @@ export function buildNameQuery(name: string): string {
 /** Search across all Dehashed fields (web UI “All” category). */
 export function buildAllFieldsPhraseQuery(value: string): string {
   return escapePhraseTerm(value.trim());
+}
+
+/** Prefix match across all fields; requires `wildcard: true` on the Dehashed API. */
+export function buildAllFieldsPrefixQuery(value: string): string {
+  const trimmed = value.trim();
+  if (/\s/.test(trimmed)) {
+    return `"${trimmed.replace(/"/g, '\\"')}*"`;
+  }
+  return `${trimmed}*`;
+}
+
+/** Tag 59 is often truncated when the display name hits the 25-character EMV limit. */
+export function isLikelyTruncatedMerchantName(raw: string): boolean {
+  return raw.trim().length >= MERCHANT_NAME_MAX_LENGTH;
 }
 
 export function buildCpfQuery(cpf: string): string {
@@ -68,6 +85,10 @@ export function buildMerchantNameQuery(raw: string): string | null {
   const identifierQuery = buildPixKeyQuery(trimmed);
   if (identifierQuery) return identifierQuery;
 
+  if (isLikelyTruncatedMerchantName(trimmed)) {
+    return buildAllFieldsPrefixQuery(trimmed);
+  }
+
   return buildAllFieldsPhraseQuery(trimmed);
 }
 
@@ -75,6 +96,17 @@ function isAllowedAllFieldsPhraseQuery(query: string): boolean {
   if (/^"[^"]{1,500}"$/.test(query)) return true;
   if (/^[^\s"\\]{2,200}$/.test(query)) return true;
   return false;
+}
+
+function isAllowedAllFieldsWildcardQuery(query: string): boolean {
+  if (/^"[^"*\\]{2,500}\*"$/.test(query)) return true;
+  if (/^[^\s"\\*]{2,200}\*$/.test(query)) return true;
+  return false;
+}
+
+/** Whether the Dehashed API request must set `wildcard: true` for this query. */
+export function queryRequiresWildcard(query: string): boolean {
+  return isAllowedAllFieldsWildcardQuery(query);
 }
 
 /** Allowed queries the API route will forward (abuse guard). */
@@ -86,5 +118,6 @@ export function isAllowedDehashedQuery(query: string): boolean {
   if (/^\d{11}$/.test(query)) return true;
   if (/^\d{14}$/.test(query)) return true;
   if (isAllowedAllFieldsPhraseQuery(query)) return true;
+  if (isAllowedAllFieldsWildcardQuery(query)) return true;
   return false;
 }
