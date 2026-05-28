@@ -586,7 +586,7 @@ function CopiaColaInputSection({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="00020126..."
-          className="min-h-[88px] font-mono text-xs"
+          className="min-h-[88px] font-mono text-base md:text-xs"
           onKeyDown={(e) => {
             if (
               e.key === "Enter" &&
