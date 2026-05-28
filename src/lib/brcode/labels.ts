@@ -1,3 +1,5 @@
+import { formatCepDigits, parseCepDigits } from "@/lib/br/normalize-cep";
+
 export type Locale = "en" | "pt";
 
 type LocalizedText = { en: string; pt: string };
@@ -218,6 +220,10 @@ export function formatDisplayValue(
   parentId: string | null,
   locale: Locale,
 ): string {
+  if (id === "61" && parentId === null) {
+    const cepDigits = parseCepDigits(value);
+    if (cepDigits) return formatCepDigits(cepDigits);
+  }
   if (id === "53" && value === "986") {
     return locale === "en" ? "986 (BRL)" : "986 (R$)";
   }

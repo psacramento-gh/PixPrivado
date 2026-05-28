@@ -102,6 +102,10 @@ export const messages = {
     dddLoading: "Loading area code region",
     dddCitiesAria: "Show {count} cities for this area code",
     dddCitiesHeading: "DDD {ddd} · {state}",
+    cepLoading: "Loading address for postal code",
+    cepLocationAria: "Show full address for this postal code",
+    cepLocationHeading: "CEP {cep}",
+    cepMapLink: "View on OpenStreetMap",
     about: "About",
   },
   pt: {
@@ -208,6 +212,10 @@ export const messages = {
     dddLoading: "Carregando região do DDD",
     dddCitiesAria: "Mostrar {count} cidades deste DDD",
     dddCitiesHeading: "DDD {ddd} · {state}",
+    cepLoading: "Carregando endereço do CEP",
+    cepLocationAria: "Mostrar endereço completo deste CEP",
+    cepLocationHeading: "CEP {cep}",
+    cepMapLink: "Ver no OpenStreetMap",
     about: "Sobre",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
