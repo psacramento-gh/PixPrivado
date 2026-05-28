@@ -7,10 +7,16 @@ import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
 type DehashedValueLinkProps = {
   displayValue: string;
   query: string;
+  /** When set, breach results “back” returns here (e.g. Receita CNPJ page). */
+  returnTo?: string | null;
 };
 
-export function DehashedValueLink({ displayValue, query }: DehashedValueLinkProps) {
-  const resultsUrl = buildDehashedResultsPageUrl(query);
+export function DehashedValueLink({
+  displayValue,
+  query,
+  returnTo,
+}: DehashedValueLinkProps) {
+  const resultsUrl = buildDehashedResultsPageUrl(query, 1, { returnTo });
 
   return (
     <Link
