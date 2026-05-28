@@ -1,4 +1,5 @@
 import { formatCepDigits, parseCepDigits } from "@/lib/br/normalize-cep";
+import { parseMccCode } from "@/lib/br/mcc/lookup";
 
 export type Locale = "en" | "pt";
 
@@ -223,6 +224,10 @@ export function formatDisplayValue(
   if (id === "61" && parentId === null) {
     const cepDigits = parseCepDigits(value);
     if (cepDigits) return formatCepDigits(cepDigits);
+  }
+  if (id === "52" && parentId === null) {
+    const mccCode = parseMccCode(value);
+    if (mccCode) return mccCode;
   }
   if (id === "53" && value === "986") {
     return locale === "en" ? "986 (BRL)" : "986 (R$)";

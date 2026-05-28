@@ -106,6 +106,9 @@ export const messages = {
     cepLocationAria: "Show full address for this postal code",
     cepLocationHeading: "CEP {cep}",
     cepMapLink: "View on OpenStreetMap",
+    mccCategoryAria: "Show merchant category for MCC {code}",
+    mccCategoryHeading: "MCC {code}",
+    mccUnknown: "Unknown category (MCC {code})",
     about: "About",
   },
   pt: {
@@ -216,6 +219,9 @@ export const messages = {
     cepLocationAria: "Mostrar endereço completo deste CEP",
     cepLocationHeading: "CEP {cep}",
     cepMapLink: "Ver no OpenStreetMap",
+    mccCategoryAria: "Mostrar categoria do comerciante para MCC {code}",
+    mccCategoryHeading: "MCC {code}",
+    mccUnknown: "Categoria desconhecida (MCC {code})",
     about: "Sobre",
   },
 } as const satisfies Record<Locale, Record<string, string>>;

@@ -48,6 +48,7 @@ import {
   rowHasDehashedLink,
 } from "@/lib/dehashed/searchable-rows";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
+import { MccEnrichedValue } from "@/components/mcc-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
 import {
@@ -738,7 +739,13 @@ function StructuredDataValue({
         locale={locale}
         active={row.id === "61" && row.parentId === null}
       >
-        {inner}
+        <MccEnrichedValue
+          rawValue={row.value}
+          locale={locale}
+          active={row.id === "52" && row.parentId === null}
+        >
+          {inner}
+        </MccEnrichedValue>
       </CepEnrichedValue>
     </PhoneEnrichedValue>
   );
