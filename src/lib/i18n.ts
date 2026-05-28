@@ -52,9 +52,6 @@ export const messages = {
       "Branch URLs like …git-…vercel.app are Preview — the variable must be enabled for Preview, not Production only.",
     dehashedEnvHint:
       "Vercel → Project → Settings → Environment Variables → DEHASHED_API_KEY → check Preview and Production → Save → Redeploy.",
-    receitaSubtitle:
-      "Public company registry lookup (Receita Federal) for a CNPJ from your decoded PIX payload.",
-    receitaSectionTitle: "Receita Federal",
     receitaDisclaimer:
       "Public cadastral data from the Receita Federal dataset (via OpenCNPJ). This is not breach or leak data.",
     receitaNotFound: "Not found in Receita dataset.",
@@ -157,9 +154,6 @@ export const messages = {
       "URLs de branch como …git-…vercel.app são Preview — a variável precisa estar habilitada em Preview, não só em Production.",
     dehashedEnvHint:
       "Vercel → Projeto → Settings → Environment Variables → DEHASHED_API_KEY → marque Preview e Production → Salvar → Redeploy.",
-    receitaSubtitle:
-      "Consulta cadastral pública (Receita Federal) para um CNPJ do payload PIX decodificado.",
-    receitaSectionTitle: "Receita Federal",
     receitaDisclaimer:
       "Dados cadastrais públicos do dataset Receita Federal (via OpenCNPJ). Não são dados de vazamento ou breach.",
     receitaNotFound: "Não encontrado no dataset Receita.",

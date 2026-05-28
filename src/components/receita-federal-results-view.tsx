@@ -77,7 +77,6 @@ function ReceitaDataTable({
 
 export function ReceitaFederalResultsView({ query, result }: ReceitaFederalResultsViewProps) {
   const [locale, setLocale] = useAppLocale();
-  const displayCnpj = result?.cnpj ?? query.replace(/\D/g, "");
 
   return (
     <AppFrame
@@ -96,20 +95,13 @@ export function ReceitaFederalResultsView({ query, result }: ReceitaFederalResul
           <ArrowLeft className="size-4" aria-hidden />
           {t(locale, "backToDecoder")}
         </Link>
-        <p className="text-sm text-muted-foreground">
-          {query ? t(locale, "receitaSubtitle") : t(locale, "dehashedMissingQuery")}
-        </p>
+        {!query ? (
+          <p className="text-sm text-muted-foreground">{t(locale, "dehashedMissingQuery")}</p>
+        ) : null}
       </header>
 
       {!query ? null : (
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              {t(locale, "receitaSectionTitle")}
-            </p>
-            <p className="font-mono text-xs break-all">{displayCnpj}</p>
-          </div>
-
           <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
             {t(locale, "receitaDisclaimer")}
           </p>
