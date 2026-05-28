@@ -16,9 +16,15 @@ import {
 type ReceitaCellValueProps = {
   fieldPath: string;
   value: string;
+  /** Current Receita results URL — forwarded as `back` on breach search links. */
+  breachReturnTo: string;
 };
 
-export function ReceitaCellValue({ fieldPath, value }: ReceitaCellValueProps) {
+export function ReceitaCellValue({
+  fieldPath,
+  value,
+  breachReturnTo,
+}: ReceitaCellValueProps) {
   if (isReceitaCnpjField(fieldPath)) {
     const digits = value.replace(/\D/g, "");
     if (digits.length === 14) {
@@ -34,7 +40,11 @@ export function ReceitaCellValue({ fieldPath, value }: ReceitaCellValueProps) {
       return (
         <>
           {nameQuery ? (
-            <DehashedValueLink displayValue={embedded.namePart} query={nameQuery} />
+            <DehashedValueLink
+              displayValue={embedded.namePart}
+              query={nameQuery}
+              returnTo={breachReturnTo}
+            />
           ) : (
             embedded.namePart
           )}
@@ -44,6 +54,7 @@ export function ReceitaCellValue({ fieldPath, value }: ReceitaCellValueProps) {
               <DehashedValueLink
                 displayValue={embedded.cpfFormatted}
                 query={cpfQuery}
+                returnTo={breachReturnTo}
               />
             </>
           ) : (
@@ -55,13 +66,25 @@ export function ReceitaCellValue({ fieldPath, value }: ReceitaCellValueProps) {
 
     const nameQuery = buildNameBreachLookupQuery(value);
     if (nameQuery) {
-      return <DehashedValueLink displayValue={value} query={nameQuery} />;
+      return (
+        <DehashedValueLink
+          displayValue={value}
+          query={nameQuery}
+          returnTo={breachReturnTo}
+        />
+      );
     }
   }
 
   const breachQuery = buildBreachLookupQuery(value);
   if (breachQuery !== null) {
-    return <DehashedValueLink displayValue={value} query={breachQuery} />;
+    return (
+      <DehashedValueLink
+        displayValue={value}
+        query={breachQuery}
+        returnTo={breachReturnTo}
+      />
+    );
   }
 
   return <>{value}</>;

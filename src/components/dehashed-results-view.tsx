@@ -18,7 +18,10 @@ import type { Locale } from "@/lib/brcode/labels";
 import type { DehashedSearchResult } from "@/lib/dehashed/api-search";
 import { DEHASHED_PAGE_SIZE } from "@/lib/dehashed/constants";
 import { entryRows } from "@/lib/dehashed/format-entry";
-import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
+import {
+  buildDehashedResultsPageUrl,
+  isReceitaResultsReturnPath,
+} from "@/lib/dehashed/results-url";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useAppLocale } from "@/lib/use-app-locale";
@@ -26,18 +29,26 @@ import { useAppLocale } from "@/lib/use-app-locale";
 type DehashedResultsViewProps = {
   query: string;
   result: DehashedSearchResult | null;
+  backHref?: string;
 };
+
+function searchBackLabelKey(backHref: string): "backToDecoder" | "backToReceita" {
+  if (isReceitaResultsReturnPath(backHref)) return "backToReceita";
+  return "backToDecoder";
+}
 
 function DehashedPagination({
   locale,
   query,
   page,
   totalPages,
+  returnTo,
 }: {
   locale: Locale;
   query: string;
   page: number;
   totalPages: number;
+  returnTo?: string | null;
 }) {
   if (totalPages <= 1) return null;
 
@@ -51,7 +62,7 @@ function DehashedPagination({
     >
       {prevPage !== null ? (
         <Link
-          href={buildDehashedResultsPageUrl(query, prevPage)}
+          href={buildDehashedResultsPageUrl(query, prevPage, { returnTo })}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
         >
           <ChevronLeft className="size-4" aria-hidden />
@@ -68,7 +79,7 @@ function DehashedPagination({
       </p>
       {nextPage !== null ? (
         <Link
-          href={buildDehashedResultsPageUrl(query, nextPage)}
+          href={buildDehashedResultsPageUrl(query, nextPage, { returnTo })}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
         >
           {t(locale, "dehashedNext")}
@@ -85,10 +96,12 @@ function DehashedOkResults({
   locale,
   query,
   result,
+  returnTo,
 }: {
   locale: Locale;
   query: string;
   result: Extract<DehashedSearchResult, { ok: true }>;
+  returnTo?: string | null;
 }) {
   const currentPage = result.page;
   const pageSize = result.pageSize ?? DEHASHED_PAGE_SIZE;
@@ -113,6 +126,7 @@ function DehashedOkResults({
         query={query}
         page={currentPage}
         totalPages={totalPages}
+        returnTo={returnTo}
       />
       {result.entries.length > 0 ? (
         <div className="flex flex-col gap-6">
@@ -160,13 +174,19 @@ function DehashedOkResults({
         query={query}
         page={currentPage}
         totalPages={totalPages}
+        returnTo={returnTo}
       />
     </>
   );
 }
 
-export function DehashedResultsView({ query, result }: DehashedResultsViewProps) {
+export function DehashedResultsView({
+  query,
+  result,
+  backHref = "/",
+}: DehashedResultsViewProps) {
   const [locale, setLocale] = useAppLocale();
+  const backLabelKey = searchBackLabelKey(backHref);
 
   return (
     <AppFrame
@@ -179,11 +199,11 @@ export function DehashedResultsView({ query, result }: DehashedResultsViewProps)
     >
       <header className="flex flex-col gap-3">
         <Link
-          href="/"
+          href={backHref}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
         >
           <ArrowLeft className="size-4" aria-hidden />
-          {t(locale, "backToDecoder")}
+          {t(locale, backLabelKey)}
         </Link>
         <p className="text-sm text-muted-foreground">
           {query ? t(locale, "dehashedSubtitle") : t(locale, "dehashedMissingQuery")}
@@ -215,7 +235,12 @@ export function DehashedResultsView({ query, result }: DehashedResultsViewProps)
           ) : null}
 
           {result?.ok ? (
-            <DehashedOkResults locale={locale} query={query} result={result} />
+            <DehashedOkResults
+              locale={locale}
+              query={query}
+              result={result}
+              returnTo={backHref === "/" ? null : backHref}
+            />
           ) : null}
         </div>
       )}

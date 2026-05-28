@@ -17,6 +17,7 @@ import {
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
 import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
+import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
 import { receitaFieldLabel } from "@/lib/receita/field-label";
 import { flattenPayload } from "@/lib/receita/flatten-payload";
 import { cn } from "@/lib/utils";
@@ -30,9 +31,11 @@ type ReceitaFederalResultsViewProps = {
 function ReceitaDataTable({
   locale,
   data,
+  breachReturnTo,
 }: {
   locale: Locale;
   data: Record<string, unknown>;
+  breachReturnTo: string;
 }) {
   const rows = flattenPayload(data);
 
@@ -55,7 +58,11 @@ function ReceitaDataTable({
                 {receitaFieldLabel(row.field, locale)}
               </TableCell>
               <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
-                <ReceitaCellValue fieldPath={row.field} value={row.value} />
+                <ReceitaCellValue
+                  fieldPath={row.field}
+                  value={row.value}
+                  breachReturnTo={breachReturnTo}
+                />
               </TableCell>
             </TableRow>
         ))}
@@ -66,6 +73,7 @@ function ReceitaDataTable({
 
 export function ReceitaFederalResultsView({ query, result }: ReceitaFederalResultsViewProps) {
   const [locale, setLocale] = useAppLocale();
+  const breachReturnTo = query ? buildDehashedResultsPageUrl(query) : "/";
 
   return (
     <AppFrame
@@ -106,7 +114,13 @@ export function ReceitaFederalResultsView({ query, result }: ReceitaFederalResul
             </div>
           ) : null}
 
-          {result?.ok ? <ReceitaDataTable locale={locale} data={result.data} /> : null}
+          {result?.ok ? (
+            <ReceitaDataTable
+              locale={locale}
+              data={result.data}
+              breachReturnTo={breachReturnTo}
+            />
+          ) : null}
         </div>
       )}
     </AppFrame>

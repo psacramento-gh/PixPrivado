@@ -37,6 +37,7 @@ export const messages = {
     invalidImageFile: "Please choose an image file (PNG, JPEG, WebP, or GIF).",
     path: "Path",
     backToDecoder: "Back to PIX decoder",
+    backToReceita: "Back to company registry",
     dehashedSubtitle: "Breach data lookup for a value from your decoded PIX payload.",
     dehashedMissingQuery: "Missing search query.",
     dehashedResults: "Dehashed results",
@@ -138,6 +139,7 @@ export const messages = {
       "Selecione um arquivo de imagem (PNG, JPEG, WebP ou GIF).",
     path: "Caminho",
     backToDecoder: "Voltar ao decodificador PIX",
+    backToReceita: "Voltar aos dados cadastrais",
     dehashedSubtitle:
       "Consulta de vazamentos para um valor do payload PIX decodificado.",
     dehashedMissingQuery: "Consulta de busca ausente.",
