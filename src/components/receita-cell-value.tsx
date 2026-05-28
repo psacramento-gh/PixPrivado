@@ -1,6 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
+import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
+import type { Locale } from "@/lib/brcode/labels";
 import {
   extractTrailingCpfFromText,
   formatCnpj,
@@ -16,6 +19,7 @@ import {
 type ReceitaCellValueProps = {
   fieldPath: string;
   value: string;
+  locale: Locale;
   /** Current Receita results URL — forwarded as `back` on breach search links. */
   breachReturnTo: string;
 };
@@ -23,21 +27,24 @@ type ReceitaCellValueProps = {
 export function ReceitaCellValue({
   fieldPath,
   value,
+  locale,
   breachReturnTo,
 }: ReceitaCellValueProps) {
+  let content: ReactNode;
+
   if (isReceitaCnpjField(fieldPath)) {
     const digits = value.replace(/\D/g, "");
     if (digits.length === 14) {
-      return <>{formatCnpj(digits)}</>;
+      content = <>{formatCnpj(digits)}</>;
+    } else {
+      content = <>{value}</>;
     }
-  }
-
-  if (isReceitaRazaoSocialField(fieldPath)) {
+  } else if (isReceitaRazaoSocialField(fieldPath)) {
     const embedded = extractTrailingCpfFromText(value);
     if (embedded) {
       const nameQuery = buildNameBreachLookupQuery(embedded.namePart);
       const cpfQuery = buildCpfBreachLookupQuery(embedded.cpfDigits);
-      return (
+      content = (
         <>
           {nameQuery ? (
             <DehashedValueLink
@@ -62,30 +69,35 @@ export function ReceitaCellValue({
           )}
         </>
       );
-    }
-
-    const nameQuery = buildNameBreachLookupQuery(value);
-    if (nameQuery) {
-      return (
+    } else {
+      const nameQuery = buildNameBreachLookupQuery(value);
+      content = nameQuery ? (
         <DehashedValueLink
           displayValue={value}
           query={nameQuery}
           returnTo={breachReturnTo}
         />
+      ) : (
+        <>{value}</>
       );
     }
+  } else {
+    const breachQuery = buildBreachLookupQuery(value);
+    content =
+      breachQuery !== null ? (
+        <DehashedValueLink
+          displayValue={value}
+          query={breachQuery}
+          returnTo={breachReturnTo}
+        />
+      ) : (
+        <>{value}</>
+      );
   }
 
-  const breachQuery = buildBreachLookupQuery(value);
-  if (breachQuery !== null) {
-    return (
-      <DehashedValueLink
-        displayValue={value}
-        query={breachQuery}
-        returnTo={breachReturnTo}
-      />
-    );
-  }
-
-  return <>{value}</>;
+  return (
+    <PhoneEnrichedValue rawValue={value} locale={locale}>
+      {content}
+    </PhoneEnrichedValue>
+  );
 }
