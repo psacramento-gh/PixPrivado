@@ -95,45 +95,37 @@ export function PhoneDddBadges({ ddd, locale }: PhoneDddBadgesProps) {
     .sort((a, b) => a.localeCompare(b, locale === "pt" ? "pt-BR" : "en"));
 
   return (
-    <>
-      <Badge
-        variant="default"
-        className="font-sans bg-sky-600 text-white hover:bg-sky-600/90 dark:bg-sky-500 dark:hover:bg-sky-500/90"
+    <Popover>
+      <PopoverTrigger
+        type="button"
+        openOnHover={isDesktop}
+        delay={0}
+        closeDelay={isDesktop ? 100 : 0}
+        className="cursor-pointer rounded-4xl focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        aria-label={t(locale, "dddCitiesAria", { count: String(sortedCities.length) })}
       >
-        {stateLabel}
-      </Badge>
-      <Popover>
-        <PopoverTrigger
-          type="button"
-          openOnHover={isDesktop}
-          delay={0}
-          closeDelay={isDesktop ? 100 : 0}
-          className="cursor-pointer rounded-4xl focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          aria-label={t(locale, "dddCitiesAria", { count: String(sortedCities.length) })}
+        <Badge
+          variant="default"
+          className="font-sans bg-sky-600 text-white hover:bg-sky-600/90 dark:bg-sky-500 dark:hover:bg-sky-500/90"
         >
-          <Badge
-            variant="secondary"
-            className="font-sans bg-violet-600/15 text-violet-900 hover:bg-violet-600/25 dark:bg-violet-400/20 dark:text-violet-100"
-          >
-            {t(locale, "dddCities")}
-          </Badge>
-        </PopoverTrigger>
-        <PopoverContent
-          side="top"
-          align="start"
-          initialFocus={false}
-          className="w-[min(20rem,90vw)] max-h-64 overflow-y-auto p-3"
-        >
-          <p className="mb-2 text-xs font-medium text-muted-foreground">
-            {t(locale, "dddCitiesHeading", { ddd: String(ddd), state: stateLabel })}
-          </p>
-          <ul className="flex flex-col gap-1 text-sm leading-snug">
-            {sortedCities.map((city) => (
-              <li key={city}>{city}</li>
-            ))}
-          </ul>
-        </PopoverContent>
-      </Popover>
-    </>
+          {stateLabel}
+        </Badge>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="start"
+        initialFocus={false}
+        className="w-[min(20rem,90vw)] max-h-64 overflow-y-auto p-3"
+      >
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          {t(locale, "dddCitiesHeading", { ddd: String(ddd), state: stateLabel })}
+        </p>
+        <ul className="flex flex-col gap-1 text-sm leading-snug">
+          {sortedCities.map((city) => (
+            <li key={city}>{city}</li>
+          ))}
+        </ul>
+      </PopoverContent>
+    </Popover>
   );
 }
