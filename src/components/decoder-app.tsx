@@ -54,6 +54,25 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Camera, ClipboardCopy, ClipboardPaste, ImageUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const STRUCTURED_NEST_INDENT_REM = 0.75;
+
+type StructuredRow = ReturnType<typeof flattenNodes>[number];
+
+function isStructuredRowInTemplateGroup(
+  row: StructuredRow,
+  rows: StructuredRow[],
+  index: number,
+): boolean {
+  if (row.isTemplate) return true;
+  for (let j = index - 1; j >= 0; j--) {
+    const prev = rows[j];
+    if (prev.isTemplate && row.depth > prev.depth) return true;
+    if (prev.depth < row.depth) break;
+  }
+  return false;
+}
 
 type LocationFetch = {
   url: string;
@@ -447,9 +466,31 @@ export function DecoderApp() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rows.map((row) => (
-                      <TableRow key={row.path}>
-                        <TableCell className="w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal text-muted-foreground sm:max-w-none sm:w-[38%] sm:text-sm">
+                    {rows.map((row, index) => (
+                      <TableRow
+                        key={row.path}
+                        className={cn(
+                          isStructuredRowInTemplateGroup(row, rows, index) &&
+                            "bg-muted/25",
+                        )}
+                        aria-level={row.depth + 1}
+                      >
+                        <TableCell
+                          className={cn(
+                            "w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal sm:max-w-none sm:w-[38%] sm:text-sm",
+                            row.depth > 0 &&
+                              "border-l-2 border-border/80 text-muted-foreground",
+                            row.depth === 0 && "text-muted-foreground",
+                            row.isTemplate && "font-medium text-foreground",
+                          )}
+                          style={
+                            row.depth > 0
+                              ? {
+                                  paddingLeft: `${row.depth * STRUCTURED_NEST_INDENT_REM}rem`,
+                                }
+                              : undefined
+                          }
+                        >
                           <StructuredDataLabel
                             id={row.id}
                             parentId={row.parentId}
