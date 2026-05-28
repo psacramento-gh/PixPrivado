@@ -1,5 +1,8 @@
-import { searchDehashed } from "@/lib/dehashed/api-search";
 import { DehashedResultsView } from "@/components/dehashed-results-view";
+import { ReceitaFederalResultsView } from "@/components/receita-federal-results-view";
+import { searchDehashed } from "@/lib/dehashed/api-search";
+import { fetchReceitaFederal } from "@/lib/receita/api-fetch";
+import { isCnpjSearchQuery } from "@/lib/receita/is-cnpj-query";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +22,11 @@ export default async function DehashedSearchPage({
 
   if (!query) {
     return <DehashedResultsView query="" result={null} />;
+  }
+
+  if (isCnpjSearchQuery(query)) {
+    const receitaResult = await fetchReceitaFederal(query);
+    return <ReceitaFederalResultsView query={query} result={receitaResult} />;
   }
 
   const result = await searchDehashed(query, { page });
