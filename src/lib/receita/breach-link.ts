@@ -1,4 +1,8 @@
-import { buildPixKeyQuery, isAllowedDehashedQuery } from "@/lib/dehashed/build-query";
+import {
+  buildCpfQuery,
+  buildPixKeyQuery,
+  isAllowedDehashedQuery,
+} from "@/lib/dehashed/build-query";
 import { classifyPixKey } from "@/lib/dehashed/classify-pix-key";
 
 /** Email or phone values from Receita may link to a Dehashed breach search on click. */
@@ -11,5 +15,13 @@ export function buildBreachLookupQuery(value: string): string | null {
 
   const query = buildPixKeyQuery(trimmed);
   if (!query || !isAllowedDehashedQuery(query)) return null;
+  return query;
+}
+
+export function buildCpfBreachLookupQuery(cpfDigits: string): string | null {
+  const digits = cpfDigits.replace(/\D/g, "");
+  if (digits.length !== 11) return null;
+  const query = buildCpfQuery(digits);
+  if (!isAllowedDehashedQuery(query)) return null;
   return query;
 }

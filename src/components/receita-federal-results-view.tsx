@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "next-view-transitions";
 import { AppFrame } from "@/components/app-frame";
 import { AppHeaderActions } from "@/components/app-header-actions";
-import { DehashedValueLink } from "@/components/dehashed-value-link";
+import { ReceitaCellValue } from "@/components/receita-cell-value";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Table,
@@ -17,7 +17,6 @@ import {
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
 import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
-import { buildBreachLookupQuery } from "@/lib/receita/breach-link";
 import { receitaFieldLabel } from "@/lib/receita/field-label";
 import { flattenPayload } from "@/lib/receita/flatten-payload";
 import { cn } from "@/lib/utils";
@@ -50,26 +49,16 @@ function ReceitaDataTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {rows.map((row) => {
-          const breachQuery = buildBreachLookupQuery(row.value);
-          const valueNode =
-            breachQuery !== null ? (
-              <DehashedValueLink displayValue={row.value} query={breachQuery} />
-            ) : (
-              row.value
-            );
-
-          return (
+        {rows.map((row) => (
             <TableRow key={row.field}>
               <TableCell className="w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal text-muted-foreground sm:max-w-none sm:w-[38%] sm:text-sm">
                 {receitaFieldLabel(row.field, locale)}
               </TableCell>
               <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
-                {valueNode}
+                <ReceitaCellValue fieldPath={row.field} value={row.value} />
               </TableCell>
             </TableRow>
-          );
-        })}
+        ))}
       </TableBody>
     </Table>
   );
