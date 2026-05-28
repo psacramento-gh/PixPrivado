@@ -3,6 +3,7 @@
 import { Link } from "next-view-transitions";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppFrame } from "@/components/app-frame";
+import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { AppHeaderActions } from "@/components/app-header-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -158,7 +159,9 @@ function DehashedOkResults({
                           {row.field}
                         </TableCell>
                         <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
-                          {row.value}
+                          <PhoneEnrichedValue rawValue={row.value} locale={locale}>
+                            {row.value}
+                          </PhoneEnrichedValue>
                         </TableCell>
                       </TableRow>
                     ))}

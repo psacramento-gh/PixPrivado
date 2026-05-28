@@ -99,6 +99,9 @@ export const messages = {
     pixKeyTypeCnpj: "CNPJ",
     pixKeyTypeEvp: "EVP",
     pixKeyTypeUnknown: "Unknown",
+    dddLoading: "Loading area code region",
+    dddCitiesAria: "Show {count} cities for this area code",
+    dddCitiesHeading: "DDD {ddd} · {state}",
     about: "About",
   },
   pt: {
@@ -202,6 +205,9 @@ export const messages = {
     pixKeyTypeCnpj: "CNPJ",
     pixKeyTypeEvp: "EVP",
     pixKeyTypeUnknown: "Desconhecido",
+    dddLoading: "Carregando região do DDD",
+    dddCitiesAria: "Mostrar {count} cidades deste DDD",
+    dddCitiesHeading: "DDD {ddd} · {state}",
     about: "Sobre",
   },
 } as const satisfies Record<Locale, Record<string, string>>;

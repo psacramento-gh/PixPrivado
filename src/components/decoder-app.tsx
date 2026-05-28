@@ -47,6 +47,7 @@ import {
   getStructuredValueBadgeKind,
   rowHasDehashedLink,
 } from "@/lib/dehashed/searchable-rows";
+import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
 import {
   Popover,
@@ -720,15 +721,19 @@ function StructuredDataValue({
     }
   }
 
-  if (!badgeKind) {
-    return <>{valueNode}</>;
-  }
-
-  return (
+  const inner = badgeKind ? (
     <span className="inline-flex flex-wrap items-center gap-2">
       {valueNode}
       <PixKeyTypeBadge kind={badgeKind} locale={locale} />
     </span>
+  ) : (
+    <>{valueNode}</>
+  );
+
+  return (
+    <PhoneEnrichedValue rawValue={row.value} locale={locale}>
+      {inner}
+    </PhoneEnrichedValue>
   );
 }
 

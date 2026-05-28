@@ -61,6 +61,7 @@ function ReceitaDataTable({
                 <ReceitaCellValue
                   fieldPath={row.field}
                   value={row.value}
+                  locale={locale}
                   breachReturnTo={breachReturnTo}
                 />
               </TableCell>
