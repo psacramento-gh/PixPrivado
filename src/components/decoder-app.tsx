@@ -47,6 +47,7 @@ import {
   getStructuredValueBadgeKind,
   rowHasDehashedLink,
 } from "@/lib/dehashed/searchable-rows";
+import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
 import {
@@ -732,7 +733,13 @@ function StructuredDataValue({
 
   return (
     <PhoneEnrichedValue rawValue={row.value} locale={locale}>
-      {inner}
+      <CepEnrichedValue
+        rawValue={row.value}
+        locale={locale}
+        active={row.id === "61" && row.parentId === null}
+      >
+        {inner}
+      </CepEnrichedValue>
     </PhoneEnrichedValue>
   );
 }
