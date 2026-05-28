@@ -10,6 +10,7 @@ import {
 import {
   buildBreachLookupQuery,
   buildCpfBreachLookupQuery,
+  buildNameBreachLookupQuery,
 } from "@/lib/receita/breach-link";
 
 type ReceitaCellValueProps = {
@@ -28,18 +29,33 @@ export function ReceitaCellValue({ fieldPath, value }: ReceitaCellValueProps) {
   if (isReceitaRazaoSocialField(fieldPath)) {
     const embedded = extractTrailingCpfFromText(value);
     if (embedded) {
+      const nameQuery = buildNameBreachLookupQuery(embedded.namePart);
       const cpfQuery = buildCpfBreachLookupQuery(embedded.cpfDigits);
-      if (cpfQuery) {
-        return (
-          <>
-            {embedded.namePart}{" "}
-            <DehashedValueLink
-              displayValue={embedded.cpfFormatted}
-              query={cpfQuery}
-            />
-          </>
-        );
-      }
+      return (
+        <>
+          {nameQuery ? (
+            <DehashedValueLink displayValue={embedded.namePart} query={nameQuery} />
+          ) : (
+            embedded.namePart
+          )}
+          {cpfQuery ? (
+            <>
+              {" "}
+              <DehashedValueLink
+                displayValue={embedded.cpfFormatted}
+                query={cpfQuery}
+              />
+            </>
+          ) : (
+            <> {embedded.cpfFormatted}</>
+          )}
+        </>
+      );
+    }
+
+    const nameQuery = buildNameBreachLookupQuery(value);
+    if (nameQuery) {
+      return <DehashedValueLink displayValue={value} query={nameQuery} />;
     }
   }
 

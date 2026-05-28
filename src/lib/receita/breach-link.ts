@@ -1,5 +1,6 @@
 import {
   buildCpfQuery,
+  buildNameQuery,
   buildPixKeyQuery,
   isAllowedDehashedQuery,
 } from "@/lib/dehashed/build-query";
@@ -22,6 +23,14 @@ export function buildCpfBreachLookupQuery(cpfDigits: string): string | null {
   const digits = cpfDigits.replace(/\D/g, "");
   if (digits.length !== 11) return null;
   const query = buildCpfQuery(digits);
+  if (!isAllowedDehashedQuery(query)) return null;
+  return query;
+}
+
+export function buildNameBreachLookupQuery(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) return null;
+  const query = buildNameQuery(trimmed);
   if (!isAllowedDehashedQuery(query)) return null;
   return query;
 }
