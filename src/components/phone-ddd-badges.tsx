@@ -12,6 +12,7 @@ import type { DddLookupResult } from "@/lib/br/ddd-api";
 import { formatCityName } from "@/lib/br/format-city-name";
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
+import { useIsDesktop } from "@/lib/use-is-desktop";
 
 type DddFetchState =
   | { status: "loading" }
@@ -47,6 +48,7 @@ type PhoneDddBadgesProps = {
 };
 
 export function PhoneDddBadges({ ddd, locale }: PhoneDddBadgesProps) {
+  const isDesktop = useIsDesktop();
   const [fetchState, setFetchState] = useState<DddFetchState>({ status: "loading" });
 
   useEffect(() => {
@@ -103,6 +105,9 @@ export function PhoneDddBadges({ ddd, locale }: PhoneDddBadgesProps) {
       <Popover>
         <PopoverTrigger
           type="button"
+          openOnHover={isDesktop}
+          delay={0}
+          closeDelay={isDesktop ? 100 : 0}
           className="cursor-pointer rounded-4xl focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           aria-label={t(locale, "dddCitiesAria", { count: String(sortedCities.length) })}
         >
