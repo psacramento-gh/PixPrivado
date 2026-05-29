@@ -106,6 +106,7 @@ export const messages = {
     cepLocationAria: "Show full address for this postal code",
     cepLocationHeading: "CEP {cep}",
     cepMapLink: "View on OpenStreetMap",
+    ageYearsOld: "{age} years old",
     about: "About",
   },
   pt: {
@@ -216,6 +217,7 @@ export const messages = {
     cepLocationAria: "Mostrar endereço completo deste CEP",
     cepLocationHeading: "CEP {cep}",
     cepMapLink: "Ver no OpenStreetMap",
+    ageYearsOld: "{age} anos",
     about: "Sobre",
   },
 } as const satisfies Record<Locale, Record<string, string>>;

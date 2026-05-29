@@ -3,7 +3,9 @@
 import { Link } from "next-view-transitions";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppFrame } from "@/components/app-frame";
+import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
+import { isBirthField } from "@/lib/age/is-birth-field";
 import { AppHeaderActions } from "@/components/app-header-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -160,7 +162,13 @@ function DehashedOkResults({
                         </TableCell>
                         <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
                           <PhoneEnrichedValue rawValue={row.value} locale={locale}>
-                            {row.value}
+                            <AgeEnrichedValue
+                              rawValue={row.value}
+                              locale={locale}
+                              active={isBirthField(row.field)}
+                            >
+                              {row.value}
+                            </AgeEnrichedValue>
                           </PhoneEnrichedValue>
                         </TableCell>
                       </TableRow>
