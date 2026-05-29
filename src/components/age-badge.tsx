@@ -9,10 +9,7 @@ type AgeBadgeProps = {
 
 export function AgeBadge({ age, locale }: AgeBadgeProps) {
   return (
-    <Badge
-      variant="default"
-      className="font-sans bg-amber-600 text-white hover:bg-amber-600/90 dark:bg-amber-500 dark:hover:bg-amber-500/90"
-    >
+    <Badge variant="secondary" className="font-sans">
       {t(locale, "ageYearsOld", { age: String(age) })}
     </Badge>
   );
