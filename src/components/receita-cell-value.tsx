@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { DddEnrichedValue } from "@/components/ddd-enriched-value";
@@ -115,7 +116,9 @@ export function ReceitaCellValue({
           locale={locale}
           active={isReceitaDddField(fieldPath)}
         >
-          {content}
+          <AgeEnrichedValue rawValue={value} locale={locale} active>
+            {content}
+          </AgeEnrichedValue>
         </DddEnrichedValue>
       </CepEnrichedValue>
     </PhoneEnrichedValue>
