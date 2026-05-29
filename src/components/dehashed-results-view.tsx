@@ -4,8 +4,10 @@ import { Link } from "next-view-transitions";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppFrame } from "@/components/app-frame";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
+import { IpEnrichedValue } from "@/components/ip-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isBirthField } from "@/lib/age/is-birth-field";
+import { isDehashedIpField } from "@/lib/ip/parse-ip";
 import { AppHeaderActions } from "@/components/app-header-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -161,15 +163,21 @@ function DehashedOkResults({
                           {row.field}
                         </TableCell>
                         <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
-                          <PhoneEnrichedValue rawValue={row.value} locale={locale}>
-                            <AgeEnrichedValue
-                              rawValue={row.value}
-                              locale={locale}
-                              active={isBirthField(row.field)}
-                            >
-                              {row.value}
-                            </AgeEnrichedValue>
-                          </PhoneEnrichedValue>
+                          <IpEnrichedValue
+                            rawValue={row.value}
+                            locale={locale}
+                            active={isDehashedIpField(row.field)}
+                          >
+                            <PhoneEnrichedValue rawValue={row.value} locale={locale}>
+                              <AgeEnrichedValue
+                                rawValue={row.value}
+                                locale={locale}
+                                active={isBirthField(row.field)}
+                              >
+                                {row.value}
+                              </AgeEnrichedValue>
+                            </PhoneEnrichedValue>
+                          </IpEnrichedValue>
                         </TableCell>
                       </TableRow>
                     ))}
