@@ -83,7 +83,8 @@ export function CnaeActivityBadge({ cnaeDigits, locale }: CnaeActivityBadgeProps
   }
 
   const { data } = fetchState;
-  const compactLabel = data.descricaoFormatted;
+  const activityLabel = data.descricaoFormatted;
+  const badgeLabel = t(locale, "cnaeActivityBadge");
 
   return (
     <Popover>
@@ -93,13 +94,16 @@ export function CnaeActivityBadge({ cnaeDigits, locale }: CnaeActivityBadgeProps
         delay={0}
         closeDelay={isDesktop ? 100 : 0}
         className="cursor-pointer rounded-4xl focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        aria-label={t(locale, "cnaeActivityAria")}
+        aria-label={t(locale, "cnaeActivityAria", {
+          code: cnaeDigits,
+          descricao: activityLabel,
+        })}
       >
         <Badge
           variant="default"
-          className="max-w-[min(18rem,75vw)] truncate font-sans bg-violet-600 text-white hover:bg-violet-600/90 dark:bg-violet-500 dark:hover:bg-violet-500/90"
+          className="shrink-0 font-sans bg-violet-600 text-white hover:bg-violet-600/90 dark:bg-violet-500 dark:hover:bg-violet-500/90"
         >
-          {compactLabel}
+          {badgeLabel}
         </Badge>
       </PopoverTrigger>
       <PopoverContent
@@ -111,7 +115,7 @@ export function CnaeActivityBadge({ cnaeDigits, locale }: CnaeActivityBadgeProps
         <p className="mb-2 text-xs font-medium text-muted-foreground">
           {t(locale, "cnaeActivityHeading", { code: cnaeDigits })}
         </p>
-        <p className="text-sm leading-snug">{compactLabel}</p>
+        <p className="text-sm leading-snug">{activityLabel}</p>
         {data.classe ? (
           <p className="mt-2 text-xs text-muted-foreground">
             {t(locale, "cnaeClassLabel", {
