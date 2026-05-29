@@ -3,8 +3,10 @@
 import type { ReactNode } from "react";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
+import { DddEnrichedValue } from "@/components/ddd-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isReceitaCepField } from "@/lib/receita/is-cep-field";
+import { isReceitaDddField } from "@/lib/receita/is-ddd-field";
 import type { Locale } from "@/lib/brcode/labels";
 import {
   extractTrailingCpfFromText,
@@ -104,7 +106,13 @@ export function ReceitaCellValue({
         locale={locale}
         active={isReceitaCepField(fieldPath)}
       >
-        {content}
+        <DddEnrichedValue
+          rawValue={value}
+          locale={locale}
+          active={isReceitaDddField(fieldPath)}
+        >
+          {content}
+        </DddEnrichedValue>
       </CepEnrichedValue>
     </PhoneEnrichedValue>
   );
