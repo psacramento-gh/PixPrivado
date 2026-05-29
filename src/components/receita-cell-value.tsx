@@ -2,11 +2,13 @@
 
 import type { ReactNode } from "react";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
+import { CnaeEnrichedValue } from "@/components/cnae-enriched-value";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { DddEnrichedValue } from "@/components/ddd-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isReceitaCepField } from "@/lib/receita/is-cep-field";
+import { isReceitaCnaeField } from "@/lib/receita/is-cnae-field";
 import { isReceitaDddField } from "@/lib/receita/is-ddd-field";
 import type { Locale } from "@/lib/brcode/labels";
 import {
@@ -106,21 +108,27 @@ export function ReceitaCellValue({
 
   return (
     <PhoneEnrichedValue rawValue={value} locale={locale}>
-      <CepEnrichedValue
+      <CnaeEnrichedValue
         rawValue={value}
         locale={locale}
-        active={isReceitaCepField(fieldPath)}
+        active={isReceitaCnaeField(fieldPath)}
       >
-        <DddEnrichedValue
+        <CepEnrichedValue
           rawValue={value}
           locale={locale}
-          active={isReceitaDddField(fieldPath)}
+          active={isReceitaCepField(fieldPath)}
         >
-          <AgeEnrichedValue rawValue={value} locale={locale} active>
-            {content}
-          </AgeEnrichedValue>
-        </DddEnrichedValue>
-      </CepEnrichedValue>
+          <DddEnrichedValue
+            rawValue={value}
+            locale={locale}
+            active={isReceitaDddField(fieldPath)}
+          >
+            <AgeEnrichedValue rawValue={value} locale={locale} active>
+              {content}
+            </AgeEnrichedValue>
+          </DddEnrichedValue>
+        </CepEnrichedValue>
+      </CnaeEnrichedValue>
     </PhoneEnrichedValue>
   );
 }
