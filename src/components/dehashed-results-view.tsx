@@ -7,7 +7,7 @@ import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { IpEnrichedValue } from "@/components/ip-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isBirthField } from "@/lib/age/is-birth-field";
-import { isDehashedIpField } from "@/lib/ip/parse-ip";
+import { isDehashedIpField, isDehashedPhoneField } from "@/lib/ip/parse-ip";
 import { AppHeaderActions } from "@/components/app-header-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -168,7 +168,11 @@ function DehashedOkResults({
                             locale={locale}
                             active={isDehashedIpField(row.field)}
                           >
-                            <PhoneEnrichedValue rawValue={row.value} locale={locale}>
+                            <PhoneEnrichedValue
+                              rawValue={row.value}
+                              locale={locale}
+                              active={isDehashedPhoneField(row.field)}
+                            >
                               <AgeEnrichedValue
                                 rawValue={row.value}
                                 locale={locale}

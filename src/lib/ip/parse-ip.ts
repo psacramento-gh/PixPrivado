@@ -96,6 +96,14 @@ export function parseIpAddressesFromValue(rawValue: string): string[] {
   return result;
 }
 
+export function isDehashedPhoneField(field: string): boolean {
+  const normalized = field.toLowerCase().replace(/-/g, "_");
+  if (normalized === "phone" || normalized === "phones") {
+    return true;
+  }
+  return normalized.endsWith("_phone") && !normalized.includes("iphone");
+}
+
 export function isDehashedIpField(field: string): boolean {
   const normalized = field.toLowerCase().replace(/-/g, "_");
   if (
