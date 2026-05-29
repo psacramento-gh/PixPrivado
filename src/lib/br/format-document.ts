@@ -59,3 +59,12 @@ export function isReceitaCnpjField(fieldPath: string): boolean {
 export function isReceitaRazaoSocialField(fieldPath: string): boolean {
   return fieldPath === "razao_social" || fieldPath.endsWith(".razao_social");
 }
+
+export function isReceitaNomeSocioField(fieldPath: string): boolean {
+  return fieldPath === "nome_socio" || fieldPath.endsWith(".nome_socio");
+}
+
+/** Person or company names that should link to a Dehashed name search. */
+export function isReceitaDehashedNameField(fieldPath: string): boolean {
+  return isReceitaRazaoSocialField(fieldPath) || isReceitaNomeSocioField(fieldPath);
+}
