@@ -1,3 +1,5 @@
+import { parseIpAddress } from "@/lib/ip/parse-ip";
+
 export type PixKeyKind = "email" | "phone" | "cpf" | "cnpj" | "evp" | "unsupported";
 
 const EVP_UUID =
@@ -10,6 +12,8 @@ function digitsOnly(value: string): string {
 export function classifyPixKey(raw: string): PixKeyKind {
   const trimmed = raw.trim();
   if (!trimmed) return "unsupported";
+
+  if (parseIpAddress(trimmed)) return "unsupported";
 
   if (EVP_UUID.test(trimmed)) return "evp";
 

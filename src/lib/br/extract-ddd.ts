@@ -1,3 +1,5 @@
+import { parseIpAddress } from "@/lib/ip/parse-ip";
+
 function digitsOnly(value: string): string {
   return value.replace(/\D/g, "");
 }
@@ -5,6 +7,8 @@ function digitsOnly(value: string): string {
 /** True when the value looks like a Brazilian number (country 55 or local 10–11 digits). */
 export function isBrazilianPhoneNumber(raw: string): boolean {
   const trimmed = raw.trim();
+  if (parseIpAddress(trimmed)) return false;
+
   const digits = digitsOnly(trimmed);
 
   if (trimmed.startsWith("+55") || trimmed.startsWith("55 ")) return true;

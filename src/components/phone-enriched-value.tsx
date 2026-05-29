@@ -5,10 +5,13 @@ import { PhoneDddBadges } from "@/components/phone-ddd-badges";
 import { extractDddFromPhone } from "@/lib/br/extract-ddd";
 import type { Locale } from "@/lib/brcode/labels";
 import { classifyPixKey } from "@/lib/dehashed/classify-pix-key";
+import { parseIpAddress } from "@/lib/ip/parse-ip";
 
 type PhoneEnrichedValueProps = {
   rawValue: string;
   locale: Locale;
+  /** When false, never attach DDD badges (e.g. ip_address rows). Default true. */
+  active?: boolean;
   children: ReactNode;
 };
 
@@ -16,8 +19,13 @@ type PhoneEnrichedValueProps = {
 export function PhoneEnrichedValue({
   rawValue,
   locale,
+  active = true,
   children,
 }: PhoneEnrichedValueProps) {
+  if (!active || parseIpAddress(rawValue.trim())) {
+    return <>{children}</>;
+  }
+
   const kind = classifyPixKey(rawValue);
   const ddd = kind === "phone" ? extractDddFromPhone(rawValue) : null;
 

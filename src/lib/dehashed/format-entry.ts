@@ -15,6 +15,7 @@ const DISPLAY_FIELDS = [
   "name",
   "phone",
   "ip_address",
+  "ip_addresses",
   "address",
   "company",
   "url",
