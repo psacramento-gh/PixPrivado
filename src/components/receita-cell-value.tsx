@@ -12,7 +12,7 @@ import {
   extractTrailingCpfFromText,
   formatCnpj,
   isReceitaCnpjField,
-  isReceitaRazaoSocialField,
+  isReceitaDehashedNameField,
 } from "@/lib/br/format-document";
 import {
   buildBreachLookupQuery,
@@ -27,6 +27,50 @@ type ReceitaCellValueProps = {
   /** Current Receita results URL — forwarded as `back` on breach search links. */
   breachReturnTo: string;
 };
+
+function renderDehashedNameValue(value: string, breachReturnTo: string): ReactNode {
+  const embedded = extractTrailingCpfFromText(value);
+  if (embedded) {
+    const nameQuery = buildNameBreachLookupQuery(embedded.namePart);
+    const cpfQuery = buildCpfBreachLookupQuery(embedded.cpfDigits);
+    return (
+      <>
+        {nameQuery ? (
+          <DehashedValueLink
+            displayValue={embedded.namePart}
+            query={nameQuery}
+            returnTo={breachReturnTo}
+          />
+        ) : (
+          embedded.namePart
+        )}
+        {cpfQuery ? (
+          <>
+            {" "}
+            <DehashedValueLink
+              displayValue={embedded.cpfFormatted}
+              query={cpfQuery}
+              returnTo={breachReturnTo}
+            />
+          </>
+        ) : (
+          <> {embedded.cpfFormatted}</>
+        )}
+      </>
+    );
+  }
+
+  const nameQuery = buildNameBreachLookupQuery(value);
+  return nameQuery ? (
+    <DehashedValueLink
+      displayValue={value}
+      query={nameQuery}
+      returnTo={breachReturnTo}
+    />
+  ) : (
+    <>{value}</>
+  );
+}
 
 export function ReceitaCellValue({
   fieldPath,
@@ -43,48 +87,8 @@ export function ReceitaCellValue({
     } else {
       content = <>{value}</>;
     }
-  } else if (isReceitaRazaoSocialField(fieldPath)) {
-    const embedded = extractTrailingCpfFromText(value);
-    if (embedded) {
-      const nameQuery = buildNameBreachLookupQuery(embedded.namePart);
-      const cpfQuery = buildCpfBreachLookupQuery(embedded.cpfDigits);
-      content = (
-        <>
-          {nameQuery ? (
-            <DehashedValueLink
-              displayValue={embedded.namePart}
-              query={nameQuery}
-              returnTo={breachReturnTo}
-            />
-          ) : (
-            embedded.namePart
-          )}
-          {cpfQuery ? (
-            <>
-              {" "}
-              <DehashedValueLink
-                displayValue={embedded.cpfFormatted}
-                query={cpfQuery}
-                returnTo={breachReturnTo}
-              />
-            </>
-          ) : (
-            <> {embedded.cpfFormatted}</>
-          )}
-        </>
-      );
-    } else {
-      const nameQuery = buildNameBreachLookupQuery(value);
-      content = nameQuery ? (
-        <DehashedValueLink
-          displayValue={value}
-          query={nameQuery}
-          returnTo={breachReturnTo}
-        />
-      ) : (
-        <>{value}</>
-      );
-    }
+  } else if (isReceitaDehashedNameField(fieldPath)) {
+    content = renderDehashedNameValue(value, breachReturnTo);
   } else {
     const breachQuery = buildBreachLookupQuery(value);
     content =
