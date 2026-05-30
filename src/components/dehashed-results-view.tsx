@@ -23,6 +23,7 @@ import type { Locale } from "@/lib/brcode/labels";
 import type { DehashedSearchResult } from "@/lib/dehashed/api-search";
 import { DEHASHED_PAGE_SIZE } from "@/lib/dehashed/constants";
 import { entryRows } from "@/lib/dehashed/format-entry";
+import { getDehashedPaginationMeta } from "@/lib/dehashed/pagination";
 import {
   buildDehashedResultsPageUrl,
   isReceitaResultsReturnPath,
@@ -46,19 +47,23 @@ function DehashedPagination({
   locale,
   query,
   page,
+  hasPrevious,
+  hasNext,
   totalPages,
   returnTo,
 }: {
   locale: Locale;
   query: string;
   page: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
   totalPages: number;
   returnTo?: string | null;
 }) {
-  if (totalPages <= 1) return null;
+  if (!hasPrevious && !hasNext) return null;
 
-  const prevPage = page > 1 ? page - 1 : null;
-  const nextPage = page < totalPages ? page + 1 : null;
+  const prevPage = hasPrevious ? page - 1 : null;
+  const nextPage = hasNext ? page + 1 : null;
 
   return (
     <nav
@@ -110,18 +115,35 @@ function DehashedOkResults({
 }) {
   const currentPage = result.page;
   const pageSize = result.pageSize ?? DEHASHED_PAGE_SIZE;
-  const totalPages = Math.max(1, Math.ceil(result.total / pageSize));
   const entryOffset = (currentPage - 1) * pageSize;
+  const pagination = getDehashedPaginationMeta(
+    currentPage,
+    pageSize,
+    result.total,
+    result.entries.length,
+    entryOffset,
+  );
+
+  const showingText =
+    result.total === 0
+      ? t(locale, "dehashedNoEntries")
+      : result.entries.length === 0
+        ? t(locale, "dehashedNoEntries")
+        : pagination.rangeFrom === pagination.rangeTo
+          ? t(locale, "dehashedShowing", {
+              shown: String(pagination.rangeFrom),
+              total: String(result.total),
+            })
+          : t(locale, "dehashedShowingRange", {
+              from: String(pagination.rangeFrom),
+              to: String(pagination.rangeTo),
+              total: String(result.total),
+            });
 
   return (
     <>
       <p className="text-sm text-muted-foreground">
-        {result.total === 0
-          ? t(locale, "dehashedNoEntries")
-          : t(locale, "dehashedShowing", {
-              shown: String(result.entries.length),
-              total: String(result.total),
-            })}
+        {showingText}
         {result.balance !== undefined
           ? ` ${t(locale, "dehashedBalance", { balance: String(result.balance) })}`
           : null}
@@ -130,7 +152,9 @@ function DehashedOkResults({
         locale={locale}
         query={query}
         page={currentPage}
-        totalPages={totalPages}
+        hasPrevious={pagination.hasPrevious}
+        hasNext={pagination.hasNext}
+        totalPages={pagination.totalPages}
         returnTo={returnTo}
       />
       {result.entries.length > 0 ? (
@@ -192,13 +216,17 @@ function DehashedOkResults({
           })}
         </div>
       ) : null}
-      <DehashedPagination
-        locale={locale}
-        query={query}
-        page={currentPage}
-        totalPages={totalPages}
-        returnTo={returnTo}
-      />
+      {result.entries.length > 0 ? (
+        <DehashedPagination
+          locale={locale}
+          query={query}
+          page={currentPage}
+          hasPrevious={pagination.hasPrevious}
+          hasNext={pagination.hasNext}
+          totalPages={pagination.totalPages}
+          returnTo={returnTo}
+        />
+      ) : null}
     </>
   );
 }

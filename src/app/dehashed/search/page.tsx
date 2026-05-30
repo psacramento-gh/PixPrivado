@@ -1,7 +1,13 @@
+import { redirect } from "next/navigation";
 import { DehashedResultsView } from "@/components/dehashed-results-view";
 import { ReceitaFederalResultsView } from "@/components/receita-federal-results-view";
 import { searchDehashed } from "@/lib/dehashed/api-search";
-import { sanitizeSearchReturnPath } from "@/lib/dehashed/results-url";
+import { dehashedPageExceedsTotal, dehashedTotalPages } from "@/lib/dehashed/pagination";
+import {
+  buildDehashedResultsPageUrl,
+  sanitizeSearchReturnPath,
+} from "@/lib/dehashed/results-url";
+import { DEHASHED_PAGE_SIZE } from "@/lib/dehashed/constants";
 import { fetchReceitaFederal } from "@/lib/receita/api-fetch";
 import { isCnpjSearchQuery } from "@/lib/receita/is-cnpj-query";
 
@@ -35,6 +41,17 @@ export default async function DehashedSearchPage({
   }
 
   const result = await searchDehashed(query, { page });
+
+  if (
+    result.ok &&
+    dehashedPageExceedsTotal(page, result.total, result.pageSize ?? DEHASHED_PAGE_SIZE)
+  ) {
+    redirect(
+      buildDehashedResultsPageUrl(query, Math.max(1, Math.ceil(result.total / DEHASHED_PAGE_SIZE)), {
+        returnTo: backHref === "/" ? null : backHref,
+      }),
+    );
+  }
 
   return (
     <DehashedResultsView query={query} result={result} backHref={backHref} />
