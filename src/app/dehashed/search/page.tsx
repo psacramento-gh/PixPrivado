@@ -47,9 +47,11 @@ export default async function DehashedSearchPage({
     dehashedPageExceedsTotal(page, result.total, result.pageSize ?? DEHASHED_PAGE_SIZE)
   ) {
     redirect(
-      buildDehashedResultsPageUrl(query, Math.max(1, Math.ceil(result.total / DEHASHED_PAGE_SIZE)), {
-        returnTo: backHref === "/" ? null : backHref,
-      }),
+      buildDehashedResultsPageUrl(
+        query,
+        dehashedTotalPages(result.total, result.pageSize ?? DEHASHED_PAGE_SIZE),
+        { returnTo: backHref === "/" ? null : backHref },
+      ),
     );
   }
 
