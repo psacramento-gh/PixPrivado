@@ -5,11 +5,9 @@ import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { CnaeEnrichedValue } from "@/components/cnae-enriched-value";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
-import { DddEnrichedValue } from "@/components/ddd-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isReceitaCepField } from "@/lib/receita/is-cep-field";
 import { isReceitaCnaeField } from "@/lib/receita/is-cnae-field";
-import { isReceitaDddField } from "@/lib/receita/is-ddd-field";
 import type { Locale } from "@/lib/brcode/labels";
 import {
   extractTrailingCpfFromText,
@@ -22,6 +20,13 @@ import {
   buildCpfBreachLookupQuery,
   buildNameBreachLookupQuery,
 } from "@/lib/receita/breach-link";
+import {
+  buildReceitaTelefoneBreachRaw,
+  decodeReceitaTelefoneValue,
+  formatReceitaTelefoneDisplay,
+  formatReceitaTelefonePartialDisplay,
+  isReceitaTelefoneRowField,
+} from "@/lib/receita/telefone-row";
 
 type ReceitaCellValueProps = {
   fieldPath: string;
@@ -30,6 +35,24 @@ type ReceitaCellValueProps = {
   /** Current Receita results URL — forwarded as `back` on breach search links. */
   breachReturnTo: string;
 };
+
+function renderReceitaTelefoneValue(encoded: string, breachReturnTo: string): ReactNode {
+  const { ddd, numero } = decodeReceitaTelefoneValue(encoded);
+  const display = formatReceitaTelefoneDisplay(ddd, numero);
+  if (!display) {
+    return <>{formatReceitaTelefonePartialDisplay(ddd, numero) || encoded}</>;
+  }
+
+  const breachRaw = buildReceitaTelefoneBreachRaw(ddd, numero);
+  const breachQuery = breachRaw ? buildBreachLookupQuery(breachRaw) : null;
+  if (!breachQuery) {
+    return <>{display}</>;
+  }
+
+  return (
+    <DehashedValueLink displayValue={display} query={breachQuery} returnTo={breachReturnTo} />
+  );
+}
 
 function renderDehashedNameValue(value: string, breachReturnTo: string): ReactNode {
   const embedded = extractTrailingCpfFromText(value);
@@ -82,8 +105,16 @@ export function ReceitaCellValue({
   breachReturnTo,
 }: ReceitaCellValueProps) {
   let content: ReactNode;
+  let phoneEnrichmentRaw = value;
+  let phoneEnrichmentActive = true;
 
-  if (isReceitaCnpjField(fieldPath)) {
+  if (isReceitaTelefoneRowField(fieldPath)) {
+    const { ddd, numero } = decodeReceitaTelefoneValue(value);
+    content = renderReceitaTelefoneValue(value, breachReturnTo);
+    const breachRaw = buildReceitaTelefoneBreachRaw(ddd, numero);
+    phoneEnrichmentRaw = breachRaw ?? value;
+    phoneEnrichmentActive = breachRaw !== null;
+  } else if (isReceitaCnpjField(fieldPath)) {
     const digits = value.replace(/\D/g, "");
     if (digits.length === 14) {
       content = <>{formatCnpj(digits)}</>;
@@ -107,7 +138,11 @@ export function ReceitaCellValue({
   }
 
   return (
-    <PhoneEnrichedValue rawValue={value} locale={locale}>
+    <PhoneEnrichedValue
+      rawValue={phoneEnrichmentRaw}
+      locale={locale}
+      active={phoneEnrichmentActive}
+    >
       <CnaeEnrichedValue
         rawValue={value}
         locale={locale}
@@ -118,15 +153,9 @@ export function ReceitaCellValue({
           locale={locale}
           active={isReceitaCepField(fieldPath)}
         >
-          <DddEnrichedValue
-            rawValue={value}
-            locale={locale}
-            active={isReceitaDddField(fieldPath)}
-          >
-            <AgeEnrichedValue rawValue={value} locale={locale} active>
-              {content}
-            </AgeEnrichedValue>
-          </DddEnrichedValue>
+          <AgeEnrichedValue rawValue={value} locale={locale} active>
+            {content}
+          </AgeEnrichedValue>
         </CepEnrichedValue>
       </CnaeEnrichedValue>
     </PhoneEnrichedValue>
