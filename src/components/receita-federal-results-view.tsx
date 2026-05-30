@@ -20,6 +20,7 @@ import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
 import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
 import { receitaFieldLabel } from "@/lib/receita/field-label";
 import { flattenPayload } from "@/lib/receita/flatten-payload";
+import { mergeReceitaTelefoneRows } from "@/lib/receita/merge-telefone-rows";
 import { cn } from "@/lib/utils";
 import { useAppLocale } from "@/lib/use-app-locale";
 
@@ -37,7 +38,7 @@ function ReceitaDataTable({
   data: Record<string, unknown>;
   breachReturnTo: string;
 }) {
-  const rows = flattenPayload(data);
+  const rows = mergeReceitaTelefoneRows(flattenPayload(data));
 
   return (
     <Table className="table-fixed w-full">
