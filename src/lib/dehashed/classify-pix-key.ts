@@ -9,6 +9,11 @@ function digitsOnly(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+/** Dotted/colon IP literals and CIDR — not bare digit-only strings (CPF/CNPJ). */
+function looksLikeIpNotation(value: string): boolean {
+  return /[.:]/.test(value) || value.startsWith("[") || value.includes("%");
+}
+
 export function classifyPixKey(raw: string): PixKeyKind {
   const trimmed = raw.trim();
   if (!trimmed) return "unsupported";
@@ -20,6 +25,10 @@ export function classifyPixKey(raw: string): PixKeyKind {
     if (parts.length === 2 && parts[0] && parts[1]?.includes(".")) {
       return "email";
     }
+    return "unsupported";
+  }
+
+  if (looksLikeIpNotation(trimmed) && parseIpAddress(trimmed)) {
     return "unsupported";
   }
 
