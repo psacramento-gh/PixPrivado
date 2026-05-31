@@ -3,9 +3,11 @@
 import type { ReactNode } from "react";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { CnaeEnrichedValue } from "@/components/cnae-enriched-value";
+import { CpfSocioEnrichedValue } from "@/components/cpf-socio-enriched-value";
 import { DehashedValueLink } from "@/components/dehashed-value-link";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
+import { isReceitaCnpjCpfSocioField } from "@/lib/br/cpf-candidates";
 import { isReceitaCepField } from "@/lib/receita/is-cep-field";
 import { isReceitaCnaeField } from "@/lib/receita/is-cnae-field";
 import type { Locale } from "@/lib/brcode/labels";
@@ -121,6 +123,13 @@ export function ReceitaCellValue({
     } else {
       content = <>{value}</>;
     }
+  } else if (isReceitaCnpjCpfSocioField(fieldPath)) {
+    const digits = value.replace(/\D/g, "");
+    if (digits.length === 14) {
+      content = <>{formatCnpj(digits)}</>;
+    } else {
+      content = <>{value}</>;
+    }
   } else if (isReceitaDehashedNameField(fieldPath)) {
     content = renderDehashedNameValue(value, breachReturnTo);
   } else {
@@ -153,9 +162,15 @@ export function ReceitaCellValue({
           locale={locale}
           active={isReceitaCepField(fieldPath)}
         >
-          <AgeEnrichedValue rawValue={value} locale={locale} active>
-            {content}
-          </AgeEnrichedValue>
+          <CpfSocioEnrichedValue
+            rawValue={value}
+            locale={locale}
+            active={isReceitaCnpjCpfSocioField(fieldPath)}
+          >
+            <AgeEnrichedValue rawValue={value} locale={locale} active>
+              {content}
+            </AgeEnrichedValue>
+          </CpfSocioEnrichedValue>
         </CepEnrichedValue>
       </CnaeEnrichedValue>
     </PhoneEnrichedValue>
