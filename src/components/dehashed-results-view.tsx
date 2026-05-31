@@ -4,6 +4,7 @@ import { Link } from "next-view-transitions";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppFrame } from "@/components/app-frame";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
+import { DehashedFieldLabel } from "@/components/dehashed-field-label";
 import { IpEnrichedValue } from "@/components/ip-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isBirthField } from "@/lib/age/is-birth-field";
@@ -184,7 +185,7 @@ function DehashedOkResults({
                     {rows.map((row) => (
                       <TableRow key={row.field}>
                         <TableCell className="w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal text-muted-foreground sm:max-w-none sm:w-[38%] sm:text-sm">
-                          {row.field}
+                          <DehashedFieldLabel field={row.field} locale={locale} />
                         </TableCell>
                         <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
                           <IpEnrichedValue
