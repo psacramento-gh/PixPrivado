@@ -13,8 +13,6 @@ export function classifyPixKey(raw: string): PixKeyKind {
   const trimmed = raw.trim();
   if (!trimmed) return "unsupported";
 
-  if (parseIpAddress(trimmed)) return "unsupported";
-
   if (EVP_UUID.test(trimmed)) return "evp";
 
   if (trimmed.includes("@")) {
@@ -28,6 +26,8 @@ export function classifyPixKey(raw: string): PixKeyKind {
   const digits = digitsOnly(trimmed);
   if (digits.length === 11) return "cpf";
   if (digits.length === 14) return "cnpj";
+
+  if (parseIpAddress(trimmed)) return "unsupported";
 
   if (/^\+?\d[\d\s().-]{8,}$/.test(trimmed)) {
     const phoneDigits = digitsOnly(trimmed);
