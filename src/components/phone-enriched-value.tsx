@@ -2,7 +2,9 @@
 
 import type { ReactNode } from "react";
 import { PhoneDddBadges } from "@/components/phone-ddd-badges";
+import { WhatsAppIconLink } from "@/components/whatsapp-icon-link";
 import { extractDddFromPhone } from "@/lib/br/extract-ddd";
+import { getWhatsAppLinksFromValue } from "@/lib/br/whatsapp-link";
 import type { Locale } from "@/lib/brcode/labels";
 import { classifyPixKey } from "@/lib/dehashed/classify-pix-key";
 import { parseIpAddress } from "@/lib/ip/parse-ip";
@@ -27,16 +29,26 @@ export function PhoneEnrichedValue({
   }
 
   const kind = classifyPixKey(rawValue);
+  const whatsappLinks =
+    kind === "cpf" || kind === "cnpj" ? [] : getWhatsAppLinksFromValue(rawValue);
   const ddd = kind === "phone" ? extractDddFromPhone(rawValue) : null;
 
-  if (ddd === null) {
+  if (whatsappLinks.length === 0 && ddd === null) {
     return <>{children}</>;
   }
 
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
       {children}
-      <PhoneDddBadges key={ddd} ddd={ddd} locale={locale} />
+      {whatsappLinks.map((link) => (
+        <WhatsAppIconLink
+          key={link.e164}
+          url={link.url}
+          phoneLabel={link.display}
+          locale={locale}
+        />
+      ))}
+      {ddd !== null ? <PhoneDddBadges key={ddd} ddd={ddd} locale={locale} /> : null}
     </span>
   );
 }
