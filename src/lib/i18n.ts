@@ -133,6 +133,7 @@ export const messages = {
     cpfCandidatesCopyHint: "Click to copy",
     cpfCandidatesCopied: "Copied",
     ageYearsOld: "{age} years old",
+    birthFieldTooltip: "Date of birth",
     about: "About",
   },
   pt: {
@@ -270,6 +271,7 @@ export const messages = {
     cpfCandidatesCopyHint: "Clique para copiar",
     cpfCandidatesCopied: "Copiado",
     ageYearsOld: "{age} anos",
+    birthFieldTooltip: "Data de nascimento",
     about: "Sobre",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
