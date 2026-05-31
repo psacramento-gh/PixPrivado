@@ -45,6 +45,10 @@ export function AgeEnrichedValue({
   active,
   children,
 }: AgeEnrichedValueProps) {
+  if (!active) {
+    return <>{children}</>;
+  }
+
   const isoSegments = isoDateSegmentsFromValue(rawValue);
   if (isoSegments.length === 0) {
     return <>{children}</>;
