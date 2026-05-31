@@ -10,6 +10,7 @@ import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isReceitaCnpjCpfSocioField } from "@/lib/br/cpf-candidates";
 import { isReceitaCepField } from "@/lib/receita/is-cep-field";
 import { isReceitaCnaeField } from "@/lib/receita/is-cnae-field";
+import { isReceitaDateField } from "@/lib/receita/is-date-field";
 import type { Locale } from "@/lib/brcode/labels";
 import {
   extractTrailingCpfFromText,
@@ -167,7 +168,11 @@ export function ReceitaCellValue({
             locale={locale}
             active={isReceitaCnpjCpfSocioField(fieldPath)}
           >
-            <AgeEnrichedValue rawValue={value} locale={locale} active>
+            <AgeEnrichedValue
+              rawValue={value}
+              locale={locale}
+              active={isReceitaDateField(fieldPath)}
+            >
               {content}
             </AgeEnrichedValue>
           </CpfSocioEnrichedValue>
