@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { QrSourceFileName } from "@/components/qr-source-file-name";
+import type { Locale } from "@/lib/brcode/labels";
 import {
   denormalizeQrCorners,
   type NormalizedQrCorners,
@@ -97,12 +99,16 @@ type QrImagePreviewProps = {
   url: string;
   normalizedCorners: NormalizedQrCorners;
   caption: string;
+  fileName?: string;
+  locale: Locale;
 };
 
 export function QrImagePreview({
   url,
   normalizedCorners,
   caption,
+  fileName,
+  locale,
 }: QrImagePreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -181,8 +187,9 @@ export function QrImagePreview({
 
   return (
     <figure className="flex w-full flex-col gap-2">
-      <figcaption className="text-xs font-medium text-muted-foreground">
-        {caption}
+      <figcaption className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <span className="text-xs font-medium text-muted-foreground">{caption}</span>
+        {fileName ? <QrSourceFileName name={fileName} locale={locale} /> : null}
       </figcaption>
       <div
         ref={containerRef}

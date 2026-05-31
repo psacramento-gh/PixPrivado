@@ -102,6 +102,7 @@ export function DecoderApp() {
   const [decodingPreviewUrl, setDecodingPreviewUrl] = useState<string | null>(
     null,
   );
+  const [decodingFileName, setDecodingFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const isDesktop = useIsDesktop();
@@ -134,6 +135,7 @@ export function DecoderApp() {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+    setDecodingFileName(null);
   }, []);
 
   const beginImageFile = useCallback(
@@ -146,6 +148,7 @@ export function DecoderApp() {
       setError(null);
       clearImageSession();
       clearDecodingPreview();
+      setDecodingFileName(file.name);
       setImagePhase("loading");
       const url = URL.createObjectURL(file);
       setDecodingPreviewUrl(url);
@@ -160,18 +163,21 @@ export function DecoderApp() {
             normalizedCorners: decoded.normalizedCorners,
           });
           setDecodingPreviewUrl(null);
+          setDecodingFileName(null);
           setImageSubmitted(true);
           setImagePhase("done");
           return;
         }
         URL.revokeObjectURL(url);
         setDecodingPreviewUrl(null);
+        setDecodingFileName(null);
         setImageSession(null);
         setImagePhase("none");
         setError(t(locale, "noQrFound"));
       } catch {
         URL.revokeObjectURL(url);
         setDecodingPreviewUrl(null);
+        setDecodingFileName(null);
         setImageSession(null);
         setImagePhase("none");
         setError(t(locale, "noQrFound"));
@@ -402,6 +408,8 @@ export function DecoderApp() {
           <QrDecodeOverlay
             previewUrl={decodingPreviewUrl}
             statusLabel={t(locale, "decodingImage")}
+            fileName={decodingFileName ?? undefined}
+            locale={locale}
           />
         ) : null}
 
@@ -412,6 +420,8 @@ export function DecoderApp() {
               url={imageSession.url}
               normalizedCorners={imageSession.normalizedCorners}
               caption={t(locale, "decodedFromImage")}
+              fileName={imageSession.file.name}
+              locale={locale}
             />
           ) : null}
 

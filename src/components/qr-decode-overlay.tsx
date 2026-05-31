@@ -1,11 +1,21 @@
 "use client";
 
+import { QrSourceFileName } from "@/components/qr-source-file-name";
+import type { Locale } from "@/lib/brcode/labels";
+
 type QrDecodeOverlayProps = {
   previewUrl: string | null;
   statusLabel: string;
+  fileName?: string;
+  locale: Locale;
 };
 
-export function QrDecodeOverlay({ previewUrl, statusLabel }: QrDecodeOverlayProps) {
+export function QrDecodeOverlay({
+  previewUrl,
+  statusLabel,
+  fileName,
+  locale,
+}: QrDecodeOverlayProps) {
   return (
     <div
       className="relative overflow-hidden rounded-lg border bg-muted/30"
@@ -38,9 +48,12 @@ export function QrDecodeOverlay({ previewUrl, statusLabel }: QrDecodeOverlayProp
         <span className="qr-decode-scan-line" />
       </div>
 
-      <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-4 py-3 text-center text-sm text-muted-foreground">
-        {statusLabel}
-      </p>
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-gradient-to-t from-background/90 to-transparent px-4 py-3">
+        {fileName ? (
+          <QrSourceFileName name={fileName} locale={locale} className="pointer-events-auto" />
+        ) : null}
+        <p className="text-center text-sm text-muted-foreground">{statusLabel}</p>
+      </div>
     </div>
   );
 }
