@@ -48,7 +48,6 @@ function CpfHubDataTable({
   const rows: { labelKey: Parameters<typeof t>[1]; value: string; ageActive?: boolean }[] = [
     { labelKey: "cpfhubFieldCpf", value: formatCpf(data.cpf) },
     { labelKey: "cpfhubFieldName", value: data.name },
-    { labelKey: "cpfhubFieldNameUpper", value: data.nameUpper },
     {
       labelKey: "cpfhubFieldGender",
       value: cpfHubGenderLabel(data.gender, locale),

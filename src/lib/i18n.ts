@@ -70,7 +70,6 @@ export const messages = {
       "Vercel → Project → Settings → Environment Variables → CPFHUB_API_KEY → check Preview and Production → Save → Redeploy.",
     cpfhubFieldCpf: "CPF",
     cpfhubFieldName: "Name",
-    cpfhubFieldNameUpper: "Name (uppercase)",
     cpfhubFieldGender: "Gender",
     cpfhubFieldBirthDate: "Date of birth",
     cpfhubFieldDay: "Birth day",
