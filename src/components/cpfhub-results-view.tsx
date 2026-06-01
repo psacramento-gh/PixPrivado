@@ -53,9 +53,6 @@ function CpfHubDataTable({
       value: cpfHubGenderLabel(data.gender, locale),
     },
     { labelKey: "cpfhubFieldBirthDate", value: data.birthDate, ageActive: true },
-    { labelKey: "cpfhubFieldDay", value: String(data.day) },
-    { labelKey: "cpfhubFieldMonth", value: String(data.month) },
-    { labelKey: "cpfhubFieldYear", value: String(data.year) },
   ];
 
   return (
