@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
 import { AboutView } from "@/components/about-view";
+import { aboutMetadata } from "@/lib/app-metadata";
 
-export const metadata: Metadata = {
-  title: "About — PIX QR Decoder",
-  description:
-    "Why the Pix QR Code Decoder exists, what it does, and how to use it responsibly for privacy awareness.",
-};
+export const metadata = aboutMetadata;
 
 export default function AboutPage() {
   return <AboutView />;

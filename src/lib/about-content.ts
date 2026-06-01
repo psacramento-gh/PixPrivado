@@ -40,7 +40,7 @@ const aboutEn: AboutPageContent = {
     },
     {
       kind: "paragraph",
-      text: "The Pix QR Code Decoder was created to make that hidden layer visible. It allows people to inspect Pix QR codes, Copia e Cola payment strings, and related Pix metadata in a readable way. The goal is not only to decode technical data, but to help people understand the privacy and security implications of sharing payment information with others.",
+      text: "Pix Privacy Explorer was created to make that hidden layer visible. It allows people to inspect Pix QR codes, Copia e Cola payment strings, and related Pix metadata in a readable way. The goal is not only to decode technical data, but to help people understand the privacy and security implications of sharing payment information with others.",
     },
   ],
   sections: [
@@ -224,7 +224,7 @@ const aboutPt: AboutPageContent = {
     },
     {
       kind: "paragraph",
-      text: "O Decodificador QR Pix foi criado para tornar essa camada oculta visível. Ele permite inspecionar QR codes Pix, strings Copia e Cola e metadados Pix relacionados de forma legível. O objetivo não é apenas decodificar dados técnicos, mas ajudar as pessoas a entender as implicações de privacidade e segurança de compartilhar informações de pagamento com outras pessoas.",
+      text: "O Pix Privacy Explorer foi criado para tornar essa camada oculta visível. Ele permite inspecionar QR codes Pix, strings Copia e Cola e metadados Pix relacionados de forma legível. O objetivo não é apenas decodificar dados técnicos, mas ajudar as pessoas a entender as implicações de privacidade e segurança de compartilhar informações de pagamento com outras pessoas.",
     },
   ],
   sections: [
