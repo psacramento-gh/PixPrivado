@@ -229,8 +229,6 @@ export const messages = {
     cpfhubDisclaimer:
       "Somente dados cadastrais — não são registros de vazamento ou breach. Use apenas para fins legítimos de verificação.",
     cpfhubRemainingCredits: "Créditos restantes na API CPFHub: {count}.",
-    cpfhubRemainingCreditsUnknown: "Os créditos restantes aparecem no seu",
-    cpfhubDashboardLink: "painel CPFHub",
     cpfhubRateLimit:
       "Aguarde alguns segundos antes de tentar novamente (limite de taxa CPFHub).",
     cpfhubEnvHint:
