@@ -19,7 +19,6 @@ import { formatCpf } from "@/lib/br/format-document";
 import { cpfHubBirthDateToIso } from "@/lib/cpfhub/brazil-birth-date";
 import { cpfHubGenderLabel } from "@/lib/cpfhub/api-fetch";
 import type { CpfHubLookupResult } from "@/lib/cpfhub/types";
-import { CPFHUB_DASHBOARD_URL } from "@/lib/cpfhub/constants";
 import { isReceitaResultsReturnPath } from "@/lib/dehashed/results-url";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -101,25 +100,11 @@ function RemainingCreditsNote({
   locale: Locale;
   remainingCredits: number | null;
 }) {
-  if (remainingCredits !== null) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        {t(locale, "cpfhubRemainingCredits", { count: String(remainingCredits) })}
-      </p>
-    );
-  }
+  if (remainingCredits === null) return null;
 
   return (
     <p className="text-sm text-muted-foreground">
-      {t(locale, "cpfhubRemainingCreditsUnknown")}{" "}
-      <a
-        href={CPFHUB_DASHBOARD_URL}
-        className="underline underline-offset-4 hover:text-foreground"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {t(locale, "cpfhubDashboardLink")}
-      </a>
+      {t(locale, "cpfhubRemainingCredits", { count: String(remainingCredits) })}
     </p>
   );
 }

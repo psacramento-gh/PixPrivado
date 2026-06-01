@@ -65,8 +65,6 @@ export const messages = {
     cpfhubDisclaimer:
       "Identity data only — not breach or leak records. Use only for legitimate verification purposes.",
     cpfhubRemainingCredits: "Remaining CPFHub API credits: {count}.",
-    cpfhubRemainingCreditsUnknown: "Remaining credits are shown in your",
-    cpfhubDashboardLink: "CPFHub dashboard",
     cpfhubRateLimit: "Wait a few seconds before trying again (CPFHub rate limit).",
     cpfhubEnvHint:
       "Vercel → Project → Settings → Environment Variables → CPFHUB_API_KEY → check Preview and Production → Save → Redeploy.",
