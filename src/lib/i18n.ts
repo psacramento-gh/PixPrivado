@@ -234,7 +234,6 @@ export const messages = {
       "Vercel → Projeto → Settings → Environment Variables → CPFHUB_API_KEY → marque Preview e Production → Salvar → Redeploy.",
     cpfhubFieldCpf: "CPF",
     cpfhubFieldName: "Nome",
-    cpfhubFieldNameUpper: "Nome (maiúsculas)",
     cpfhubFieldGender: "Gênero",
     cpfhubFieldBirthDate: "Data de nascimento",
     cpfhubFieldDay: "Dia de nascimento",
