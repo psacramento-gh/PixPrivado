@@ -329,11 +329,11 @@ export function DecoderApp() {
                 }}
               />
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="flex flex-col gap-2">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 gap-1.5"
+                className="w-full gap-1.5"
                 onClick={() => cameraInputRef.current?.click()}
               >
                 <Camera className="size-4 shrink-0" aria-hidden />
@@ -343,7 +343,7 @@ export function DecoderApp() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 gap-1.5"
+                  className="w-full gap-1.5"
                   onClick={async () => {
                     try {
                       const items = await navigator.clipboard.read();
