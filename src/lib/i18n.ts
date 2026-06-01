@@ -55,6 +55,29 @@ export const messages = {
       "Branch URLs like …git-…vercel.app are Preview — the variable must be enabled for Preview, not Production only.",
     dehashedEnvHint:
       "Vercel → Project → Settings → Environment Variables → DEHASHED_API_KEY → check Preview and Production → Save → Redeploy.",
+    cpfhubSubtitle: "CPF identity lookup for a value from your decoded PIX payload.",
+    cpfhubMissingQuery: "Missing CPF query.",
+    cpfhubResults: "CPFHub results",
+    cpfhubAttribution:
+      "Data provided by CPFHub.io (name, gender, and date of birth from public cadastral sources).",
+    cpfhubNotFound:
+      "This CPF was not found in the CPFHub database. This lookup did not use a paid credit.",
+    cpfhubDisclaimer:
+      "Identity data only — not breach or leak records. Use only for legitimate verification purposes.",
+    cpfhubRemainingCredits: "Remaining CPFHub API credits: {count}.",
+    cpfhubRemainingCreditsUnknown: "Remaining credits are shown in your",
+    cpfhubDashboardLink: "CPFHub dashboard",
+    cpfhubRateLimit: "Wait a few seconds before trying again (CPFHub rate limit).",
+    cpfhubEnvHint:
+      "Vercel → Project → Settings → Environment Variables → CPFHUB_API_KEY → check Preview and Production → Save → Redeploy.",
+    cpfhubFieldCpf: "CPF",
+    cpfhubFieldName: "Name",
+    cpfhubFieldNameUpper: "Name (uppercase)",
+    cpfhubFieldGender: "Gender",
+    cpfhubFieldBirthDate: "Date of birth",
+    cpfhubFieldDay: "Birth day",
+    cpfhubFieldMonth: "Birth month",
+    cpfhubFieldYear: "Birth year",
     receitaDisclaimer:
       "Public cadastral data from the Receita Federal dataset (via OpenCNPJ). This is not breach or leak data.",
     receitaNotFound: "Not found in Receita dataset.",
@@ -197,6 +220,31 @@ export const messages = {
       "URLs de branch como …git-…vercel.app são Preview — a variável precisa estar habilitada em Preview, não só em Production.",
     dehashedEnvHint:
       "Vercel → Projeto → Settings → Environment Variables → DEHASHED_API_KEY → marque Preview e Production → Salvar → Redeploy.",
+    cpfhubSubtitle:
+      "Consulta cadastral de CPF para um valor do payload PIX decodificado.",
+    cpfhubMissingQuery: "Consulta de CPF ausente.",
+    cpfhubResults: "Resultados CPFHub",
+    cpfhubAttribution:
+      "Dados fornecidos por CPFHub.io (nome, gênero e data de nascimento de fontes cadastrais públicas).",
+    cpfhubNotFound:
+      "Este CPF não foi encontrado na base CPFHub. Esta consulta não consumiu crédito pago.",
+    cpfhubDisclaimer:
+      "Somente dados cadastrais — não são registros de vazamento ou breach. Use apenas para fins legítimos de verificação.",
+    cpfhubRemainingCredits: "Créditos restantes na API CPFHub: {count}.",
+    cpfhubRemainingCreditsUnknown: "Os créditos restantes aparecem no seu",
+    cpfhubDashboardLink: "painel CPFHub",
+    cpfhubRateLimit:
+      "Aguarde alguns segundos antes de tentar novamente (limite de taxa CPFHub).",
+    cpfhubEnvHint:
+      "Vercel → Projeto → Settings → Environment Variables → CPFHUB_API_KEY → marque Preview e Production → Salvar → Redeploy.",
+    cpfhubFieldCpf: "CPF",
+    cpfhubFieldName: "Nome",
+    cpfhubFieldNameUpper: "Nome (maiúsculas)",
+    cpfhubFieldGender: "Gênero",
+    cpfhubFieldBirthDate: "Data de nascimento",
+    cpfhubFieldDay: "Dia de nascimento",
+    cpfhubFieldMonth: "Mês de nascimento",
+    cpfhubFieldYear: "Ano de nascimento",
     receitaDisclaimer:
       "Dados cadastrais públicos do dataset Receita Federal (via OpenCNPJ). Não são dados de vazamento ou breach.",
     receitaNotFound: "Não encontrado no dataset Receita.",

@@ -132,7 +132,6 @@ export function isAllowedDehashedQuery(query: string): boolean {
   if (/^phone:\+?\d{10,15}$/.test(query)) return true;
   if (/^name:"[^"]{1,500}"$/.test(query)) return true;
   if (/^name:[^\s"\\]{2,200}$/.test(query) && isAllowedNameToken(query.slice(5))) return true;
-  if (/^\d{11}$/.test(query)) return true;
   if (/^\d{14}$/.test(query)) return true;
   if (isAllowedAllFieldsPhraseQuery(query)) return true;
   return false;
