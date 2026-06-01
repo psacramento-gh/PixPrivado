@@ -1,4 +1,5 @@
 import { AppFrame } from "@/components/app-frame";
+import { APP_DISPLAY_NAME } from "@/lib/app-brand";
 
 function SkeletonBar({ className }: { className?: string }) {
   return (
@@ -12,8 +13,8 @@ function SkeletonBar({ className }: { className?: string }) {
 export default function DehashedSearchLoading() {
   return (
     <AppFrame
-      title="PIX QR Decoder"
-      titleAriaLabel="PIX QR Decoder"
+      title={APP_DISPLAY_NAME}
+      titleAriaLabel={APP_DISPLAY_NAME}
       aboutLinkLabel="About"
     >
       <header className="flex flex-col gap-3">

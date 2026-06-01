@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import { ViewTransitions } from "next-view-transitions";
 import { ThemeProvider } from "@/components/theme-provider";
+import { rootMetadata } from "@/lib/app-metadata";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -9,10 +9,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "PIX QR Decoder",
-  description: "Decode PIX BR Code QR payloads from images or Copia e Cola text.",
-};
+export const metadata = rootMetadata;
 
 export default function RootLayout({
   children,

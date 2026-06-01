@@ -1,9 +1,14 @@
 import type { Locale } from "./brcode/labels";
+import {
+  APP_DISPLAY_NAME,
+  APP_HOME_ARIA_LABEL_EN,
+  APP_HOME_ARIA_LABEL_PT,
+} from "./app-brand";
 
 export const messages = {
   en: {
-    title: "PIX QR Decoder",
-    titleHomeAria: "PIX QR Decoder — start a new submission",
+    title: APP_DISPLAY_NAME,
+    titleHomeAria: APP_HOME_ARIA_LABEL_EN,
     subtitle: "Decode BR Code payloads from QR images or Copia e Cola text.",
     language: "Language",
     upload: "Upload image",
@@ -37,7 +42,7 @@ export const messages = {
     pasteImageHint: "Or press Ctrl+V / ⌘V with an image on the clipboard",
     invalidImageFile: "Please choose an image file (PNG, JPEG, WebP, or GIF).",
     path: "Path",
-    backToDecoder: "Back to PIX decoder",
+    backToDecoder: "Back to explorer",
     backToReceita: "Back to company registry",
     dehashedSubtitle: "Breach data lookup for a value from your decoded PIX payload.",
     dehashedMissingQuery: "Missing search query.",
@@ -158,8 +163,8 @@ export const messages = {
     about: "About",
   },
   pt: {
-    title: "Decodificador QR Pix",
-    titleHomeAria: "Decodificador QR Pix — iniciar nova decodificação",
+    title: APP_DISPLAY_NAME,
+    titleHomeAria: APP_HOME_ARIA_LABEL_PT,
     subtitle: "Decodifique payloads BR Code de imagens QR ou texto Copia e Cola.",
     language: "Idioma",
     upload: "Enviar imagem",
@@ -195,7 +200,7 @@ export const messages = {
     invalidImageFile:
       "Selecione um arquivo de imagem (PNG, JPEG, WebP ou GIF).",
     path: "Caminho",
-    backToDecoder: "Voltar ao decodificador PIX",
+    backToDecoder: "Voltar ao explorador",
     backToReceita: "Voltar aos dados cadastrais",
     dehashedSubtitle:
       "Consulta de vazamentos para um valor do payload PIX decodificado.",

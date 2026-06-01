@@ -1,6 +1,6 @@
-# PIX QR Decoder
+# Pix Privacy Explorer
 
-A Next.js microapp to decode **PIX BR Code** (EMV) payloads from QR images or **Copia e Cola** text. Deploy-ready for [Vercel](https://vercel.com).
+A Next.js microapp to explore **what Pix BR Code (EMV) payloads reveal**—from QR images or **Copia e Cola** text. Deploy-ready for [Vercel](https://vercel.com).
 
 ## Features
 
@@ -53,7 +53,7 @@ Quick check: decode a PIX QR with a linked field, click the value, and confirm a
 
 **Dashboard (recommended)**
 
-1. Open [Vercel Dashboard](https://vercel.com/dashboard) → your **PIX QR Decoder** project.
+1. Open [Vercel Dashboard](https://vercel.com/dashboard) → your **Pix Privacy Explorer** project.
 2. **Settings** → **Environment Variables**.
 3. Add:
    - **Key:** `DEHASHED_API_KEY`
