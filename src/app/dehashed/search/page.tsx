@@ -9,6 +9,8 @@ import {
 } from "@/lib/dehashed/results-url";
 import { DEHASHED_PAGE_SIZE } from "@/lib/dehashed/constants";
 import { fetchReceitaFederal } from "@/lib/receita/api-fetch";
+import { isCpfSearchQuery } from "@/lib/cpfhub/is-cpf-query";
+import { buildCpfResultsPageUrl } from "@/lib/cpfhub/results-url";
 import { isCnpjSearchQuery } from "@/lib/receita/is-cnpj-query";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +35,14 @@ export default async function DehashedSearchPage({
 
   if (!query) {
     return <DehashedResultsView query="" result={null} backHref={backHref} />;
+  }
+
+  if (isCpfSearchQuery(query)) {
+    redirect(
+      buildCpfResultsPageUrl(query, {
+        returnTo: backHref === "/" ? null : backHref,
+      }),
+    );
   }
 
   if (isCnpjSearchQuery(query)) {

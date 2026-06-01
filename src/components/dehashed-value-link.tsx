@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import { Link } from "next-view-transitions";
-import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
+import { buildLookupResultsPageUrl } from "@/lib/lookup/build-results-url";
 
 type DehashedValueLinkProps = {
   displayValue: string;
@@ -16,7 +16,7 @@ export function DehashedValueLink({
   query,
   returnTo,
 }: DehashedValueLinkProps) {
-  const resultsUrl = buildDehashedResultsPageUrl(query, 1, { returnTo });
+  const resultsUrl = buildLookupResultsPageUrl(query, 1, { returnTo });
 
   return (
     <Link
