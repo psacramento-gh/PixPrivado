@@ -72,9 +72,6 @@ export const messages = {
     cpfhubFieldName: "Name",
     cpfhubFieldGender: "Gender",
     cpfhubFieldBirthDate: "Date of birth",
-    cpfhubFieldDay: "Birth day",
-    cpfhubFieldMonth: "Birth month",
-    cpfhubFieldYear: "Birth year",
     receitaDisclaimer:
       "Public cadastral data from the Receita Federal dataset (via OpenCNPJ). This is not breach or leak data.",
     receitaNotFound: "Not found in Receita dataset.",
@@ -236,9 +233,6 @@ export const messages = {
     cpfhubFieldName: "Nome",
     cpfhubFieldGender: "Gênero",
     cpfhubFieldBirthDate: "Data de nascimento",
-    cpfhubFieldDay: "Dia de nascimento",
-    cpfhubFieldMonth: "Mês de nascimento",
-    cpfhubFieldYear: "Ano de nascimento",
     receitaDisclaimer:
       "Dados cadastrais públicos do dataset Receita Federal (via OpenCNPJ). Não são dados de vazamento ou breach.",
     receitaNotFound: "Não encontrado no dataset Receita.",
