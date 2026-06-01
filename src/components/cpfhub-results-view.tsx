@@ -163,7 +163,9 @@ export function CpfHubResultsView({
             <p className="font-mono text-xs break-all">{result?.cpf ?? query}</p>
           </div>
 
-          <p className="text-sm text-muted-foreground">{t(locale, "cpfhubAttribution")}</p>
+          <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
+            {t(locale, "cpfhubAttribution")}
+          </p>
 
           {result && !result.ok ? (
             <div className="flex flex-col gap-2" role="alert">
