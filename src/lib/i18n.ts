@@ -10,7 +10,7 @@ export const messages = {
     title: APP_DISPLAY_NAME,
     titleHomeAria: APP_HOME_ARIA_LABEL_EN,
     subtitle:
-      "Find out what your Pix payment information can reveal about you.",
+      "Sharing Pix information publicly? See what people could learn about you.",
     language: "Language",
     upload: "Upload image",
     uploadHint: "PNG, JPEG, or WebP",
@@ -167,7 +167,7 @@ export const messages = {
     title: APP_DISPLAY_NAME,
     titleHomeAria: APP_HOME_ARIA_LABEL_PT,
     subtitle:
-      "Descubra o que as informações do seu pagamento Pix podem revelar sobre você.",
+      "Vai compartilhar Pix publicamente? Veja o que as pessoas podem descobrir sobre você.",
     language: "Idioma",
     upload: "Enviar imagem",
     uploadHint: "PNG, JPEG ou WebP",
