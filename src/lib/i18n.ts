@@ -9,8 +9,8 @@ export const messages = {
   en: {
     title: APP_DISPLAY_NAME,
     titleHomeAria: APP_HOME_ARIA_LABEL_EN,
-    subtitle:
-      "Sharing Pix information publicly? See what people could learn about you.",
+    subtitleLead: "Sharing Pix information publicly?",
+    subtitleDetail: "See what people could learn about you.",
     language: "Language",
     upload: "Upload image",
     uploadHint: "PNG, JPEG, or WebP",
@@ -166,8 +166,9 @@ export const messages = {
   pt: {
     title: APP_DISPLAY_NAME,
     titleHomeAria: APP_HOME_ARIA_LABEL_PT,
-    subtitle:
-      "Vai compartilhar Pix publicamente? Veja o que as pessoas podem descobrir sobre você.",
+    subtitleLead: "Vai compartilhar Pix publicamente?",
+    subtitleDetail:
+      "Veja o que as pessoas podem descobrir sobre você.",
     language: "Idioma",
     upload: "Enviar imagem",
     uploadHint: "PNG, JPEG ou WebP",

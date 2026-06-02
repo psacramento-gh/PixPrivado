@@ -55,7 +55,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Camera, ClipboardCopy, ClipboardPaste, ImageUp } from "lucide-react";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import { Camera, ClipboardCopy, ClipboardPaste, ImageUp, ShieldAlert } from "lucide-react";
 
 type LocationFetch = {
   url: string;
@@ -285,7 +290,14 @@ export function DecoderApp() {
       }
     >
       <header>
-        <p className="text-sm text-muted-foreground">{t(locale, "subtitle")}</p>
+        <Alert
+          role="note"
+          className="border-border bg-muted/40 *:[svg]:text-muted-foreground"
+        >
+          <ShieldAlert aria-hidden />
+          <AlertTitle>{t(locale, "subtitleLead")}</AlertTitle>
+          <AlertDescription>{t(locale, "subtitleDetail")}</AlertDescription>
+        </Alert>
       </header>
 
       <DecoderPhaseTransition phase={phase}>
