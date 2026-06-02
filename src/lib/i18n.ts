@@ -9,7 +9,8 @@ export const messages = {
   en: {
     title: APP_DISPLAY_NAME,
     titleHomeAria: APP_HOME_ARIA_LABEL_EN,
-    subtitle: "Decode BR Code payloads from QR images or Copia e Cola text.",
+    subtitleLead: "Sharing Pix information publicly?",
+    subtitleDetail: "See what people could learn about you.",
     language: "Language",
     upload: "Upload image",
     uploadHint: "PNG, JPEG, or WebP",
@@ -165,7 +166,9 @@ export const messages = {
   pt: {
     title: APP_DISPLAY_NAME,
     titleHomeAria: APP_HOME_ARIA_LABEL_PT,
-    subtitle: "Decodifique payloads BR Code de imagens QR ou texto Copia e Cola.",
+    subtitleLead: "Vai compartilhar Pix publicamente?",
+    subtitleDetail:
+      "Veja o que as pessoas podem descobrir sobre você.",
     language: "Idioma",
     upload: "Enviar imagem",
     uploadHint: "PNG, JPEG ou WebP",
