@@ -29,6 +29,9 @@ export const messages = {
     label: "Label",
     value: "Value",
     noQrFound: "No QR code found in the image.",
+    decodeImageFailed:
+      "Could not read a QR code from this image. Try a clearer photo or paste the Copia e Cola code.",
+    cancelDecoding: "Cancel",
     parseError: "Parse error",
     fetchingLocation: "Fetching location…",
     fetchFailed: "Could not fetch location",
@@ -193,6 +196,9 @@ export const messages = {
     label: "Rótulo",
     value: "Valor",
     noQrFound: "Nenhum QR Code encontrado na imagem.",
+    decodeImageFailed:
+      "Não foi possível ler um QR Code nesta imagem. Tente uma foto mais nítida ou cole o código Copia e Cola.",
+    cancelDecoding: "Cancelar",
     parseError: "Erro de parse",
     fetchingLocation: "Buscando location…",
     fetchFailed: "Não foi possível buscar a location",
