@@ -1,8 +1,8 @@
 import jsQR from "jsqr";
 import { loadOrientedBitmap } from "@/lib/qr/load-oriented-bitmap";
 
-/** Upper bounds tried for full-image decode (highest first). */
-const FULL_DECODE_MAX_DIMS = [2560, 2048, 1536, 1024] as const;
+/** Upper bounds tried for full-image decode (lowest first for faster “not found”). */
+const FULL_DECODE_MAX_DIMS = [1024, 1536, 2048, 2560] as const;
 
 export type QrPoint = { x: number; y: number };
 
@@ -24,6 +24,30 @@ export type QrDecodeResult = {
   naturalHeight: number;
 };
 
+export type DecodeQrOptions = {
+  signal?: AbortSignal;
+};
+
+export class QrDecodeAbortedError extends Error {
+  constructor(message = "QR decode aborted") {
+    super(message);
+    this.name = "QrDecodeAbortedError";
+  }
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new QrDecodeAbortedError();
+  }
+}
+
+/** Yields so long decode passes do not freeze the loading UI. */
+function yieldToMain(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+}
+
 function fullDecodeMaxDims(width: number, height: number): number[] {
   const long = Math.max(width, height);
   const caps = [Math.min(long, 2560), ...FULL_DECODE_MAX_DIMS];
@@ -36,7 +60,7 @@ function fullDecodeMaxDims(width: number, height: number): number[] {
     seen.add(key);
     out.push(cap);
   }
-  return out.sort((a, b) => b - a);
+  return out.sort((a, b) => a - b);
 }
 
 function mapLocationToCorners(
@@ -90,14 +114,20 @@ export function denormalizeQrCorners(
 
 export async function decodeQrFromFile(
   file: File,
+  options?: DecodeQrOptions,
 ): Promise<QrDecodeResult | null> {
+  const signal = options?.signal;
+  throwIfAborted(signal);
   const bitmap = await loadOrientedBitmap(file);
+  throwIfAborted(signal);
   try {
     const w = bitmap.width;
     const h = bitmap.height;
     for (const maxDim of fullDecodeMaxDims(w, h)) {
+      throwIfAborted(signal);
       const result = decodeQrFromImageSource(bitmap, w, h, maxDim);
       if (result) return result;
+      await yieldToMain();
     }
     return null;
   } finally {

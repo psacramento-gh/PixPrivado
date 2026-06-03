@@ -32,7 +32,11 @@ import {
 import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
 import { flattenJson } from "@/lib/json-flatten";
 import { t } from "@/lib/i18n";
-import { decodeQrFromFile, type NormalizedQrCorners } from "@/lib/qr/decode-image";
+import {
+  decodeQrFromFile,
+  QrDecodeAbortedError,
+  type NormalizedQrCorners,
+} from "@/lib/qr/decode-image";
 import {
   DecoderPhaseTransition,
   type DecoderPhase,
@@ -71,6 +75,8 @@ type LocationFetch = {
   error?: string;
 };
 
+
+const IMAGE_DECODE_TIMEOUT_MS = 25_000;
 const dropZoneClass =
   "border-input hover:bg-muted/50 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-5 text-center text-sm text-muted-foreground transition-colors";
 
@@ -111,6 +117,8 @@ export function DecoderApp() {
   const [decodingFileName, setDecodingFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const decodeAbortRef = useRef<AbortController | null>(null);
+  const decodeJobIdRef = useRef(0);
   const isDesktop = useIsDesktop();
 
   const processPayload = useCallback((payload: string) => {
@@ -144,6 +152,15 @@ export function DecoderApp() {
     setDecodingFileName(null);
   }, []);
 
+  const cancelImageDecode = useCallback(() => {
+    decodeAbortRef.current?.abort();
+    decodeJobIdRef.current += 1;
+    decodeAbortRef.current = null;
+    clearDecodingPreview();
+    setImagePhase("none");
+    setImageSubmitted(false);
+  }, [clearDecodingPreview]);
+
   const beginImageFile = useCallback(
     async (file: File | null) => {
       if (!file) return;
@@ -151,15 +168,32 @@ export function DecoderApp() {
         setError(t(locale, "invalidImageFile"));
         return;
       }
+
+      decodeAbortRef.current?.abort();
+      const decodeId = ++decodeJobIdRef.current;
+      const controller = new AbortController();
+      decodeAbortRef.current = controller;
+
       setError(null);
       clearImageSession();
       clearDecodingPreview();
+      setImageSubmitted(false);
       setDecodingFileName(file.name);
       setImagePhase("loading");
       const url = URL.createObjectURL(file);
       setDecodingPreviewUrl(url);
+
+      const timeoutId = window.setTimeout(
+        () => controller.abort(),
+        IMAGE_DECODE_TIMEOUT_MS,
+      );
+
       try {
-        const decoded = await decodeQrFromFile(file);
+        const decoded = await decodeQrFromFile(file, {
+          signal: controller.signal,
+        });
+        if (decodeId !== decodeJobIdRef.current) return;
+
         if (decoded) {
           processPayload(decoded.data);
           setCopiaCola(decoded.data);
@@ -174,25 +208,42 @@ export function DecoderApp() {
           setImagePhase("done");
           return;
         }
+
         URL.revokeObjectURL(url);
         setDecodingPreviewUrl(null);
         setDecodingFileName(null);
         setImageSession(null);
-        setImagePhase("none");
         setError(t(locale, "noQrFound"));
-      } catch {
+      } catch (err) {
+        if (decodeId !== decodeJobIdRef.current) return;
+
         URL.revokeObjectURL(url);
         setDecodingPreviewUrl(null);
         setDecodingFileName(null);
         setImageSession(null);
-        setImagePhase("none");
-        setError(t(locale, "noQrFound"));
+
+        if (err instanceof QrDecodeAbortedError) {
+          setError(t(locale, "decodeImageFailed"));
+          return;
+        }
+        setError(t(locale, "decodeImageFailed"));
+      } finally {
+        window.clearTimeout(timeoutId);
+        if (decodeId === decodeJobIdRef.current) {
+          if (decodeAbortRef.current === controller) {
+            decodeAbortRef.current = null;
+          }
+          setImagePhase((phase) => (phase === "loading" ? "none" : phase));
+        }
       }
     },
     [clearDecodingPreview, clearImageSession, locale, processPayload],
   );
 
   const resetDecoder = useCallback(() => {
+    decodeAbortRef.current?.abort();
+    decodeJobIdRef.current += 1;
+    decodeAbortRef.current = null;
     clearDecodingPreview();
     clearImageSession();
     setImagePhase("none");
@@ -423,6 +474,8 @@ export function DecoderApp() {
             statusLabel={t(locale, "decodingImage")}
             fileName={decodingFileName ?? undefined}
             locale={locale}
+            cancelLabel={t(locale, "cancelDecoding")}
+            onCancel={cancelImageDecode}
           />
         ) : null}
 

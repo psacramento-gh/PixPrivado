@@ -1,6 +1,7 @@
 "use client";
 
 import { QrSourceFileName } from "@/components/qr-source-file-name";
+import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/brcode/labels";
 
 type QrDecodeOverlayProps = {
@@ -8,6 +9,8 @@ type QrDecodeOverlayProps = {
   statusLabel: string;
   fileName?: string;
   locale: Locale;
+  cancelLabel?: string;
+  onCancel?: () => void;
 };
 
 export function QrDecodeOverlay({
@@ -15,6 +18,8 @@ export function QrDecodeOverlay({
   statusLabel,
   fileName,
   locale,
+  cancelLabel,
+  onCancel,
 }: QrDecodeOverlayProps) {
   return (
     <div
@@ -53,6 +58,17 @@ export function QrDecodeOverlay({
           <QrSourceFileName name={fileName} locale={locale} className="pointer-events-auto" />
         ) : null}
         <p className="text-center text-sm text-muted-foreground">{statusLabel}</p>
+        {onCancel && cancelLabel ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="pointer-events-auto"
+            onClick={onCancel}
+          >
+            {cancelLabel}
+          </Button>
+        ) : null}
       </div>
     </div>
   );
