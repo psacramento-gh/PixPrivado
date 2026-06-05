@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   clearPersistedDecoderState,
   loadPersistedDecoderBundle,
@@ -66,6 +67,11 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { Camera, ClipboardCopy, ClipboardPaste, ImageUp, ShieldAlert } from "lucide-react";
+import {
+  buildDecoderSharePath,
+  parseDecoderPayloadFromSearch,
+} from "@/lib/decoder/share-url";
+import { ShareDecoderLink } from "@/components/share-decoder-link";
 
 type LocationFetch = {
   url: string;
@@ -103,6 +109,9 @@ function isImageFile(file: File): boolean {
 }
 
 export function DecoderApp() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [restoreDone, setRestoreDone] = useState(false);
   const [locale, setLocale] = useAppLocale();
   const [rawPayload, setRawPayload] = useState("");
@@ -252,7 +261,10 @@ export function DecoderApp() {
     setError(null);
     setImageSubmitted(false);
     clearPersistedDecoderState();
-  }, [clearDecodingPreview, clearImageSession]);
+    if (pathname === "/" && searchParams.has("p")) {
+      router.replace("/", { scroll: false });
+    }
+  }, [clearDecodingPreview, clearImageSession, pathname, router, searchParams]);
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
@@ -266,6 +278,18 @@ export function DecoderApp() {
     let cancelled = false;
 
     void (async () => {
+      const urlPayload = parseDecoderPayloadFromSearch(window.location.search);
+      if (urlPayload) {
+        setRawPayload(urlPayload);
+        setCopiaCola(urlPayload);
+        setError(null);
+        setImageSession(null);
+        setImageSubmitted(false);
+        setImagePhase("none");
+        setRestoreDone(true);
+        return;
+      }
+
       const bundle = await loadPersistedDecoderBundle();
       if (cancelled) return;
 
@@ -292,6 +316,21 @@ export function DecoderApp() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!restoreDone || pathname !== "/") return;
+
+    const trimmed = rawPayload.trim();
+    const urlPayload = parseDecoderPayloadFromSearch(searchParams);
+
+    if (!trimmed) {
+      if (urlPayload) router.replace("/", { scroll: false });
+      return;
+    }
+
+    if (urlPayload === trimmed) return;
+    router.replace(buildDecoderSharePath(trimmed), { scroll: false });
+  }, [restoreDone, rawPayload, pathname, router, searchParams]);
 
   useEffect(() => {
     if (!restoreDone) return;
@@ -505,6 +544,8 @@ export function DecoderApp() {
 
           <Separator />
           <RawPayloadSection payload={rawPayload} locale={locale} />
+
+          <ShareDecoderLink payload={rawPayload} locale={locale} />
 
           {isPix && rows.length > 0 ? (
             <>

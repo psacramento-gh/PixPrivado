@@ -22,6 +22,13 @@ export const messages = {
       "Could not read from the clipboard. Paste manually or allow clipboard access.",
     decode: "Decode",
     structuredView: "Structured view",
+    shareLink: "Share this link",
+    shareLinkCopy: "Copy link",
+    shareLinkCopied: "Copied",
+    shareLinkHint:
+      "This link contains the full PIX payload. Anyone with the link can decode the same structured view.",
+    shareLinkTooLong:
+      "This link is very long; some messengers or browsers may truncate it.",
     rawPayload: "Raw payload",
     copyPayload: "Copy payload",
     copyPayloadCopied: "Copied",
@@ -189,6 +196,13 @@ export const messages = {
       "Não foi possível ler a área de transferência. Cole manualmente ou permita o acesso.",
     decode: "Decodificar",
     structuredView: "Visualização estruturada",
+    shareLink: "Compartilhar este link",
+    shareLinkCopy: "Copiar link",
+    shareLinkCopied: "Copiado",
+    shareLinkHint:
+      "Este link contém o payload PIX completo. Quem tiver o link verá a mesma visualização estruturada.",
+    shareLinkTooLong:
+      "Este link é muito longo; alguns apps ou navegadores podem truncá-lo.",
     rawPayload: "Payload bruto",
     copyPayload: "Copiar payload",
     copyPayloadCopied: "Copiado",
