@@ -2,23 +2,26 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
+import {
+  APP_MOTION_DURATION,
+  APP_MOTION_EASE,
+  APP_MOTION_REDUCED_DURATION,
+} from "@/lib/motion-presets";
 
 export type DecoderPhase = "input" | "decoding-qr" | "results";
-
-const EASE = [0.25, 0.1, 0.25, 1] as const;
 
 const phaseMotion = {
   initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -6 },
-  transition: { duration: 0.22, ease: EASE },
+  transition: { duration: APP_MOTION_DURATION, ease: APP_MOTION_EASE },
 };
 
 const reducedMotion = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
-  transition: { duration: 0.12 },
+  transition: { duration: APP_MOTION_REDUCED_DURATION },
 };
 
 export function DecoderPhaseTransition({

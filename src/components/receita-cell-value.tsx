@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { CnaeEnrichedValue } from "@/components/cnae-enriched-value";
 import { CpfSocioEnrichedValue } from "@/components/cpf-socio-enriched-value";
-import { DehashedValueLink } from "@/components/dehashed-value-link";
+import { LookupValueButton } from "@/components/lookup/lookup-value-button";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isReceitaCnpjCpfSocioField } from "@/lib/br/cpf-candidates";
@@ -35,11 +35,9 @@ type ReceitaCellValueProps = {
   fieldPath: string;
   value: string;
   locale: Locale;
-  /** Current Receita results URL — forwarded as `back` on breach search links. */
-  breachReturnTo: string;
 };
 
-function renderReceitaTelefoneValue(encoded: string, breachReturnTo: string): ReactNode {
+function renderReceitaTelefoneValue(encoded: string): ReactNode {
   const { ddd, numero } = decodeReceitaTelefoneValue(encoded);
   const display = formatReceitaTelefoneDisplay(ddd, numero);
   if (!display) {
@@ -52,12 +50,10 @@ function renderReceitaTelefoneValue(encoded: string, breachReturnTo: string): Re
     return <>{display}</>;
   }
 
-  return (
-    <DehashedValueLink displayValue={display} query={breachQuery} returnTo={breachReturnTo} />
-  );
+  return <LookupValueButton displayValue={display} query={breachQuery} />;
 }
 
-function renderDehashedNameValue(value: string, breachReturnTo: string): ReactNode {
+function renderDehashedNameValue(value: string): ReactNode {
   const embedded = extractTrailingCpfFromText(value);
   if (embedded) {
     const nameQuery = buildNameBreachLookupQuery(embedded.namePart);
@@ -65,22 +61,14 @@ function renderDehashedNameValue(value: string, breachReturnTo: string): ReactNo
     return (
       <>
         {nameQuery ? (
-          <DehashedValueLink
-            displayValue={embedded.namePart}
-            query={nameQuery}
-            returnTo={breachReturnTo}
-          />
+          <LookupValueButton displayValue={embedded.namePart} query={nameQuery} />
         ) : (
           embedded.namePart
         )}
         {cpfQuery ? (
           <>
             {" "}
-            <DehashedValueLink
-              displayValue={embedded.cpfFormatted}
-              query={cpfQuery}
-              returnTo={breachReturnTo}
-            />
+            <LookupValueButton displayValue={embedded.cpfFormatted} query={cpfQuery} />
           </>
         ) : (
           <> {embedded.cpfFormatted}</>
@@ -91,29 +79,20 @@ function renderDehashedNameValue(value: string, breachReturnTo: string): ReactNo
 
   const nameQuery = buildNameBreachLookupQuery(value);
   return nameQuery ? (
-    <DehashedValueLink
-      displayValue={value}
-      query={nameQuery}
-      returnTo={breachReturnTo}
-    />
+    <LookupValueButton displayValue={value} query={nameQuery} />
   ) : (
     <>{value}</>
   );
 }
 
-export function ReceitaCellValue({
-  fieldPath,
-  value,
-  locale,
-  breachReturnTo,
-}: ReceitaCellValueProps) {
+export function ReceitaCellValue({ fieldPath, value, locale }: ReceitaCellValueProps) {
   let content: ReactNode;
   let phoneEnrichmentRaw = value;
   let phoneEnrichmentActive = true;
 
   if (isReceitaTelefoneRowField(fieldPath)) {
     const { ddd, numero } = decodeReceitaTelefoneValue(value);
-    content = renderReceitaTelefoneValue(value, breachReturnTo);
+    content = renderReceitaTelefoneValue(value);
     const breachRaw = buildReceitaTelefoneBreachRaw(ddd, numero);
     phoneEnrichmentRaw = breachRaw ?? value;
     phoneEnrichmentActive = breachRaw !== null;
@@ -132,16 +111,12 @@ export function ReceitaCellValue({
       content = <>{value}</>;
     }
   } else if (isReceitaDehashedNameField(fieldPath)) {
-    content = renderDehashedNameValue(value, breachReturnTo);
+    content = renderDehashedNameValue(value);
   } else {
     const breachQuery = buildBreachLookupQuery(value);
     content =
       breachQuery !== null ? (
-        <DehashedValueLink
-          displayValue={value}
-          query={breachQuery}
-          returnTo={breachReturnTo}
-        />
+        <LookupValueButton displayValue={value} query={breachQuery} />
       ) : (
         <>{value}</>
       );
