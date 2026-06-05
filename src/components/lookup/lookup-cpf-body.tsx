@@ -1,6 +1,7 @@
 "use client";
 
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
+import { CpfHubFieldValue } from "@/components/cpfhub-field-value";
 import {
   Table,
   TableBody,
@@ -47,9 +48,20 @@ export function LookupCpfBody({
 
   const { data } = result;
   const birthIso = cpfHubBirthDateToIso(data.birthDate) ?? data.birthDate;
-  const rows: { labelKey: Parameters<typeof t>[1]; value: string; ageActive?: boolean }[] = [
-    { labelKey: "cpfhubFieldCpf", value: formatCpf(data.cpf) },
-    { labelKey: "cpfhubFieldName", value: data.name },
+  const rows: {
+    labelKey: Parameters<typeof t>[1];
+    value: string;
+    ageActive?: boolean;
+    portalField?: "cpf" | "name";
+    cpfDigits?: string;
+  }[] = [
+    {
+      labelKey: "cpfhubFieldCpf",
+      value: formatCpf(data.cpf),
+      portalField: "cpf",
+      cpfDigits: data.cpf,
+    },
+    { labelKey: "cpfhubFieldName", value: data.name, portalField: "name" },
     { labelKey: "cpfhubFieldGender", value: cpfHubGenderLabel(data.gender, locale) },
     { labelKey: "cpfhubFieldBirthDate", value: data.birthDate, ageActive: true },
   ];
@@ -88,6 +100,12 @@ export function LookupCpfBody({
                   <AgeEnrichedValue rawValue={birthIso} locale={locale} active>
                     {row.value}
                   </AgeEnrichedValue>
+                ) : row.portalField ? (
+                  <CpfHubFieldValue
+                    field={row.portalField}
+                    displayValue={row.value}
+                    cpfDigits={row.cpfDigits}
+                  />
                 ) : (
                   row.value
                 )}

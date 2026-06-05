@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { CnaeEnrichedValue } from "@/components/cnae-enriched-value";
 import { CpfSocioEnrichedValue } from "@/components/cpf-socio-enriched-value";
+import { LookupExternalLink } from "@/components/lookup/lookup-external-link";
 import { LookupValueButton } from "@/components/lookup/lookup-value-button";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
@@ -17,12 +18,14 @@ import {
   formatCnpj,
   isReceitaCnpjField,
   isReceitaDehashedNameField,
+  isReceitaRazaoSocialField,
 } from "@/lib/br/format-document";
+import { buildBreachLookupQuery } from "@/lib/receita/breach-link";
 import {
-  buildBreachLookupQuery,
-  buildCpfBreachLookupQuery,
-  buildNameBreachLookupQuery,
-} from "@/lib/receita/breach-link";
+  buildPessoaFisicaPortalUrlFromCpfDigits,
+  buildPessoaFisicaPortalUrlFromName,
+  buildPessoaJuridicaPortalUrlFromName,
+} from "@/lib/transparencia/portal-link";
 import {
   buildReceitaTelefoneBreachRaw,
   decodeReceitaTelefoneValue,
@@ -53,22 +56,28 @@ function renderReceitaTelefoneValue(encoded: string): ReactNode {
   return <LookupValueButton displayValue={display} query={breachQuery} />;
 }
 
-function renderDehashedNameValue(value: string): ReactNode {
+function buildReceitaNamePortalUrl(name: string, fieldPath: string): string | null {
+  return isReceitaRazaoSocialField(fieldPath)
+    ? buildPessoaJuridicaPortalUrlFromName(name)
+    : buildPessoaFisicaPortalUrlFromName(name);
+}
+
+function renderPortalNameValue(value: string, fieldPath: string): ReactNode {
   const embedded = extractTrailingCpfFromText(value);
   if (embedded) {
-    const nameQuery = buildNameBreachLookupQuery(embedded.namePart);
-    const cpfQuery = buildCpfBreachLookupQuery(embedded.cpfDigits);
+    const nameUrl = buildReceitaNamePortalUrl(embedded.namePart, fieldPath);
+    const cpfUrl = buildPessoaFisicaPortalUrlFromCpfDigits(embedded.cpfDigits);
     return (
       <>
-        {nameQuery ? (
-          <LookupValueButton displayValue={embedded.namePart} query={nameQuery} />
+        {nameUrl ? (
+          <LookupExternalLink displayValue={embedded.namePart} href={nameUrl} />
         ) : (
           embedded.namePart
         )}
-        {cpfQuery ? (
+        {cpfUrl ? (
           <>
             {" "}
-            <LookupValueButton displayValue={embedded.cpfFormatted} query={cpfQuery} />
+            <LookupExternalLink displayValue={embedded.cpfFormatted} href={cpfUrl} />
           </>
         ) : (
           <> {embedded.cpfFormatted}</>
@@ -77,9 +86,9 @@ function renderDehashedNameValue(value: string): ReactNode {
     );
   }
 
-  const nameQuery = buildNameBreachLookupQuery(value);
-  return nameQuery ? (
-    <LookupValueButton displayValue={value} query={nameQuery} />
+  const nameUrl = buildReceitaNamePortalUrl(value, fieldPath);
+  return nameUrl ? (
+    <LookupExternalLink displayValue={value} href={nameUrl} />
   ) : (
     <>{value}</>
   );
@@ -111,7 +120,7 @@ export function ReceitaCellValue({ fieldPath, value, locale }: ReceitaCellValueP
       content = <>{value}</>;
     }
   } else if (isReceitaDehashedNameField(fieldPath)) {
-    content = renderDehashedNameValue(value);
+    content = renderPortalNameValue(value, fieldPath);
   } else {
     const breachQuery = buildBreachLookupQuery(value);
     content =

@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "next-view-transitions";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
+import { CpfHubFieldValue } from "@/components/cpfhub-field-value";
 import { AppFrame } from "@/components/app-frame";
 import { AppHeaderActions } from "@/components/app-header-actions";
 import { buttonVariants } from "@/components/ui/button";
@@ -45,9 +46,20 @@ function CpfHubDataTable({
   const { data } = result;
   const birthIso = cpfHubBirthDateToIso(data.birthDate) ?? data.birthDate;
 
-  const rows: { labelKey: Parameters<typeof t>[1]; value: string; ageActive?: boolean }[] = [
-    { labelKey: "cpfhubFieldCpf", value: formatCpf(data.cpf) },
-    { labelKey: "cpfhubFieldName", value: data.name },
+  const rows: {
+    labelKey: Parameters<typeof t>[1];
+    value: string;
+    ageActive?: boolean;
+    portalField?: "cpf" | "name";
+    cpfDigits?: string;
+  }[] = [
+    {
+      labelKey: "cpfhubFieldCpf",
+      value: formatCpf(data.cpf),
+      portalField: "cpf",
+      cpfDigits: data.cpf,
+    },
+    { labelKey: "cpfhubFieldName", value: data.name, portalField: "name" },
     {
       labelKey: "cpfhubFieldGender",
       value: cpfHubGenderLabel(data.gender, locale),
@@ -78,6 +90,12 @@ function CpfHubDataTable({
                 <AgeEnrichedValue rawValue={birthIso} locale={locale} active>
                   {row.value}
                 </AgeEnrichedValue>
+              ) : row.portalField ? (
+                <CpfHubFieldValue
+                  field={row.portalField}
+                  displayValue={row.value}
+                  cpfDigits={row.cpfDigits}
+                />
               ) : (
                 row.value
               )}
