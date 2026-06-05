@@ -1,10 +1,8 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { AgeEnrichedValue } from "@/components/age-enriched-value";
+import { DehashedEntryValue } from "@/components/dehashed-entry-value";
 import { DehashedFieldLabel } from "@/components/dehashed-field-label";
-import { IpEnrichedValue } from "@/components/ip-enriched-value";
-import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -15,13 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { isBirthField } from "@/lib/age/is-birth-field";
 import type { Locale } from "@/lib/brcode/labels";
 import type { DehashedSearchResult } from "@/lib/dehashed/api-search";
 import { DEHASHED_PAGE_SIZE } from "@/lib/dehashed/constants";
 import { entryRows } from "@/lib/dehashed/format-entry";
 import { getDehashedPaginationMeta } from "@/lib/dehashed/pagination";
-import { isDehashedIpField, isDehashedPhoneField } from "@/lib/ip/parse-ip";
 import { t } from "@/lib/i18n";
 
 function DehashedPanelPagination({
@@ -184,25 +180,11 @@ export function LookupDehashedBody({
                           <DehashedFieldLabel field={row.field} locale={locale} />
                         </TableCell>
                         <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
-                          <IpEnrichedValue
-                            rawValue={row.value}
+                          <DehashedEntryValue
+                            field={row.field}
+                            value={row.value}
                             locale={locale}
-                            active={isDehashedIpField(row.field)}
-                          >
-                            <PhoneEnrichedValue
-                              rawValue={row.value}
-                              locale={locale}
-                              active={isDehashedPhoneField(row.field)}
-                            >
-                              <AgeEnrichedValue
-                                rawValue={row.value}
-                                locale={locale}
-                                active={isBirthField(row.field)}
-                              >
-                                {row.value}
-                              </AgeEnrichedValue>
-                            </PhoneEnrichedValue>
-                          </IpEnrichedValue>
+                          />
                         </TableCell>
                       </TableRow>
                     ))}

@@ -35,6 +35,7 @@ export function buildDehashedQueryForRow(
   if (!isPixMerchantAccount(allRows, row.parentId!)) return null;
 
   if (row.id === "01") {
+    if (classifyPixKey(row.value) === "phone") return null;
     return buildPixKeyQuery(row.value);
   }
 

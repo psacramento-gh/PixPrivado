@@ -82,7 +82,7 @@ Never commit `.env.local` or paste the API key into Git, issues, or chat logs.
 
 ## CPFHub API key
 
-CPF lookups (11-digit CPF from PIX keys or registry fields) use **`CPFHUB_API_KEY`** from [app.cpfhub.io](https://app.cpfhub.io). Breach searches (email, phone, name) still use DeHashed above.
+CPF lookups (11-digit CPF from PIX keys or registry fields) use **`CPFHUB_API_KEY`** from [app.cpfhub.io](https://app.cpfhub.io). Breach searches use DeHashed for **email only** (phone numbers are not sent to the DeHashed API).
 
 Add to `.env.local`:
 
