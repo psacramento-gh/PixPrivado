@@ -4,17 +4,19 @@ import {
   createContext,
   useCallback,
   useContext,
-  useLayoutEffect,
+  useEffect,
   useMemo,
   useRef,
-  useState,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
 } from "react";
 import { normalizeLookupQueryKey } from "@/lib/lookup/normalize-query-key";
 import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
-import { APP_MOTION_DURATION } from "@/lib/motion-presets";
+import {
+  PANEL_SCROLL_RETRY_DELAYS_MS,
+  scrollToPanelElement,
+} from "@/lib/lookup/scroll-to-panel";
 
 type PendingPanelScroll = {
   id: string;
@@ -52,61 +54,63 @@ export function LookupPanelsProvider({
 }) {
   const panelElementsRef = useRef(new Map<string, HTMLElement>());
   const pendingScrollRef = useRef<PendingPanelScroll | null>(null);
-  const scrollFallbackTimerRef = useRef<number | null>(null);
-  const [scrollRequest, setScrollRequest] = useState(0);
+  const scrollRetryTimersRef = useRef<number[]>([]);
 
-  const clearScrollFallback = useCallback(() => {
-    if (scrollFallbackTimerRef.current !== null) {
-      window.clearTimeout(scrollFallbackTimerRef.current);
-      scrollFallbackTimerRef.current = null;
+  const clearScrollRetries = useCallback(() => {
+    for (const timer of scrollRetryTimersRef.current) {
+      window.clearTimeout(timer);
     }
+    scrollRetryTimersRef.current = [];
+  }, []);
+
+  const performPanelScroll = useCallback((id: string) => {
+    const element = panelElementsRef.current.get(id);
+    if (!element) return false;
+
+    scrollToPanelElement(element, { behavior: "auto" });
+    const heading = element.querySelector<HTMLElement>("[data-lookup-panel-heading]");
+    heading?.focus({ preventScroll: true });
+    return true;
   }, []);
 
   const scrollPanelIntoView = useCallback(
-    (id: string, options?: { behavior?: ScrollBehavior }) => {
-      const element = panelElementsRef.current.get(id);
-      if (!element) return false;
-
-      element.scrollIntoView({
-        behavior: options?.behavior ?? "smooth",
-        block: "start",
-      });
-      const heading = element.querySelector<HTMLElement>("[data-lookup-panel-heading]");
-      heading?.focus({ preventScroll: true });
-      return true;
+    (id: string) => {
+      performPanelScroll(id);
     },
-    [],
+    [performPanelScroll],
   );
 
   const commitPanelScroll = useCallback(
-    (id: string) => {
+    (id: string, waitForExpand: boolean) => {
       if (pendingScrollRef.current?.id !== id) return;
 
-      const panel = panels.find((entry) => entry.id === id);
-      if (!panel || panel.collapsed) return;
-      if (!scrollPanelIntoView(id, { behavior: "auto" })) return;
+      clearScrollRetries();
+      const delays = waitForExpand
+        ? PANEL_SCROLL_RETRY_DELAYS_MS.afterExpand
+        : PANEL_SCROLL_RETRY_DELAYS_MS.immediate;
 
-      clearScrollFallback();
-      pendingScrollRef.current = null;
+      for (const [index, delay] of delays.entries()) {
+        const timer = window.setTimeout(() => {
+          if (pendingScrollRef.current?.id !== id) return;
+          if (!performPanelScroll(id)) return;
+
+          if (index === delays.length - 1) {
+            pendingScrollRef.current = null;
+          }
+        }, delay);
+        scrollRetryTimersRef.current.push(timer);
+      }
     },
-    [clearScrollFallback, panels, scrollPanelIntoView],
+    [clearScrollRetries, performPanelScroll],
   );
 
   const requestPanelScroll = useCallback(
     (id: string, waitForExpand: boolean) => {
-      clearScrollFallback();
+      clearScrollRetries();
       pendingScrollRef.current = { id, waitForExpand };
-
-      if (waitForExpand) {
-        scrollFallbackTimerRef.current = window.setTimeout(() => {
-          commitPanelScroll(id);
-        }, APP_MOTION_DURATION * 1000 + 50);
-        return;
-      }
-
-      setScrollRequest((request) => request + 1);
+      commitPanelScroll(id, waitForExpand);
     },
-    [clearScrollFallback, commitPanelScroll],
+    [clearScrollRetries, commitPanelScroll],
   );
 
   const notifyPanelBodyExpanded = useCallback(
@@ -114,21 +118,12 @@ export function LookupPanelsProvider({
       if (pendingScrollRef.current?.id !== id || !pendingScrollRef.current.waitForExpand) {
         return;
       }
-      commitPanelScroll(id);
+      commitPanelScroll(id, true);
     },
     [commitPanelScroll],
   );
 
-  useLayoutEffect(() => {
-    const pending = pendingScrollRef.current;
-    if (!pending || pending.waitForExpand) return;
-
-    const panel = panels.find((entry) => entry.id === pending.id);
-    if (!panel || panel.collapsed) return;
-    if (!panelElementsRef.current.has(pending.id)) return;
-
-    commitPanelScroll(pending.id);
-  }, [commitPanelScroll, panels, scrollRequest]);
+  useEffect(() => () => clearScrollRetries(), [clearScrollRetries]);
 
   const registerPanelElement = useCallback((id: string, element: HTMLElement | null) => {
     if (element) {
@@ -179,7 +174,9 @@ export function LookupPanelsProvider({
 
       const scrollIntent = scrollIntentRef.current;
       if (scrollIntent) {
-        requestPanelScroll(scrollIntent.id, scrollIntent.waitForExpand);
+        queueMicrotask(() => {
+          requestPanelScroll(scrollIntent.id, scrollIntent.waitForExpand);
+        });
       }
     },
     [onPanelsChange, requestPanelScroll],
@@ -196,7 +193,7 @@ export function LookupPanelsProvider({
         }),
       );
       if (expanding) {
-        requestPanelScroll(id, true);
+        queueMicrotask(() => requestPanelScroll(id, true));
       }
     },
     [onPanelsChange, requestPanelScroll],
@@ -204,7 +201,6 @@ export function LookupPanelsProvider({
 
   const setPanelPage = useCallback(
     (id: string, page: number) => {
-      requestPanelScroll(id, false);
       onPanelsChange((prev) =>
         prev.map((panel) =>
           panel.id === id
@@ -218,16 +214,17 @@ export function LookupPanelsProvider({
             : panel,
         ),
       );
+      queueMicrotask(() => requestPanelScroll(id, false));
     },
     [onPanelsChange, requestPanelScroll],
   );
 
   const clearPanels = useCallback(() => {
-    clearScrollFallback();
+    clearScrollRetries();
     pendingScrollRef.current = null;
     onPanelsChange([]);
     panelElementsRef.current.clear();
-  }, [clearScrollFallback, onPanelsChange]);
+  }, [clearScrollRetries, onPanelsChange]);
 
   const value = useMemo(
     () => ({
