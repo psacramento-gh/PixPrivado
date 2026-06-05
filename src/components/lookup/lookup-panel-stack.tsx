@@ -80,12 +80,14 @@ function LookupPanelCard({
   onPageChange,
   onToggleCollapsed,
   registerPanelElement,
+  onPanelBodyExpanded,
 }: {
   locale: Locale;
   panel: LookupPanelRecord;
   onPageChange: (page: number) => void;
   onToggleCollapsed: () => void;
   registerPanelElement: (id: string, element: HTMLElement | null) => void;
+  onPanelBodyExpanded: (id: string) => void;
 }) {
   const prefersReducedMotion = useReducedMotion();
   const kind = panel.kind ?? resolveLookupKind(panel.query);
@@ -159,6 +161,11 @@ function LookupPanelCard({
         }}
         transition={bodyTransition}
         className="overflow-hidden"
+        onAnimationComplete={() => {
+          if (!panel.collapsed) {
+            onPanelBodyExpanded(panel.id);
+          }
+        }}
       >
         <div className="flex flex-col gap-4 pt-1">
           <LookupPanelBody
@@ -181,8 +188,13 @@ export function LookupPanelStack({
   panels: LookupPanelRecord[];
   onPanelsChange: Dispatch<SetStateAction<LookupPanelRecord[]>>;
 }) {
-  const { toggleCollapsed, setPanelPage, registerPanelElement, scrollPanelIntoView } =
-    useLookupPanels();
+  const {
+    toggleCollapsed,
+    setPanelPage,
+    registerPanelElement,
+    scrollPanelIntoView,
+    notifyPanelBodyExpanded,
+  } = useLookupPanels();
   const inFlightRef = useRef(new Set<string>());
   const scrolledReadyPanelRef = useRef<string | null>(null);
 
@@ -274,6 +286,7 @@ export function LookupPanelStack({
           onPageChange={(page) => setPanelPage(panel.id, page)}
           onToggleCollapsed={() => toggleCollapsed(panel.id)}
           registerPanelElement={registerPanelElement}
+          onPanelBodyExpanded={notifyPanelBodyExpanded}
         />
       ))}
     </div>
