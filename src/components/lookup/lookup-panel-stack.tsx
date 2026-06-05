@@ -78,8 +78,21 @@ export function LookupPanelStack({
   panels: LookupPanelRecord[];
   onPanelsChange: Dispatch<SetStateAction<LookupPanelRecord[]>>;
 }) {
-  const { toggleCollapsed, setPanelPage, registerPanelElement } = useLookupPanels();
+  const { toggleCollapsed, setPanelPage, registerPanelElement, scrollPanelIntoView } =
+    useLookupPanels();
   const inFlightRef = useRef(new Set<string>());
+  const scrolledReadyPanelRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const newest = panels.at(-1);
+    if (!newest || newest.collapsed || newest.status !== "ready") return;
+
+    const readyKey = `${newest.id}:${newest.page}:ready`;
+    if (scrolledReadyPanelRef.current === readyKey) return;
+    scrolledReadyPanelRef.current = readyKey;
+
+    requestAnimationFrame(() => scrollPanelIntoView(newest.id));
+  }, [panels, scrollPanelIntoView]);
 
   useEffect(() => {
     const loadingPanels = panels.filter((panel) => panel.status === "loading");
@@ -159,7 +172,7 @@ export function LookupPanelStack({
             key={panel.id}
             ref={(element) => registerPanelElement(panel.id, element)}
             aria-labelledby={`lookup-panel-${panel.id}-heading`}
-            className="flex flex-col gap-2 rounded-lg border bg-muted/20 p-3"
+            className="flex scroll-mt-4 flex-col gap-2 rounded-lg border bg-muted/20 p-3"
           >
             <div className="flex items-center justify-between gap-2">
               <button

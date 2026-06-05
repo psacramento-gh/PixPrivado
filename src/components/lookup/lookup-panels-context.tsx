@@ -19,6 +19,7 @@ type LookupPanelsContextValue = {
   setPanelPage: (id: string, page: number) => void;
   clearPanels: () => void;
   registerPanelElement: (id: string, element: HTMLElement | null) => void;
+  scrollPanelIntoView: (id: string) => void;
 };
 
 const LookupPanelsContext = createContext<LookupPanelsContextValue | null>(null);
@@ -40,20 +41,34 @@ export function LookupPanelsProvider({
   children: ReactNode;
 }) {
   const panelElementsRef = useRef(new Map<string, HTMLElement>());
+  const pendingScrollPanelIdRef = useRef<string | null>(null);
 
-  const registerPanelElement = useCallback((id: string, element: HTMLElement | null) => {
-    if (element) panelElementsRef.current.set(id, element);
-    else panelElementsRef.current.delete(id);
+  const scrollPanelIntoView = useCallback((id: string) => {
+    const element = panelElementsRef.current.get(id);
+    if (!element) {
+      pendingScrollPanelIdRef.current = id;
+      return;
+    }
+
+    pendingScrollPanelIdRef.current = null;
+    element.scrollIntoView({ behavior: "smooth", block: "start" });
+    const heading = element.querySelector<HTMLElement>("[data-lookup-panel-heading]");
+    heading?.focus({ preventScroll: true });
   }, []);
 
-  const focusPanel = useCallback((id: string) => {
-    requestAnimationFrame(() => {
-      const element = panelElementsRef.current.get(id);
-      element?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      const heading = element?.querySelector<HTMLElement>("[data-lookup-panel-heading]");
-      heading?.focus();
-    });
-  }, []);
+  const registerPanelElement = useCallback(
+    (id: string, element: HTMLElement | null) => {
+      if (element) {
+        panelElementsRef.current.set(id, element);
+        if (pendingScrollPanelIdRef.current === id) {
+          requestAnimationFrame(() => scrollPanelIntoView(id));
+        }
+        return;
+      }
+      panelElementsRef.current.delete(id);
+    },
+    [scrollPanelIntoView],
+  );
 
   const openLookup = useCallback(
     (query: string) => {
@@ -69,28 +84,36 @@ export function LookupPanelsProvider({
         status: "loading",
       };
 
+      pendingScrollPanelIdRef.current = id;
       onPanelsChange((prev) => [
         ...prev.map((panel) => ({ ...panel, collapsed: true })),
         nextPanel,
       ]);
-      focusPanel(id);
-    },
-    [focusPanel, onPanelsChange],
-  );
-
-  const toggleCollapsed = useCallback(
-    (id: string) => {
-      onPanelsChange((prev) =>
-        prev.map((panel) =>
-          panel.id === id ? { ...panel, collapsed: !panel.collapsed } : panel,
-        ),
-      );
     },
     [onPanelsChange],
   );
 
+  const toggleCollapsed = useCallback(
+    (id: string) => {
+      let expanding = false;
+      onPanelsChange((prev) =>
+        prev.map((panel) => {
+          if (panel.id !== id) return panel;
+          expanding = panel.collapsed;
+          return { ...panel, collapsed: !panel.collapsed };
+        }),
+      );
+      if (expanding) {
+        pendingScrollPanelIdRef.current = id;
+        requestAnimationFrame(() => scrollPanelIntoView(id));
+      }
+    },
+    [onPanelsChange, scrollPanelIntoView],
+  );
+
   const setPanelPage = useCallback(
     (id: string, page: number) => {
+      pendingScrollPanelIdRef.current = id;
       onPanelsChange((prev) =>
         prev.map((panel) =>
           panel.id === id
@@ -104,8 +127,9 @@ export function LookupPanelsProvider({
             : panel,
         ),
       );
+      requestAnimationFrame(() => scrollPanelIntoView(id));
     },
-    [onPanelsChange],
+    [onPanelsChange, scrollPanelIntoView],
   );
 
   const clearPanels = useCallback(() => {
@@ -121,8 +145,17 @@ export function LookupPanelsProvider({
       setPanelPage,
       clearPanels,
       registerPanelElement,
+      scrollPanelIntoView,
     }),
-    [clearPanels, openLookup, panels, registerPanelElement, setPanelPage, toggleCollapsed],
+    [
+      clearPanels,
+      openLookup,
+      panels,
+      registerPanelElement,
+      scrollPanelIntoView,
+      setPanelPage,
+      toggleCollapsed,
+    ],
   );
 
   return (
