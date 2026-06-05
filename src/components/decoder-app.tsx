@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   clearPersistedDecoderState,
   loadPersistedDecoderBundle,
@@ -22,7 +23,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { extractLocationUrls, hasPixGui } from "@/lib/brcode/analyze";
+import {
+  detectQrKind,
+  extractLocationUrls,
+  hasPixGui,
+} from "@/lib/brcode/analyze";
 import {
   formatDisplayValue,
   getTagDescription,
@@ -66,6 +71,11 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { Camera, ClipboardCopy, ClipboardPaste, ImageUp, ShieldAlert } from "lucide-react";
+import {
+  buildDecoderSharePath,
+  parseDecoderPayloadFromSearch,
+} from "@/lib/decoder/share-url";
+import { ShareDecoderLink } from "@/components/share-decoder-link";
 
 type LocationFetch = {
   url: string;
@@ -103,6 +113,9 @@ function isImageFile(file: File): boolean {
 }
 
 export function DecoderApp() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [restoreDone, setRestoreDone] = useState(false);
   const [locale, setLocale] = useAppLocale();
   const [rawPayload, setRawPayload] = useState("");
@@ -252,10 +265,14 @@ export function DecoderApp() {
     setError(null);
     setImageSubmitted(false);
     clearPersistedDecoderState();
-  }, [clearDecodingPreview, clearImageSession]);
+    if (pathname === "/" && searchParams.has("p")) {
+      router.replace("/", { scroll: false });
+    }
+  }, [clearDecodingPreview, clearImageSession, pathname, router, searchParams]);
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
+  const canSharePayload = parsed ? detectQrKind(parsed.nodes) === "static" : false;
   const rows = parsed ? flattenNodes(parsed.nodes) : [];
   const locations = parsed && isPix ? extractLocationUrls(parsed.nodes) : [];
 
@@ -266,6 +283,18 @@ export function DecoderApp() {
     let cancelled = false;
 
     void (async () => {
+      const urlPayload = parseDecoderPayloadFromSearch(window.location.search);
+      if (urlPayload) {
+        setRawPayload(urlPayload);
+        setCopiaCola(urlPayload);
+        setError(null);
+        setImageSession(null);
+        setImageSubmitted(false);
+        setImagePhase("none");
+        setRestoreDone(true);
+        return;
+      }
+
       const bundle = await loadPersistedDecoderBundle();
       if (cancelled) return;
 
@@ -292,6 +321,26 @@ export function DecoderApp() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!restoreDone || pathname !== "/") return;
+
+    const trimmed = rawPayload.trim();
+    const urlPayload = parseDecoderPayloadFromSearch(searchParams);
+
+    if (!trimmed) {
+      if (urlPayload) router.replace("/", { scroll: false });
+      return;
+    }
+
+    if (!canSharePayload) {
+      if (urlPayload) router.replace("/", { scroll: false });
+      return;
+    }
+
+    if (urlPayload === trimmed) return;
+    router.replace(buildDecoderSharePath(trimmed), { scroll: false });
+  }, [canSharePayload, restoreDone, rawPayload, pathname, router, searchParams]);
 
   useEffect(() => {
     if (!restoreDone) return;
@@ -510,9 +559,16 @@ export function DecoderApp() {
             <>
               <Separator />
               <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t(locale, "structuredView")}
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t(locale, "structuredView")}
+                  </p>
+                  <ShareDecoderLink
+                    payload={rawPayload}
+                    locale={locale}
+                    enabled={canSharePayload}
+                  />
+                </div>
                 <Table className="table-fixed w-full">
                   <TableHeader>
                     <TableRow>
