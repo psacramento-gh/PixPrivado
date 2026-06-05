@@ -139,56 +139,46 @@ export function LookupPanelsProvider({
       if (!trimmed) return;
 
       const queryKey = normalizeLookupQueryKey(trimmed);
-      const scrollIntentRef: { current: PendingPanelScroll | null } = { current: null };
 
-      onPanelsChange((prev) => {
-        const existing = prev.find(
-          (panel) => normalizeLookupQueryKey(panel.query) === queryKey,
-        );
-        if (existing) {
-          scrollIntentRef.current = {
-            id: existing.id,
-            waitForExpand: existing.collapsed,
-          };
-          return prev.map((panel) => ({
+      const existing = panels.find(
+        (panel) => normalizeLookupQueryKey(panel.query) === queryKey,
+      );
+      if (existing) {
+        onPanelsChange((prev) =>
+          prev.map((panel) => ({
             ...panel,
             collapsed: panel.id !== existing.id,
-          }));
-        }
-
-        const id = createPanelId();
-        scrollIntentRef.current = { id, waitForExpand: true };
-        const nextPanel: LookupPanelRecord = {
-          id,
-          query: trimmed,
-          page: 1,
-          collapsed: false,
-          status: "loading",
-        };
-
-        return [
-          ...prev.map((panel) => ({ ...panel, collapsed: true })),
-          nextPanel,
-        ];
-      });
-
-      const scrollIntent = scrollIntentRef.current;
-      if (scrollIntent) {
-        queueMicrotask(() => {
-          requestPanelScroll(scrollIntent.id, scrollIntent.waitForExpand);
-        });
+          })),
+        );
+        queueMicrotask(() => requestPanelScroll(existing.id, existing.collapsed));
+        return;
       }
+
+      const id = createPanelId();
+      const nextPanel: LookupPanelRecord = {
+        id,
+        query: trimmed,
+        page: 1,
+        collapsed: false,
+        status: "loading",
+      };
+
+      onPanelsChange((prev) => [
+        ...prev.map((panel) => ({ ...panel, collapsed: true })),
+        nextPanel,
+      ]);
+      queueMicrotask(() => requestPanelScroll(id, true));
     },
-    [onPanelsChange, requestPanelScroll],
+    [onPanelsChange, panels, requestPanelScroll],
   );
 
   const toggleCollapsed = useCallback(
     (id: string) => {
-      let expanding = false;
+      const panel = panels.find((entry) => entry.id === id);
+      const expanding = panel?.collapsed ?? false;
       onPanelsChange((prev) =>
         prev.map((panel) => {
           if (panel.id !== id) return panel;
-          expanding = panel.collapsed;
           return { ...panel, collapsed: !panel.collapsed };
         }),
       );
@@ -196,7 +186,7 @@ export function LookupPanelsProvider({
         queueMicrotask(() => requestPanelScroll(id, true));
       }
     },
-    [onPanelsChange, requestPanelScroll],
+    [onPanelsChange, panels, requestPanelScroll],
   );
 
   const setPanelPage = useCallback(
