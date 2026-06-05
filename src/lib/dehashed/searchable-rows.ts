@@ -1,5 +1,6 @@
 import { PIX_GUI } from "./constants";
-import { buildMerchantCnpjQuery, buildMerchantNameQuery, buildPixKeyQuery } from "./build-query";
+import { buildMerchantCnpjQuery, buildPixKeyQuery } from "./build-query";
+import { buildMerchantNamePortalUrl } from "@/lib/transparencia/portal-link";
 import { classifyPixKey, type PixKeyKind } from "./classify-pix-key";
 
 export type FlatRow = {
@@ -29,10 +30,6 @@ export function buildDehashedQueryForRow(
 ): string | null {
   if (!row.value.trim()) return null;
 
-  if (row.id === "59" && row.parentId === null) {
-    return buildMerchantNameQuery(row.value);
-  }
-
   if (!isMerchantAccountParent(row.parentId)) return null;
   if (!isPixMerchantAccount(allRows, row.parentId!)) return null;
 
@@ -49,6 +46,22 @@ export function buildDehashedQueryForRow(
 
 export function rowHasDehashedLink(row: FlatRow, allRows: FlatRow[]): boolean {
   return buildDehashedQueryForRow(row, allRows) !== null;
+}
+
+export function buildPortalUrlForMerchantNameRow(
+  row: FlatRow,
+  displayValue: string,
+): string | null {
+  if (!row.value.trim()) return null;
+  if (row.id !== "59" || row.parentId !== null) return null;
+  return buildMerchantNamePortalUrl(row.value, displayValue);
+}
+
+export function rowHasPortalTransparenciaLink(
+  row: FlatRow,
+  displayValue: string,
+): boolean {
+  return buildPortalUrlForMerchantNameRow(row, displayValue) !== null;
 }
 
 function isPixMerchantAccountChildRow(row: FlatRow, allRows: FlatRow[]): boolean {

@@ -1,4 +1,5 @@
 import {
+  buildCnpjQuery,
   buildCpfQuery,
   buildNameQuery,
   buildPixKeyQuery,
@@ -23,6 +24,14 @@ export function buildCpfBreachLookupQuery(cpfDigits: string): string | null {
   const digits = cpfDigits.replace(/\D/g, "");
   if (digits.length !== 11) return null;
   const query = buildCpfQuery(digits);
+  if (!isAllowedDehashedQuery(query)) return null;
+  return query;
+}
+
+export function buildCnpjBreachLookupQuery(cnpjDigits: string): string | null {
+  const digits = cnpjDigits.replace(/\D/g, "");
+  if (digits.length !== 14) return null;
+  const query = buildCnpjQuery(digits);
   if (!isAllowedDehashedQuery(query)) return null;
   return query;
 }

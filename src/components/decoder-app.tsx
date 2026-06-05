@@ -52,12 +52,15 @@ import { useIsDesktop } from "@/lib/use-is-desktop";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { LookupPanelStack } from "@/components/lookup/lookup-panel-stack";
 import { LookupPanelsProvider } from "@/components/lookup/lookup-panels-context";
+import { LookupExternalLink } from "@/components/lookup/lookup-external-link";
 import { LookupValueButton } from "@/components/lookup/lookup-value-button";
 import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
 import {
   buildDehashedQueryForRow,
+  buildPortalUrlForMerchantNameRow,
   getStructuredValueBadgeKind,
   rowHasDehashedLink,
+  rowHasPortalTransparenciaLink,
 } from "@/lib/dehashed/searchable-rows";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { MerchantCityEnrichedValue } from "@/components/merchant-city-enriched-value";
@@ -862,7 +865,12 @@ function StructuredDataValue({
   const badgeKind = getStructuredValueBadgeKind(row, rows);
 
   let valueNode: ReactNode = displayValue;
-  if (rowHasDehashedLink(row, rows)) {
+  if (rowHasPortalTransparenciaLink(row, displayValue)) {
+    const portalUrl = buildPortalUrlForMerchantNameRow(row, displayValue);
+    if (portalUrl) {
+      valueNode = <LookupExternalLink displayValue={displayValue} href={portalUrl} />;
+    }
+  } else if (rowHasDehashedLink(row, rows)) {
     const query = buildDehashedQueryForRow(row, rows);
     if (query) {
       valueNode = <LookupValueButton displayValue={displayValue} query={query} />;

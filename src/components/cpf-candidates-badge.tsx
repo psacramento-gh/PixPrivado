@@ -1,6 +1,8 @@
 "use client";
 
+import { ClipboardCopy } from "lucide-react";
 import { useMemo, useState } from "react";
+import { LookupExternalLink } from "@/components/lookup/lookup-external-link";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -12,6 +14,7 @@ import {
   formatCpfCandidateList,
 } from "@/lib/br/cpf-candidates";
 import type { Locale } from "@/lib/brcode/labels";
+import { buildPessoaFisicaPortalUrlFromCpfDigits } from "@/lib/transparencia/portal-link";
 import { t } from "@/lib/i18n";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { cn } from "@/lib/utils";
@@ -25,17 +28,22 @@ export function CpfCandidatesBadge({ rawValue, locale }: CpfCandidatesBadgeProps
   const isDesktop = useIsDesktop();
   const [copiedDigits, setCopiedDigits] = useState<string | null>(null);
 
-  const formattedCandidates = useMemo(() => {
-    const digits = enumerateCpfCandidates(rawValue);
-    return formatCpfCandidateList(digits);
+  const candidates = useMemo(() => {
+    const digitsList = enumerateCpfCandidates(rawValue);
+    const formattedList = formatCpfCandidateList(digitsList);
+    return digitsList.map((digits, index) => ({
+      digits,
+      formatted: formattedList[index],
+      portalUrl: buildPessoaFisicaPortalUrlFromCpfDigits(digits),
+    }));
   }, [rawValue]);
 
-  if (formattedCandidates.length === 0) {
+  if (candidates.length === 0) {
     return null;
   }
 
   const badgeLabel = t(locale, "cpfCandidatesBadge");
-  const count = formattedCandidates.length;
+  const count = candidates.length;
 
   async function copyCandidate(digits: string, formatted: string) {
     try {
@@ -82,28 +90,42 @@ export function CpfCandidatesBadge({ rawValue, locale }: CpfCandidatesBadgeProps
           className="flex max-h-56 flex-col gap-0.5 overflow-y-auto font-mono text-xs leading-snug"
           aria-label={t(locale, "cpfCandidatesListAria")}
         >
-          {formattedCandidates.map((formatted) => {
-            const digits = formatted.replace(/\D/g, "");
+          {candidates.map(({ digits, formatted, portalUrl }) => {
             const copied = copiedDigits === digits;
             return (
-              <li key={formatted}>
+              <li
+                key={digits}
+                className={cn(
+                  "flex items-start gap-1 rounded px-2 py-1",
+                  copied && "bg-muted",
+                )}
+              >
+                {portalUrl ? (
+                  <LookupExternalLink displayValue={formatted} href={portalUrl} />
+                ) : (
+                  <span className="min-w-0 break-all">{formatted}</span>
+                )}
                 <button
                   type="button"
                   onClick={() => void copyCandidate(digits, formatted)}
                   className={cn(
-                    "w-full rounded px-2 py-1 text-left transition-colors",
-                    "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-                    copied && "bg-muted text-foreground",
+                    "mt-0.5 shrink-0 rounded p-0.5 text-muted-foreground transition-colors",
+                    "hover:bg-muted-foreground/15 hover:text-foreground",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
                   )}
                   title={t(locale, "cpfCandidatesCopyHint")}
+                  aria-label={t(locale, "cpfCandidatesCopyHint")}
                 >
-                  {formatted}
-                  {copied ? (
-                    <span className="ml-2 font-sans text-[10px] text-muted-foreground">
-                      {t(locale, "cpfCandidatesCopied")}
-                    </span>
-                  ) : null}
+                  <ClipboardCopy className="size-3.5" aria-hidden />
+                  <span className="sr-only">
+                    {copied ? t(locale, "cpfCandidatesCopied") : formatted}
+                  </span>
                 </button>
+                {copied ? (
+                  <span className="sr-only" aria-live="polite">
+                    {t(locale, "cpfCandidatesCopied")}
+                  </span>
+                ) : null}
               </li>
             );
           })}
