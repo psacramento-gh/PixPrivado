@@ -555,19 +555,20 @@ export function DecoderApp() {
           <Separator />
           <RawPayloadSection payload={rawPayload} locale={locale} />
 
-          <ShareDecoderLink
-            payload={rawPayload}
-            locale={locale}
-            enabled={canSharePayload}
-          />
-
           {isPix && rows.length > 0 ? (
             <>
               <Separator />
               <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t(locale, "structuredView")}
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t(locale, "structuredView")}
+                  </p>
+                  <ShareDecoderLink
+                    payload={rawPayload}
+                    locale={locale}
+                    enabled={canSharePayload}
+                  />
+                </div>
                 <Table className="table-fixed w-full">
                   <TableHeader>
                     <TableRow>
