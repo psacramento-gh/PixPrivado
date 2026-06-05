@@ -3,7 +3,6 @@ import test from "node:test";
 import {
   buildDecoderSharePath,
   buildDecoderShareUrl,
-  isDecoderShareUrlLong,
   parseDecoderPayloadFromSearch,
   truncateShareUrlForDisplay,
 } from "./share-url.ts";
@@ -60,7 +59,3 @@ test("truncateShareUrlForDisplay truncates long urls in the middle", () => {
   assert.match(shown, /…/);
 });
 
-test("isDecoderShareUrlLong flags urls at or above the warning threshold", () => {
-  assert.equal(isDecoderShareUrlLong("a".repeat(2_047)), false);
-  assert.equal(isDecoderShareUrlLong("a".repeat(2_048)), true);
-});

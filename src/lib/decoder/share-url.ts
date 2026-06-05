@@ -1,9 +1,6 @@
 /** Query param carrying the raw EMV / PIX payload for shareable decoder links. */
 export const DECODER_PAYLOAD_PARAM = "p";
 
-/** Browsers and some chat apps may truncate URLs beyond ~2k characters. */
-export const DECODER_SHARE_URL_WARN_LENGTH = 2_048;
-
 export function buildDecoderSharePath(payload: string): string {
   const trimmed = payload.trim();
   if (!trimmed) return "/";
@@ -48,8 +45,4 @@ export function truncateShareUrlForDisplay(
   const head = Math.ceil(keep / 2);
   const tail = Math.floor(keep / 2);
   return `${url.slice(0, head)}${ellipsis}${url.slice(-tail)}`;
-}
-
-export function isDecoderShareUrlLong(url: string): boolean {
-  return url.length >= DECODER_SHARE_URL_WARN_LENGTH;
 }

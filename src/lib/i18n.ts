@@ -26,9 +26,7 @@ export const messages = {
     shareLinkCopy: "Copy link",
     shareLinkCopied: "Copied",
     shareLinkHint:
-      "This link contains the full PIX payload. Anyone with the link can decode the same structured view.",
-    shareLinkTooLong:
-      "This link is very long; some messengers or browsers may truncate it.",
+      "Static PIX only. The link contains the full payload so anyone can open the same structured view.",
     rawPayload: "Raw payload",
     copyPayload: "Copy payload",
     copyPayloadCopied: "Copied",
@@ -200,9 +198,7 @@ export const messages = {
     shareLinkCopy: "Copiar link",
     shareLinkCopied: "Copiado",
     shareLinkHint:
-      "Este link contém o payload PIX completo. Quem tiver o link verá a mesma visualização estruturada.",
-    shareLinkTooLong:
-      "Este link é muito longo; alguns apps ou navegadores podem truncá-lo.",
+      "Somente Pix estático. O link contém o payload completo para abrir a mesma visualização estruturada.",
     rawPayload: "Payload bruto",
     copyPayload: "Copiar payload",
     copyPayloadCopied: "Copiado",

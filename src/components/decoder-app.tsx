@@ -23,7 +23,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { extractLocationUrls, hasPixGui } from "@/lib/brcode/analyze";
+import {
+  detectQrKind,
+  extractLocationUrls,
+  hasPixGui,
+} from "@/lib/brcode/analyze";
 import {
   formatDisplayValue,
   getTagDescription,
@@ -268,6 +272,7 @@ export function DecoderApp() {
 
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
+  const canSharePayload = parsed ? detectQrKind(parsed.nodes) === "static" : false;
   const rows = parsed ? flattenNodes(parsed.nodes) : [];
   const locations = parsed && isPix ? extractLocationUrls(parsed.nodes) : [];
 
@@ -328,9 +333,14 @@ export function DecoderApp() {
       return;
     }
 
+    if (!canSharePayload) {
+      if (urlPayload) router.replace("/", { scroll: false });
+      return;
+    }
+
     if (urlPayload === trimmed) return;
     router.replace(buildDecoderSharePath(trimmed), { scroll: false });
-  }, [restoreDone, rawPayload, pathname, router, searchParams]);
+  }, [canSharePayload, restoreDone, rawPayload, pathname, router, searchParams]);
 
   useEffect(() => {
     if (!restoreDone) return;
@@ -545,7 +555,11 @@ export function DecoderApp() {
           <Separator />
           <RawPayloadSection payload={rawPayload} locale={locale} />
 
-          <ShareDecoderLink payload={rawPayload} locale={locale} />
+          <ShareDecoderLink
+            payload={rawPayload}
+            locale={locale}
+            enabled={canSharePayload}
+          />
 
           {isPix && rows.length > 0 ? (
             <>
