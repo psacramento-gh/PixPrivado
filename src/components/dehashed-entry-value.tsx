@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { IpEnrichedValue } from "@/components/ip-enriched-value";
 import { LookupValueButton } from "@/components/lookup/lookup-value-button";
+import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { isBirthField } from "@/lib/age/is-birth-field";
 import type { Locale } from "@/lib/brcode/labels";
 import { buildBreachLookupQuery } from "@/lib/receita/breach-link";
@@ -42,14 +43,18 @@ function renderEmailFieldValue(value: string): ReactNode {
   return joinListParts(nodes);
 }
 
-/** Renders a Dehashed breach entry cell: email pivots only; phone stays plain text. */
+/** Renders a Dehashed breach entry cell: email pivots only; phone gets WhatsApp/DDD only. */
 export function DehashedEntryValue({ field, value, locale }: DehashedEntryValueProps) {
   if (isDehashedEmailField(field)) {
     return <>{renderEmailFieldValue(value)}</>;
   }
 
   if (isDehashedPhoneField(field)) {
-    return <>{value}</>;
+    return (
+      <PhoneEnrichedValue rawValue={value} locale={locale}>
+        {value}
+      </PhoneEnrichedValue>
+    );
   }
 
   return (
