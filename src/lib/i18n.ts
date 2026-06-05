@@ -48,6 +48,11 @@ export const messages = {
     pasteImageHint: "Or press Ctrl+V / ⌘V with an image on the clipboard",
     invalidImageFile: "Please choose an image file (PNG, JPEG, WebP, or GIF).",
     path: "Path",
+    lookupPanelsSection: "Lookups",
+    lookupExpand: "Expand",
+    lookupCollapse: "Collapse",
+    lookupLoading: "Loading…",
+    lookupReceitaResults: "Company registry (Receita)",
     backToDecoder: "Back to explorer",
     backToReceita: "Back to company registry",
     dehashedSubtitle: "Breach data lookup for a value from your decoded PIX payload.",
@@ -219,6 +224,11 @@ export const messages = {
     invalidImageFile:
       "Selecione um arquivo de imagem (PNG, JPEG, WebP ou GIF).",
     path: "Caminho",
+    lookupPanelsSection: "Consultas",
+    lookupExpand: "Expandir",
+    lookupCollapse: "Recolher",
+    lookupLoading: "Carregando…",
+    lookupReceitaResults: "Dados cadastrais (Receita)",
     backToDecoder: "Voltar ao explorador",
     backToReceita: "Voltar aos dados cadastrais",
     dehashedSubtitle:

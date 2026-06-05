@@ -50,7 +50,10 @@ import { QrDecodeOverlay } from "@/components/qr-decode-overlay";
 import { QrImagePreview } from "@/components/qr-image-preview";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { useAppLocale } from "@/lib/use-app-locale";
-import { DehashedValueLink } from "@/components/dehashed-value-link";
+import { LookupPanelStack } from "@/components/lookup/lookup-panel-stack";
+import { LookupPanelsProvider } from "@/components/lookup/lookup-panels-context";
+import { LookupValueButton } from "@/components/lookup/lookup-value-button";
+import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
 import {
   buildDehashedQueryForRow,
   getStructuredValueBadgeKind,
@@ -128,6 +131,7 @@ export function DecoderApp() {
     null,
   );
   const [decodingFileName, setDecodingFileName] = useState<string | null>(null);
+  const [lookupPanels, setLookupPanels] = useState<LookupPanelRecord[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const decodeAbortRef = useRef<AbortController | null>(null);
@@ -152,6 +156,7 @@ export function DecoderApp() {
       clearImageSession();
       setImageSubmitted(false);
       setImagePhase("none");
+      setLookupPanels([]);
       processPayload(payload);
     },
     [clearImageSession, processPayload],
@@ -191,6 +196,7 @@ export function DecoderApp() {
       clearImageSession();
       clearDecodingPreview();
       setImageSubmitted(false);
+      setLookupPanels([]);
       setDecodingFileName(file.name);
       setImagePhase("loading");
       const url = URL.createObjectURL(file);
@@ -264,6 +270,7 @@ export function DecoderApp() {
     setCopiaCola("");
     setError(null);
     setImageSubmitted(false);
+    setLookupPanels([]);
     clearPersistedDecoderState();
     if (pathname === "/" && searchParams.has("p")) {
       router.replace("/", { scroll: false });
@@ -381,6 +388,7 @@ export function DecoderApp() {
   }, [beginImageFile, isDesktop, phase]);
 
   return (
+    <LookupPanelsProvider panels={lookupPanels} onPanelsChange={setLookupPanels}>
     <AppFrame
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
@@ -623,6 +631,12 @@ export function DecoderApp() {
             </>
           ) : null}
 
+          <LookupPanelStack
+            locale={locale}
+            panels={lookupPanels}
+            onPanelsChange={setLookupPanels}
+          />
+
           <div className="flex flex-col gap-2 pb-4 sm:flex-row sm:justify-start">
             <Button
               type="button"
@@ -643,6 +657,7 @@ export function DecoderApp() {
         </p>
       ) : null}
     </AppFrame>
+    </LookupPanelsProvider>
   );
 }
 
@@ -850,7 +865,7 @@ function StructuredDataValue({
   if (rowHasDehashedLink(row, rows)) {
     const query = buildDehashedQueryForRow(row, rows);
     if (query) {
-      valueNode = <DehashedValueLink displayValue={displayValue} query={query} />;
+      valueNode = <LookupValueButton displayValue={displayValue} query={query} />;
     }
   }
 

@@ -1,0 +1,216 @@
+"use client";
+
+import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { LookupCpfBody } from "@/components/lookup/lookup-cpf-body";
+import { LookupDehashedBody } from "@/components/lookup/lookup-dehashed-body";
+import { useLookupPanels } from "@/components/lookup/lookup-panels-context";
+import { LookupReceitaBody } from "@/components/lookup/lookup-receita-body";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import type { Locale } from "@/lib/brcode/labels";
+import { resolveLookupKind, type LookupKind } from "@/lib/lookup/kind";
+import type { LookupApiResponse, LookupPanelRecord } from "@/lib/lookup/panel-types";
+import type { CpfHubLookupResult } from "@/lib/cpfhub/types";
+import type { DehashedSearchResult } from "@/lib/dehashed/api-search";
+import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
+import { t, type MessageKey } from "@/lib/i18n";
+
+function panelTitleKey(kind: LookupKind): MessageKey {
+  switch (kind) {
+    case "cpf":
+      return "cpfhubResults";
+    case "cnpj":
+      return "lookupReceitaResults";
+    case "dehashed":
+      return "dehashedResults";
+  }
+}
+
+function LookupPanelBody({
+  locale,
+  panel,
+  onPageChange,
+}: {
+  locale: Locale;
+  panel: LookupPanelRecord;
+  onPageChange: (page: number) => void;
+}) {
+  if (panel.status === "loading") {
+    return <p className="text-sm text-muted-foreground">{t(locale, "lookupLoading")}</p>;
+  }
+
+  if (panel.status === "error" || !panel.result || !panel.kind) {
+    return (
+      <p className="text-sm text-destructive" role="alert">
+        {panel.errorMessage ?? t(locale, "fetchFailed")}
+      </p>
+    );
+  }
+
+  switch (panel.kind) {
+    case "cpf":
+      return (
+        <LookupCpfBody locale={locale} result={panel.result as CpfHubLookupResult} />
+      );
+    case "cnpj":
+      return (
+        <LookupReceitaBody locale={locale} result={panel.result as ReceitaFetchResult} />
+      );
+    case "dehashed":
+      return (
+        <LookupDehashedBody
+          locale={locale}
+          result={panel.result as DehashedSearchResult}
+          page={panel.page}
+          onPageChange={onPageChange}
+        />
+      );
+  }
+}
+
+export function LookupPanelStack({
+  locale,
+  panels,
+  onPanelsChange,
+}: {
+  locale: Locale;
+  panels: LookupPanelRecord[];
+  onPanelsChange: Dispatch<SetStateAction<LookupPanelRecord[]>>;
+}) {
+  const { toggleCollapsed, setPanelPage, registerPanelElement } = useLookupPanels();
+  const inFlightRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    const loadingPanels = panels.filter((panel) => panel.status === "loading");
+    if (loadingPanels.length === 0) return;
+
+    for (const panel of loadingPanels) {
+      const fetchKey = `${panel.id}:${panel.page}`;
+      if (inFlightRef.current.has(fetchKey)) continue;
+      inFlightRef.current.add(fetchKey);
+
+      void (async () => {
+        try {
+          const params = new URLSearchParams({
+            q: panel.query,
+            page: String(panel.page),
+          });
+          const response = await fetch(`/api/lookup?${params.toString()}`);
+          const json = (await response.json()) as LookupApiResponse | { error?: string };
+
+          onPanelsChange((prev) =>
+            prev.map((current) => {
+              if (current.id !== panel.id) return current;
+              if (!response.ok || "error" in json) {
+                return {
+                  ...current,
+                  status: "error" as const,
+                  errorMessage:
+                    "error" in json && json.error
+                      ? json.error
+                      : t(locale, "fetchFailed"),
+                };
+              }
+
+              const data = json as LookupApiResponse;
+              return {
+                ...current,
+                status: "ready" as const,
+                kind: data.kind,
+                result: data.result,
+                errorMessage: undefined,
+              };
+            }),
+          );
+        } catch {
+          onPanelsChange((prev) =>
+            prev.map((current) =>
+              current.id === panel.id
+                ? {
+                    ...current,
+                    status: "error" as const,
+                    errorMessage: t(locale, "fetchFailed"),
+                  }
+                : current,
+            ),
+          );
+        } finally {
+          inFlightRef.current.delete(fetchKey);
+        }
+      })();
+    }
+  }, [locale, onPanelsChange, panels]);
+
+  if (panels.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Separator />
+      <p className="text-xs font-medium text-muted-foreground">
+        {t(locale, "lookupPanelsSection")}
+      </p>
+      {panels.map((panel) => {
+        const kind = panel.kind ?? resolveLookupKind(panel.query);
+        const title = t(locale, panelTitleKey(kind));
+
+        return (
+          <section
+            key={panel.id}
+            ref={(element) => registerPanelElement(panel.id, element)}
+            aria-labelledby={`lookup-panel-${panel.id}-heading`}
+            className="flex flex-col gap-2 rounded-lg border bg-muted/20 p-3"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                id={`lookup-panel-${panel.id}-heading`}
+                data-lookup-panel-heading
+                tabIndex={-1}
+                onClick={() => toggleCollapsed(panel.id)}
+                className="min-w-0 flex-1 text-left"
+              >
+                <p className="text-xs font-medium text-muted-foreground">{title}</p>
+                <p className="font-mono text-xs break-all text-foreground">
+                  {panel.query}
+                </p>
+              </button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className="h-auto shrink-0 py-0.5"
+                onClick={() => toggleCollapsed(panel.id)}
+                aria-expanded={!panel.collapsed}
+                aria-controls={`lookup-panel-${panel.id}-body`}
+                aria-label={
+                  panel.collapsed
+                    ? t(locale, "lookupExpand")
+                    : t(locale, "lookupCollapse")
+                }
+              >
+                {panel.collapsed ? (
+                  <ChevronDown className="size-3.5 shrink-0" aria-hidden />
+                ) : (
+                  <ChevronUp className="size-3.5 shrink-0" aria-hidden />
+                )}
+                {panel.collapsed
+                  ? t(locale, "lookupExpand")
+                  : t(locale, "lookupCollapse")}
+              </Button>
+            </div>
+            {!panel.collapsed ? (
+              <div id={`lookup-panel-${panel.id}-body`} className="flex flex-col gap-4 pt-1">
+                <LookupPanelBody
+                  locale={locale}
+                  panel={panel}
+                  onPageChange={(page) => setPanelPage(panel.id, page)}
+                />
+              </div>
+            ) : null}
+          </section>
+        );
+      })}
+    </div>
+  );
+}

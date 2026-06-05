@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchDehashed } from "@/lib/dehashed/api-search";
 import { isAllowedDehashedQuery } from "@/lib/dehashed/build-query";
-import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
 
 export async function POST(request: NextRequest) {
   let body: { query?: string };
@@ -20,16 +19,12 @@ export async function POST(request: NextRequest) {
 
   if (!result.ok) {
     return NextResponse.json(
-      {
-        error: result.error,
-        url: buildDehashedResultsPageUrl(query),
-      },
+      { error: result.error },
       { status: result.status ?? 502 },
     );
   }
 
   return NextResponse.json({
-    url: buildDehashedResultsPageUrl(query),
     total: result.total,
   });
 }
