@@ -4,7 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -18,7 +18,7 @@ import { APP_MOTION_DURATION } from "@/lib/motion-presets";
 
 type PendingPanelScroll = {
   id: string;
-  afterExpand: boolean;
+  waitForExpand: boolean;
 };
 
 type LookupPanelsContextValue = {
@@ -29,6 +29,7 @@ type LookupPanelsContextValue = {
   clearPanels: () => void;
   registerPanelElement: (id: string, element: HTMLElement | null) => void;
   scrollPanelIntoView: (id: string) => void;
+  notifyPanelBodyExpanded: (id: string) => void;
 };
 
 const LookupPanelsContext = createContext<LookupPanelsContextValue | null>(null);
@@ -51,14 +52,21 @@ export function LookupPanelsProvider({
 }) {
   const panelElementsRef = useRef(new Map<string, HTMLElement>());
   const pendingScrollRef = useRef<PendingPanelScroll | null>(null);
-  const [scrollTick, setScrollTick] = useState(0);
+  const scrollFallbackTimerRef = useRef<number | null>(null);
+  const [scrollRequest, setScrollRequest] = useState(0);
+
+  const clearScrollFallback = useCallback(() => {
+    if (scrollFallbackTimerRef.current !== null) {
+      window.clearTimeout(scrollFallbackTimerRef.current);
+      scrollFallbackTimerRef.current = null;
+    }
+  }, []);
 
   const scrollPanelIntoView = useCallback(
     (id: string, options?: { behavior?: ScrollBehavior }) => {
       const element = panelElementsRef.current.get(id);
       if (!element) return false;
 
-      pendingScrollRef.current = null;
       element.scrollIntoView({
         behavior: options?.behavior ?? "smooth",
         block: "start",
@@ -70,43 +78,65 @@ export function LookupPanelsProvider({
     [],
   );
 
-  const queuePanelScroll = useCallback((id: string, afterExpand: boolean) => {
-    pendingScrollRef.current = { id, afterExpand };
-    setScrollTick((tick) => tick + 1);
-  }, []);
+  const commitPanelScroll = useCallback(
+    (id: string) => {
+      if (pendingScrollRef.current?.id !== id) return;
 
-  useEffect(() => {
+      const panel = panels.find((entry) => entry.id === id);
+      if (!panel || panel.collapsed) return;
+      if (!scrollPanelIntoView(id, { behavior: "auto" })) return;
+
+      clearScrollFallback();
+      pendingScrollRef.current = null;
+    },
+    [clearScrollFallback, panels, scrollPanelIntoView],
+  );
+
+  const requestPanelScroll = useCallback(
+    (id: string, waitForExpand: boolean) => {
+      clearScrollFallback();
+      pendingScrollRef.current = { id, waitForExpand };
+
+      if (waitForExpand) {
+        scrollFallbackTimerRef.current = window.setTimeout(() => {
+          commitPanelScroll(id);
+        }, APP_MOTION_DURATION * 1000 + 50);
+        return;
+      }
+
+      setScrollRequest((request) => request + 1);
+    },
+    [clearScrollFallback, commitPanelScroll],
+  );
+
+  const notifyPanelBodyExpanded = useCallback(
+    (id: string) => {
+      if (pendingScrollRef.current?.id !== id || !pendingScrollRef.current.waitForExpand) {
+        return;
+      }
+      commitPanelScroll(id);
+    },
+    [commitPanelScroll],
+  );
+
+  useLayoutEffect(() => {
     const pending = pendingScrollRef.current;
-    if (!pending) return;
+    if (!pending || pending.waitForExpand) return;
 
     const panel = panels.find((entry) => entry.id === pending.id);
     if (!panel || panel.collapsed) return;
     if (!panelElementsRef.current.has(pending.id)) return;
 
-    const { id, afterExpand } = pending;
-    const delay = afterExpand ? APP_MOTION_DURATION * 1000 + 16 : 0;
+    commitPanelScroll(pending.id);
+  }, [commitPanelScroll, panels, scrollRequest]);
 
-    const timer = window.setTimeout(() => {
-      if (pendingScrollRef.current?.id !== id) return;
-      scrollPanelIntoView(id, { behavior: "auto" });
-    }, delay);
-
-    return () => window.clearTimeout(timer);
-  }, [panels, scrollPanelIntoView, scrollTick]);
-
-  const registerPanelElement = useCallback(
-    (id: string, element: HTMLElement | null) => {
-      if (element) {
-        panelElementsRef.current.set(id, element);
-        if (pendingScrollRef.current?.id === id) {
-          setScrollTick((tick) => tick + 1);
-        }
-        return;
-      }
-      panelElementsRef.current.delete(id);
-    },
-    [],
-  );
+  const registerPanelElement = useCallback((id: string, element: HTMLElement | null) => {
+    if (element) {
+      panelElementsRef.current.set(id, element);
+      return;
+    }
+    panelElementsRef.current.delete(id);
+  }, []);
 
   const openLookup = useCallback(
     (query: string) => {
@@ -121,7 +151,10 @@ export function LookupPanelsProvider({
           (panel) => normalizeLookupQueryKey(panel.query) === queryKey,
         );
         if (existing) {
-          scrollIntentRef.current = { id: existing.id, afterExpand: existing.collapsed };
+          scrollIntentRef.current = {
+            id: existing.id,
+            waitForExpand: existing.collapsed,
+          };
           return prev.map((panel) => ({
             ...panel,
             collapsed: panel.id !== existing.id,
@@ -129,7 +162,7 @@ export function LookupPanelsProvider({
         }
 
         const id = createPanelId();
-        scrollIntentRef.current = { id, afterExpand: true };
+        scrollIntentRef.current = { id, waitForExpand: true };
         const nextPanel: LookupPanelRecord = {
           id,
           query: trimmed,
@@ -146,10 +179,10 @@ export function LookupPanelsProvider({
 
       const scrollIntent = scrollIntentRef.current;
       if (scrollIntent) {
-        queuePanelScroll(scrollIntent.id, scrollIntent.afterExpand);
+        requestPanelScroll(scrollIntent.id, scrollIntent.waitForExpand);
       }
     },
-    [onPanelsChange, queuePanelScroll],
+    [onPanelsChange, requestPanelScroll],
   );
 
   const toggleCollapsed = useCallback(
@@ -163,15 +196,15 @@ export function LookupPanelsProvider({
         }),
       );
       if (expanding) {
-        queuePanelScroll(id, true);
+        requestPanelScroll(id, true);
       }
     },
-    [onPanelsChange, queuePanelScroll],
+    [onPanelsChange, requestPanelScroll],
   );
 
   const setPanelPage = useCallback(
     (id: string, page: number) => {
-      queuePanelScroll(id, false);
+      requestPanelScroll(id, false);
       onPanelsChange((prev) =>
         prev.map((panel) =>
           panel.id === id
@@ -186,14 +219,15 @@ export function LookupPanelsProvider({
         ),
       );
     },
-    [onPanelsChange, queuePanelScroll],
+    [onPanelsChange, requestPanelScroll],
   );
 
   const clearPanels = useCallback(() => {
+    clearScrollFallback();
+    pendingScrollRef.current = null;
     onPanelsChange([]);
     panelElementsRef.current.clear();
-    pendingScrollRef.current = null;
-  }, [onPanelsChange]);
+  }, [clearScrollFallback, onPanelsChange]);
 
   const value = useMemo(
     () => ({
@@ -204,9 +238,11 @@ export function LookupPanelsProvider({
       clearPanels,
       registerPanelElement,
       scrollPanelIntoView,
+      notifyPanelBodyExpanded,
     }),
     [
       clearPanels,
+      notifyPanelBodyExpanded,
       openLookup,
       panels,
       registerPanelElement,
