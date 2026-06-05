@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AgeEnrichedValue } from "@/components/age-enriched-value";
 import { CnaeEnrichedValue } from "@/components/cnae-enriched-value";
 import { CpfSocioEnrichedValue } from "@/components/cpf-socio-enriched-value";
-import { LookupExternalLink } from "@/components/lookup/lookup-external-link";
+import { LookupPortalLink } from "@/components/lookup/lookup-portal-link";
 import { LookupValueButton } from "@/components/lookup/lookup-value-button";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
@@ -63,7 +63,11 @@ function buildReceitaNamePortalUrl(name: string, fieldPath: string): string | nu
     : buildPessoaFisicaPortalUrlFromName(name);
 }
 
-function renderPortalNameValue(value: string, fieldPath: string): ReactNode {
+function renderPortalNameValue(
+  value: string,
+  fieldPath: string,
+  locale: Locale,
+): ReactNode {
   const embedded = extractTrailingCpfFromText(value);
   if (embedded) {
     const nameUrl = buildReceitaNamePortalUrl(embedded.namePart, fieldPath);
@@ -71,14 +75,22 @@ function renderPortalNameValue(value: string, fieldPath: string): ReactNode {
     return (
       <>
         {nameUrl ? (
-          <LookupExternalLink displayValue={embedded.namePart} href={nameUrl} />
+          <LookupPortalLink
+            displayValue={embedded.namePart}
+            href={nameUrl}
+            locale={locale}
+          />
         ) : (
           embedded.namePart
         )}
         {cpfUrl ? (
           <>
             {" "}
-            <LookupExternalLink displayValue={embedded.cpfFormatted} href={cpfUrl} />
+            <LookupPortalLink
+              displayValue={embedded.cpfFormatted}
+              href={cpfUrl}
+              locale={locale}
+            />
           </>
         ) : (
           <> {embedded.cpfFormatted}</>
@@ -89,7 +101,7 @@ function renderPortalNameValue(value: string, fieldPath: string): ReactNode {
 
   const nameUrl = buildReceitaNamePortalUrl(value, fieldPath);
   return nameUrl ? (
-    <LookupExternalLink displayValue={value} href={nameUrl} />
+    <LookupPortalLink displayValue={value} href={nameUrl} locale={locale} />
   ) : (
     <>{value}</>
   );
@@ -112,7 +124,7 @@ export function ReceitaCellValue({ fieldPath, value, locale }: ReceitaCellValueP
       const display = formatCnpj(digits);
       const portalUrl = buildPessoaJuridicaPortalUrlFromCnpjDigits(digits);
       content = portalUrl ? (
-        <LookupExternalLink displayValue={display} href={portalUrl} />
+        <LookupPortalLink displayValue={display} href={portalUrl} locale={locale} />
       ) : (
         <>{display}</>
       );
@@ -127,7 +139,7 @@ export function ReceitaCellValue({ fieldPath, value, locale }: ReceitaCellValueP
       content = <>{value}</>;
     }
   } else if (isReceitaDehashedNameField(fieldPath)) {
-    content = renderPortalNameValue(value, fieldPath);
+    content = renderPortalNameValue(value, fieldPath, locale);
   } else {
     const breachQuery = buildBreachLookupQuery(value);
     content =

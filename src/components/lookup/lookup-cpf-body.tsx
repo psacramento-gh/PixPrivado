@@ -104,6 +104,7 @@ export function LookupCpfBody({
                   <CpfHubFieldValue
                     field={row.portalField}
                     displayValue={row.value}
+                    locale={locale}
                     cpfDigits={row.cpfDigits}
                   />
                 ) : (
