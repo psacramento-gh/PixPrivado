@@ -10,6 +10,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
+import { normalizeLookupQueryKey } from "@/lib/lookup/normalize-query-key";
 import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
 
 type LookupPanelsContextValue = {
@@ -75,22 +76,38 @@ export function LookupPanelsProvider({
       const trimmed = query.trim();
       if (!trimmed) return;
 
-      const id = createPanelId();
-      const nextPanel: LookupPanelRecord = {
-        id,
-        query: trimmed,
-        page: 1,
-        collapsed: false,
-        status: "loading",
-      };
+      const queryKey = normalizeLookupQueryKey(trimmed);
 
-      pendingScrollPanelIdRef.current = id;
-      onPanelsChange((prev) => [
-        ...prev.map((panel) => ({ ...panel, collapsed: true })),
-        nextPanel,
-      ]);
+      onPanelsChange((prev) => {
+        const existing = prev.find(
+          (panel) => normalizeLookupQueryKey(panel.query) === queryKey,
+        );
+        if (existing) {
+          pendingScrollPanelIdRef.current = existing.id;
+          requestAnimationFrame(() => scrollPanelIntoView(existing.id));
+          return prev.map((panel) => ({
+            ...panel,
+            collapsed: panel.id !== existing.id,
+          }));
+        }
+
+        const id = createPanelId();
+        const nextPanel: LookupPanelRecord = {
+          id,
+          query: trimmed,
+          page: 1,
+          collapsed: false,
+          status: "loading",
+        };
+
+        pendingScrollPanelIdRef.current = id;
+        return [
+          ...prev.map((panel) => ({ ...panel, collapsed: true })),
+          nextPanel,
+        ];
+      });
     },
-    [onPanelsChange],
+    [onPanelsChange, scrollPanelIntoView],
   );
 
   const toggleCollapsed = useCallback(
