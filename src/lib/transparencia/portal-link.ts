@@ -2,6 +2,7 @@ import { formatCnpj, formatCpf } from "@/lib/br/format-document";
 import {
   buildMerchantNameQuery,
   isAllowedDehashedQuery,
+  isMerchantNameIdentifier,
 } from "@/lib/dehashed/build-query";
 import {
   buildCnpjBreachLookupQuery,
@@ -71,11 +72,14 @@ export function buildPessoaJuridicaPortalUrlFromCnpjDigits(
   );
 }
 
-/** EMV tag 59 — same gating as Dehashed merchant name lookup. */
-export function buildMerchantNamePortalUrl(
+/** EMV tag 59 identifiers (CPF/CNPJ/email/phone) — Portal da Transparência lookup. */
+export function buildMerchantNameIdentifierPortalUrl(
   rawValue: string,
   displayValue: string,
 ): string | null {
+  const trimmed = rawValue.trim();
+  if (!trimmed || !isMerchantNameIdentifier(trimmed)) return null;
+
   const query = buildMerchantNameQuery(rawValue);
   if (!query || !isAllowedDehashedQuery(query)) return null;
 

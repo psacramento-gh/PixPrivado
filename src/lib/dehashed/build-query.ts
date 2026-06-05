@@ -74,6 +74,11 @@ export function buildCnpjQuery(cnpj: string): string {
   return cnpj.replace(/\D/g, "");
 }
 
+/** True when tag 59 holds CPF, CNPJ, email, or phone instead of a display name. */
+export function isMerchantNameIdentifier(raw: string): boolean {
+  return buildPixKeyQuery(raw.trim()) !== null;
+}
+
 export function buildPixKeyQuery(raw: string): string | null {
   const kind = classifyPixKey(raw);
   switch (kind) {

@@ -2,7 +2,7 @@
 
 import { ClipboardCopy } from "lucide-react";
 import { useMemo, useState } from "react";
-import { LookupExternalLink } from "@/components/lookup/lookup-external-link";
+import { LookupPortalLink } from "@/components/lookup/lookup-portal-link";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -101,7 +101,11 @@ export function CpfCandidatesBadge({ rawValue, locale }: CpfCandidatesBadgeProps
                 )}
               >
                 {portalUrl ? (
-                  <LookupExternalLink displayValue={formatted} href={portalUrl} />
+                  <LookupPortalLink
+                    displayValue={formatted}
+                    href={portalUrl}
+                    locale={locale}
+                  />
                 ) : (
                   <span className="min-w-0 break-all">{formatted}</span>
                 )}

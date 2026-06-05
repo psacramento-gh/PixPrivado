@@ -52,15 +52,18 @@ import { useIsDesktop } from "@/lib/use-is-desktop";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { LookupPanelStack } from "@/components/lookup/lookup-panel-stack";
 import { LookupPanelsProvider } from "@/components/lookup/lookup-panels-context";
-import { LookupExternalLink } from "@/components/lookup/lookup-external-link";
+import { LookupGoogleLink } from "@/components/lookup/lookup-google-link";
+import { LookupPortalLink } from "@/components/lookup/lookup-portal-link";
 import { LookupValueButton } from "@/components/lookup/lookup-value-button";
 import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
 import {
   buildDehashedQueryForRow,
-  buildPortalUrlForMerchantNameRow,
+  buildGoogleSearchUrlForMerchantNameRow,
+  buildPortalUrlForMerchantNameIdentifierRow,
   getStructuredValueBadgeKind,
   rowHasDehashedLink,
-  rowHasPortalTransparenciaLink,
+  rowHasMerchantNameGoogleLink,
+  rowHasMerchantNamePortalLink,
 } from "@/lib/dehashed/searchable-rows";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { MerchantCityEnrichedValue } from "@/components/merchant-city-enriched-value";
@@ -865,10 +868,19 @@ function StructuredDataValue({
   const badgeKind = getStructuredValueBadgeKind(row, rows);
 
   let valueNode: ReactNode = displayValue;
-  if (rowHasPortalTransparenciaLink(row, displayValue)) {
-    const portalUrl = buildPortalUrlForMerchantNameRow(row, displayValue);
+  if (rowHasMerchantNameGoogleLink(row)) {
+    const googleUrl = buildGoogleSearchUrlForMerchantNameRow(row);
+    if (googleUrl) {
+      valueNode = (
+        <LookupGoogleLink displayValue={displayValue} href={googleUrl} locale={locale} />
+      );
+    }
+  } else if (rowHasMerchantNamePortalLink(row, displayValue)) {
+    const portalUrl = buildPortalUrlForMerchantNameIdentifierRow(row, displayValue);
     if (portalUrl) {
-      valueNode = <LookupExternalLink displayValue={displayValue} href={portalUrl} />;
+      valueNode = (
+        <LookupPortalLink displayValue={displayValue} href={portalUrl} locale={locale} />
+      );
     }
   } else if (rowHasDehashedLink(row, rows)) {
     const query = buildDehashedQueryForRow(row, rows);

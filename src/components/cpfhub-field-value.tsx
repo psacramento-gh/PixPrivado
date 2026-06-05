@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { LookupExternalLink } from "@/components/lookup/lookup-external-link";
+import type { Locale } from "@/lib/brcode/labels";
+import { LookupPortalLink } from "@/components/lookup/lookup-portal-link";
 import {
   buildPessoaFisicaPortalUrlFromCpfDigits,
   buildPessoaFisicaPortalUrlFromName,
@@ -10,6 +11,7 @@ import {
 type CpfHubFieldValueProps = {
   field: "cpf" | "name";
   displayValue: string;
+  locale: Locale;
   /** Raw CPF digits for portal gating when field is cpf. */
   cpfDigits?: string;
   children?: ReactNode;
@@ -18,6 +20,7 @@ type CpfHubFieldValueProps = {
 export function CpfHubFieldValue({
   field,
   displayValue,
+  locale,
   cpfDigits,
   children,
 }: CpfHubFieldValueProps) {
@@ -29,7 +32,9 @@ export function CpfHubFieldValue({
         : null;
 
   if (portalUrl) {
-    return <LookupExternalLink displayValue={displayValue} href={portalUrl} />;
+    return (
+      <LookupPortalLink displayValue={displayValue} href={portalUrl} locale={locale} />
+    );
   }
 
   return <>{children ?? displayValue}</>;
