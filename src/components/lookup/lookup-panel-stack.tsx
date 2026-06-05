@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { LookupCpfBody } from "@/components/lookup/lookup-cpf-body";
 import { LookupDehashedBody } from "@/components/lookup/lookup-dehashed-body";
 import { useLookupPanels } from "@/components/lookup/lookup-panels-context";
@@ -15,6 +16,10 @@ import type { CpfHubLookupResult } from "@/lib/cpfhub/types";
 import type { DehashedSearchResult } from "@/lib/dehashed/api-search";
 import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
 import { t, type MessageKey } from "@/lib/i18n";
+import {
+  appMotionTransition,
+  appPanelBodyTransition,
+} from "@/lib/motion-presets";
 
 function panelTitleKey(kind: LookupKind): MessageKey {
   switch (kind) {
@@ -67,6 +72,104 @@ function LookupPanelBody({
         />
       );
   }
+}
+
+function LookupPanelCard({
+  locale,
+  panel,
+  onPageChange,
+  onToggleCollapsed,
+  registerPanelElement,
+}: {
+  locale: Locale;
+  panel: LookupPanelRecord;
+  onPageChange: (page: number) => void;
+  onToggleCollapsed: () => void;
+  registerPanelElement: (id: string, element: HTMLElement | null) => void;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  const kind = panel.kind ?? resolveLookupKind(panel.query);
+  const title = t(locale, panelTitleKey(kind));
+  const enterTransition = appMotionTransition(prefersReducedMotion);
+  const bodyTransition = appPanelBodyTransition(prefersReducedMotion);
+  const chevronTransition = appMotionTransition(prefersReducedMotion);
+
+  return (
+    <motion.section
+      ref={(element) => registerPanelElement(panel.id, element)}
+      aria-labelledby={`lookup-panel-${panel.id}-heading`}
+      className="flex scroll-mt-4 flex-col gap-2 rounded-lg border bg-muted/20 p-3"
+      initial={{
+        opacity: 0,
+        y: prefersReducedMotion ? 0 : 8,
+      }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={enterTransition}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          id={`lookup-panel-${panel.id}-heading`}
+          data-lookup-panel-heading
+          tabIndex={-1}
+          onClick={onToggleCollapsed}
+          className="min-w-0 flex-1 text-left"
+        >
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
+          <p
+            className={
+              panel.collapsed
+                ? "truncate font-mono text-xs text-foreground"
+                : "font-mono text-xs break-all text-foreground"
+            }
+          >
+            {panel.query}
+          </p>
+        </button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          className="h-auto shrink-0 gap-1.5 py-0.5"
+          onClick={onToggleCollapsed}
+          aria-expanded={!panel.collapsed}
+          aria-controls={`lookup-panel-${panel.id}-body`}
+          aria-label={
+            panel.collapsed ? t(locale, "lookupExpand") : t(locale, "lookupCollapse")
+          }
+        >
+          <motion.span
+            className="inline-flex shrink-0"
+            animate={{ rotate: panel.collapsed ? 0 : 180 }}
+            transition={chevronTransition}
+            aria-hidden
+          >
+            <ChevronDown className="size-3.5" />
+          </motion.span>
+          {panel.collapsed ? t(locale, "lookupExpand") : t(locale, "lookupCollapse")}
+        </Button>
+      </div>
+      <motion.div
+        id={`lookup-panel-${panel.id}-body`}
+        aria-hidden={panel.collapsed}
+        initial={false}
+        animate={{
+          height: panel.collapsed ? 0 : "auto",
+          opacity: panel.collapsed ? 0 : 1,
+        }}
+        transition={bodyTransition}
+        className="overflow-hidden"
+      >
+        <div className="flex flex-col gap-4 pt-1">
+          <LookupPanelBody
+            locale={locale}
+            panel={panel}
+            onPageChange={onPageChange}
+          />
+        </div>
+      </motion.div>
+    </motion.section>
+  );
 }
 
 export function LookupPanelStack({
@@ -163,67 +266,16 @@ export function LookupPanelStack({
       <p className="text-xs font-medium text-muted-foreground">
         {t(locale, "lookupPanelsSection")}
       </p>
-      {panels.map((panel) => {
-        const kind = panel.kind ?? resolveLookupKind(panel.query);
-        const title = t(locale, panelTitleKey(kind));
-
-        return (
-          <section
-            key={panel.id}
-            ref={(element) => registerPanelElement(panel.id, element)}
-            aria-labelledby={`lookup-panel-${panel.id}-heading`}
-            className="flex scroll-mt-4 flex-col gap-2 rounded-lg border bg-muted/20 p-3"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                id={`lookup-panel-${panel.id}-heading`}
-                data-lookup-panel-heading
-                tabIndex={-1}
-                onClick={() => toggleCollapsed(panel.id)}
-                className="min-w-0 flex-1 text-left"
-              >
-                <p className="text-xs font-medium text-muted-foreground">{title}</p>
-                <p className="font-mono text-xs break-all text-foreground">
-                  {panel.query}
-                </p>
-              </button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                className="h-auto shrink-0 py-0.5"
-                onClick={() => toggleCollapsed(panel.id)}
-                aria-expanded={!panel.collapsed}
-                aria-controls={`lookup-panel-${panel.id}-body`}
-                aria-label={
-                  panel.collapsed
-                    ? t(locale, "lookupExpand")
-                    : t(locale, "lookupCollapse")
-                }
-              >
-                {panel.collapsed ? (
-                  <ChevronDown className="size-3.5 shrink-0" aria-hidden />
-                ) : (
-                  <ChevronUp className="size-3.5 shrink-0" aria-hidden />
-                )}
-                {panel.collapsed
-                  ? t(locale, "lookupExpand")
-                  : t(locale, "lookupCollapse")}
-              </Button>
-            </div>
-            {!panel.collapsed ? (
-              <div id={`lookup-panel-${panel.id}-body`} className="flex flex-col gap-4 pt-1">
-                <LookupPanelBody
-                  locale={locale}
-                  panel={panel}
-                  onPageChange={(page) => setPanelPage(panel.id, page)}
-                />
-              </div>
-            ) : null}
-          </section>
-        );
-      })}
+      {panels.map((panel) => (
+        <LookupPanelCard
+          key={panel.id}
+          locale={locale}
+          panel={panel}
+          onPageChange={(page) => setPanelPage(panel.id, page)}
+          onToggleCollapsed={() => toggleCollapsed(panel.id)}
+          registerPanelElement={registerPanelElement}
+        />
+      ))}
     </div>
   );
 }
