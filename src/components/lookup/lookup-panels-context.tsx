@@ -4,14 +4,22 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
+  useState,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
 } from "react";
 import { normalizeLookupQueryKey } from "@/lib/lookup/normalize-query-key";
 import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
+import { APP_MOTION_DURATION } from "@/lib/motion-presets";
+
+type PendingPanelScroll = {
+  id: string;
+  afterExpand: boolean;
+};
 
 type LookupPanelsContextValue = {
   panels: LookupPanelRecord[];
@@ -42,33 +50,62 @@ export function LookupPanelsProvider({
   children: ReactNode;
 }) {
   const panelElementsRef = useRef(new Map<string, HTMLElement>());
-  const pendingScrollPanelIdRef = useRef<string | null>(null);
+  const pendingScrollRef = useRef<PendingPanelScroll | null>(null);
+  const [scrollTick, setScrollTick] = useState(0);
 
-  const scrollPanelIntoView = useCallback((id: string) => {
-    const element = panelElementsRef.current.get(id);
-    if (!element) {
-      pendingScrollPanelIdRef.current = id;
-      return;
-    }
+  const scrollPanelIntoView = useCallback(
+    (id: string, options?: { behavior?: ScrollBehavior }) => {
+      const element = panelElementsRef.current.get(id);
+      if (!element) return false;
 
-    pendingScrollPanelIdRef.current = null;
-    element.scrollIntoView({ behavior: "smooth", block: "start" });
-    const heading = element.querySelector<HTMLElement>("[data-lookup-panel-heading]");
-    heading?.focus({ preventScroll: true });
+      pendingScrollRef.current = null;
+      element.scrollIntoView({
+        behavior: options?.behavior ?? "smooth",
+        block: "start",
+      });
+      const heading = element.querySelector<HTMLElement>("[data-lookup-panel-heading]");
+      heading?.focus({ preventScroll: true });
+      return true;
+    },
+    [],
+  );
+
+  const queuePanelScroll = useCallback((id: string, afterExpand: boolean) => {
+    pendingScrollRef.current = { id, afterExpand };
+    setScrollTick((tick) => tick + 1);
   }, []);
+
+  useEffect(() => {
+    const pending = pendingScrollRef.current;
+    if (!pending) return;
+
+    const panel = panels.find((entry) => entry.id === pending.id);
+    if (!panel || panel.collapsed) return;
+    if (!panelElementsRef.current.has(pending.id)) return;
+
+    const { id, afterExpand } = pending;
+    const delay = afterExpand ? APP_MOTION_DURATION * 1000 + 16 : 0;
+
+    const timer = window.setTimeout(() => {
+      if (pendingScrollRef.current?.id !== id) return;
+      scrollPanelIntoView(id, { behavior: "auto" });
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [panels, scrollPanelIntoView, scrollTick]);
 
   const registerPanelElement = useCallback(
     (id: string, element: HTMLElement | null) => {
       if (element) {
         panelElementsRef.current.set(id, element);
-        if (pendingScrollPanelIdRef.current === id) {
-          requestAnimationFrame(() => scrollPanelIntoView(id));
+        if (pendingScrollRef.current?.id === id) {
+          setScrollTick((tick) => tick + 1);
         }
         return;
       }
       panelElementsRef.current.delete(id);
     },
-    [scrollPanelIntoView],
+    [],
   );
 
   const openLookup = useCallback(
@@ -77,14 +114,14 @@ export function LookupPanelsProvider({
       if (!trimmed) return;
 
       const queryKey = normalizeLookupQueryKey(trimmed);
+      const scrollIntentRef: { current: PendingPanelScroll | null } = { current: null };
 
       onPanelsChange((prev) => {
         const existing = prev.find(
           (panel) => normalizeLookupQueryKey(panel.query) === queryKey,
         );
         if (existing) {
-          pendingScrollPanelIdRef.current = existing.id;
-          requestAnimationFrame(() => scrollPanelIntoView(existing.id));
+          scrollIntentRef.current = { id: existing.id, afterExpand: existing.collapsed };
           return prev.map((panel) => ({
             ...panel,
             collapsed: panel.id !== existing.id,
@@ -92,6 +129,7 @@ export function LookupPanelsProvider({
         }
 
         const id = createPanelId();
+        scrollIntentRef.current = { id, afterExpand: true };
         const nextPanel: LookupPanelRecord = {
           id,
           query: trimmed,
@@ -100,14 +138,18 @@ export function LookupPanelsProvider({
           status: "loading",
         };
 
-        pendingScrollPanelIdRef.current = id;
         return [
           ...prev.map((panel) => ({ ...panel, collapsed: true })),
           nextPanel,
         ];
       });
+
+      const scrollIntent = scrollIntentRef.current;
+      if (scrollIntent) {
+        queuePanelScroll(scrollIntent.id, scrollIntent.afterExpand);
+      }
     },
-    [onPanelsChange, scrollPanelIntoView],
+    [onPanelsChange, queuePanelScroll],
   );
 
   const toggleCollapsed = useCallback(
@@ -121,16 +163,15 @@ export function LookupPanelsProvider({
         }),
       );
       if (expanding) {
-        pendingScrollPanelIdRef.current = id;
-        requestAnimationFrame(() => scrollPanelIntoView(id));
+        queuePanelScroll(id, true);
       }
     },
-    [onPanelsChange, scrollPanelIntoView],
+    [onPanelsChange, queuePanelScroll],
   );
 
   const setPanelPage = useCallback(
     (id: string, page: number) => {
-      pendingScrollPanelIdRef.current = id;
+      queuePanelScroll(id, false);
       onPanelsChange((prev) =>
         prev.map((panel) =>
           panel.id === id
@@ -144,14 +185,14 @@ export function LookupPanelsProvider({
             : panel,
         ),
       );
-      requestAnimationFrame(() => scrollPanelIntoView(id));
     },
-    [onPanelsChange, scrollPanelIntoView],
+    [onPanelsChange, queuePanelScroll],
   );
 
   const clearPanels = useCallback(() => {
     onPanelsChange([]);
     panelElementsRef.current.clear();
+    pendingScrollRef.current = null;
   }, [onPanelsChange]);
 
   const value = useMemo(
