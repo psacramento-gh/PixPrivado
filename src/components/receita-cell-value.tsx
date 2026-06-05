@@ -24,6 +24,7 @@ import { buildBreachLookupQuery } from "@/lib/receita/breach-link";
 import {
   buildPessoaFisicaPortalUrlFromCpfDigits,
   buildPessoaFisicaPortalUrlFromName,
+  buildPessoaJuridicaPortalUrlFromCnpjDigits,
   buildPessoaJuridicaPortalUrlFromName,
 } from "@/lib/transparencia/portal-link";
 import {
@@ -108,7 +109,13 @@ export function ReceitaCellValue({ fieldPath, value, locale }: ReceitaCellValueP
   } else if (isReceitaCnpjField(fieldPath)) {
     const digits = value.replace(/\D/g, "");
     if (digits.length === 14) {
-      content = <>{formatCnpj(digits)}</>;
+      const display = formatCnpj(digits);
+      const portalUrl = buildPessoaJuridicaPortalUrlFromCnpjDigits(digits);
+      content = portalUrl ? (
+        <LookupExternalLink displayValue={display} href={portalUrl} />
+      ) : (
+        <>{display}</>
+      );
     } else {
       content = <>{value}</>;
     }

@@ -4,6 +4,7 @@ import {
   isAllowedDehashedQuery,
 } from "@/lib/dehashed/build-query";
 import {
+  buildCnpjBreachLookupQuery,
   buildCpfBreachLookupQuery,
   buildNameBreachLookupQuery,
 } from "@/lib/receita/breach-link";
@@ -59,6 +60,15 @@ export function buildPessoaFisicaPortalUrlFromCpfDigits(cpfDigits: string): stri
 export function buildPessoaJuridicaPortalUrlFromName(name: string): string | null {
   if (!buildNameBreachLookupQuery(name)) return null;
   return buildPessoaJuridicaSearchUrl(name.trim());
+}
+
+export function buildPessoaJuridicaPortalUrlFromCnpjDigits(
+  cnpjDigits: string,
+): string | null {
+  if (!buildCnpjBreachLookupQuery(cnpjDigits)) return null;
+  return buildPessoaJuridicaSearchUrl(
+    formatCnpj(cnpjDigits.replace(/\D/g, "")),
+  );
 }
 
 /** EMV tag 59 — same gating as Dehashed merchant name lookup. */

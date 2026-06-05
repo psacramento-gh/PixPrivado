@@ -4,6 +4,7 @@ import {
   buildMerchantNamePortalUrl,
   buildPessoaFisicaPortalUrlFromCpfDigits,
   buildPessoaFisicaPortalUrlFromName,
+  buildPessoaJuridicaPortalUrlFromCnpjDigits,
   buildPessoaJuridicaPortalUrlFromName,
   termoFromDehashedQuery,
 } from "./portal-link";
@@ -42,6 +43,14 @@ test("buildPessoaJuridicaPortalUrlFromName rejects empty", () => {
 
 test("buildPessoaFisicaPortalUrlFromName", () => {
   assert.ok(buildPessoaFisicaPortalUrlFromName("Joao Silva"));
+});
+
+test("buildPessoaJuridicaPortalUrlFromCnpjDigits", () => {
+  const url = buildPessoaJuridicaPortalUrlFromCnpjDigits("30407634000124");
+  assert.equal(
+    url,
+    "https://portaldatransparencia.gov.br/pessoa-juridica/busca/lista?termo=30.407.634%2F0001-24&pagina=1&tamanhoPagina=10",
+  );
 });
 
 test("buildMerchantNamePortalUrl CNPJ uses juridica", () => {
