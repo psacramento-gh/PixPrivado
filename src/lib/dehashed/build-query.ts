@@ -134,7 +134,6 @@ function isAllowedNameToken(term: string): boolean {
 export function isAllowedDehashedQuery(query: string): boolean {
   if (!query || query.length > 512) return false;
   if (/^email:[^\s&]+@[^\s&]+\.[^\s&]+$/.test(query)) return true;
-  if (/^phone:\+?\d{10,15}$/.test(query)) return true;
   if (/^name:"[^"]{1,500}"$/.test(query)) return true;
   if (/^name:[^\s"\\]{2,200}$/.test(query) && isAllowedNameToken(query.slice(5))) return true;
   if (/^\d{14}$/.test(query)) return true;

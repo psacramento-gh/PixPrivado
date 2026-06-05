@@ -75,7 +75,7 @@ export function parseIpAddress(value: string): string | null {
 }
 
 /** Splits Dehashed list values (comma, semicolon, pipe, or newline). */
-export function splitIpListValues(value: string): string[] {
+export function splitDehashedListValues(value: string): string[] {
   if (!/[,;|\n\r]/.test(value)) return [value];
   return value
     .split(/[,;|\n\r]+/)
@@ -87,13 +87,21 @@ export function splitIpListValues(value: string): string[] {
 export function parseIpAddressesFromValue(rawValue: string): string[] {
   const seen = new Set<string>();
   const result: string[] = [];
-  for (const part of splitIpListValues(rawValue)) {
+  for (const part of splitDehashedListValues(rawValue)) {
     const ip = parseIpAddress(part);
     if (ip === null || seen.has(ip)) continue;
     seen.add(ip);
     result.push(ip);
   }
   return result;
+}
+
+export function isDehashedEmailField(field: string): boolean {
+  const normalized = field.toLowerCase().replace(/-/g, "_");
+  if (normalized === "email" || normalized === "emails") {
+    return true;
+  }
+  return normalized.endsWith("_email");
 }
 
 export function isDehashedPhoneField(field: string): boolean {
