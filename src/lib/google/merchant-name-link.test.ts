@@ -6,7 +6,7 @@ test("buildMerchantNameGoogleSearchUrl uses exact raw name", () => {
   const raw = "LUCIANA BENJAMIM FREDERIC";
   const url = buildMerchantNameGoogleSearchUrl(raw);
   assert.ok(url);
-  assert.equal(new URL(url!).searchParams.get("q"), raw);
+  assert.equal(new URL(url!).searchParams.get("as_q"), raw);
 });
 
 test("buildMerchantNameGoogleSearchUrl skips identifiers", () => {
