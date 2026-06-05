@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  buildMerchantNamePortalUrl,
+  buildMerchantNameIdentifierPortalUrl,
   buildPessoaFisicaPortalUrlFromCpfDigits,
   buildPessoaFisicaPortalUrlFromName,
   buildPessoaJuridicaPortalUrlFromCnpjDigits,
@@ -53,10 +53,17 @@ test("buildPessoaJuridicaPortalUrlFromCnpjDigits", () => {
   );
 });
 
-test("buildMerchantNamePortalUrl CNPJ uses juridica", () => {
-  const url = buildMerchantNamePortalUrl(
+test("buildMerchantNameIdentifierPortalUrl CNPJ uses juridica", () => {
+  const url = buildMerchantNameIdentifierPortalUrl(
     "12345678000195",
     "12.345.678/0001-95",
   );
   assert.ok(url?.includes("/pessoa-juridica/"));
+});
+
+test("buildMerchantNameIdentifierPortalUrl skips plain names", () => {
+  assert.equal(
+    buildMerchantNameIdentifierPortalUrl("Joao Silva", "Joao Silva"),
+    null,
+  );
 });
