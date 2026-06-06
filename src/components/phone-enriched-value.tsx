@@ -1,8 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import { LookupWhatsAppLink } from "@/components/lookup/lookup-whatsapp-link";
 import { PhoneDddBadges } from "@/components/phone-ddd-badges";
-import { WhatsAppIconLink } from "@/components/whatsapp-icon-link";
 import { extractDddFromPhone } from "@/lib/br/extract-ddd";
 import { getWhatsAppLinksFromValue } from "@/lib/br/whatsapp-link";
 import type { Locale } from "@/lib/brcode/labels";
@@ -12,15 +12,41 @@ import { parseIpAddress } from "@/lib/ip/parse-ip";
 type PhoneEnrichedValueProps = {
   rawValue: string;
   locale: Locale;
+  /** Visible label for the WhatsApp link; defaults to rawValue or children when string. */
+  displayValue?: string;
   /** When false, never attach DDD badges (e.g. ip_address rows). Default true. */
   active?: boolean;
   children: ReactNode;
 };
 
-/** Wraps a phone value with DDD state and cities badges when applicable. */
+function renderWhatsAppLinks(
+  links: ReturnType<typeof getWhatsAppLinksFromValue>,
+  displayValue: string | undefined,
+  children: ReactNode,
+  locale: Locale,
+) {
+  if (links.length === 1) {
+    const link = links[0]!;
+    const label =
+      displayValue ?? (typeof children === "string" ? children : link.display);
+    return (
+      <LookupWhatsAppLink displayValue={label} href={link.url} locale={locale} />
+    );
+  }
+
+  return links.map((link, index) => (
+    <Fragment key={link.e164}>
+      {index > 0 ? <span>, </span> : null}
+      <LookupWhatsAppLink displayValue={link.display} href={link.url} locale={locale} />
+    </Fragment>
+  ));
+}
+
+/** Wraps a phone value with WhatsApp link and DDD state badges when applicable. */
 export function PhoneEnrichedValue({
   rawValue,
   locale,
+  displayValue,
   active = true,
   children,
 }: PhoneEnrichedValueProps) {
@@ -33,22 +59,26 @@ export function PhoneEnrichedValue({
     kind === "cpf" || kind === "cnpj" ? [] : getWhatsAppLinksFromValue(rawValue);
   const ddd = kind === "phone" ? extractDddFromPhone(rawValue) : null;
 
-  if (whatsappLinks.length === 0 && ddd === null) {
+  const canReplaceWithWhatsApp =
+    whatsappLinks.length > 0 &&
+    (displayValue !== undefined || typeof children === "string");
+
+  if (!canReplaceWithWhatsApp && whatsappLinks.length === 0 && ddd === null) {
     return <>{children}</>;
+  }
+
+  const phoneNode = canReplaceWithWhatsApp
+    ? renderWhatsAppLinks(whatsappLinks, displayValue, children, locale)
+    : children;
+
+  if (ddd === null) {
+    return <>{phoneNode}</>;
   }
 
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
-      {children}
-      {whatsappLinks.map((link) => (
-        <WhatsAppIconLink
-          key={link.e164}
-          url={link.url}
-          phoneLabel={link.display}
-          locale={locale}
-        />
-      ))}
-      {ddd !== null ? <PhoneDddBadges key={ddd} ddd={ddd} locale={locale} /> : null}
+      {phoneNode}
+      <PhoneDddBadges key={ddd} ddd={ddd} locale={locale} />
     </span>
   );
 }
