@@ -1,10 +1,10 @@
 "use client";
 
 import { Fragment, type ReactNode } from "react";
-import { LookupWhatsAppLink } from "@/components/lookup/lookup-whatsapp-link";
+import { LookupPhoneLink } from "@/components/lookup/lookup-phone-link";
 import { PhoneDddBadges } from "@/components/phone-ddd-badges";
 import { extractDddFromPhone } from "@/lib/br/extract-ddd";
-import { getWhatsAppLinksFromValue } from "@/lib/br/whatsapp-link";
+import { getPhoneLinksFromValue } from "@/lib/br/phone-link";
 import type { Locale } from "@/lib/brcode/labels";
 import { classifyPixKey } from "@/lib/dehashed/classify-pix-key";
 import { parseIpAddress } from "@/lib/ip/parse-ip";
@@ -12,15 +12,15 @@ import { parseIpAddress } from "@/lib/ip/parse-ip";
 type PhoneEnrichedValueProps = {
   rawValue: string;
   locale: Locale;
-  /** Visible label for the WhatsApp link; defaults to rawValue or children when string. */
+  /** Visible label for the phone link; defaults to rawValue or children when string. */
   displayValue?: string;
   /** When false, never attach DDD badges (e.g. ip_address rows). Default true. */
   active?: boolean;
   children: ReactNode;
 };
 
-function renderWhatsAppLinks(
-  links: ReturnType<typeof getWhatsAppLinksFromValue>,
+function renderPhoneLinks(
+  links: ReturnType<typeof getPhoneLinksFromValue>,
   displayValue: string | undefined,
   children: ReactNode,
   locale: Locale,
@@ -30,19 +30,29 @@ function renderWhatsAppLinks(
     const label =
       displayValue ?? (typeof children === "string" ? children : link.display);
     return (
-      <LookupWhatsAppLink displayValue={label} href={link.url} locale={locale} />
+      <LookupPhoneLink
+        displayValue={label}
+        href={link.url}
+        kind={link.kind}
+        locale={locale}
+      />
     );
   }
 
   return links.map((link, index) => (
     <Fragment key={link.e164}>
       {index > 0 ? <span>, </span> : null}
-      <LookupWhatsAppLink displayValue={link.display} href={link.url} locale={locale} />
+      <LookupPhoneLink
+        displayValue={link.display}
+        href={link.url}
+        kind={link.kind}
+        locale={locale}
+      />
     </Fragment>
   ));
 }
 
-/** Wraps a phone value with WhatsApp link and DDD state badges when applicable. */
+/** Wraps a phone value with phone links and DDD state badges when applicable. */
 export function PhoneEnrichedValue({
   rawValue,
   locale,
@@ -55,20 +65,20 @@ export function PhoneEnrichedValue({
   }
 
   const kind = classifyPixKey(rawValue);
-  const whatsappLinks =
-    kind === "cpf" || kind === "cnpj" ? [] : getWhatsAppLinksFromValue(rawValue);
+  const phoneLinks =
+    kind === "cpf" || kind === "cnpj" ? [] : getPhoneLinksFromValue(rawValue);
   const ddd = kind === "phone" ? extractDddFromPhone(rawValue) : null;
 
-  const canReplaceWithWhatsApp =
-    whatsappLinks.length > 0 &&
+  const canReplaceWithPhoneLink =
+    phoneLinks.length > 0 &&
     (displayValue !== undefined || typeof children === "string");
 
-  if (!canReplaceWithWhatsApp && whatsappLinks.length === 0 && ddd === null) {
+  if (!canReplaceWithPhoneLink && phoneLinks.length === 0 && ddd === null) {
     return <>{children}</>;
   }
 
-  const phoneNode = canReplaceWithWhatsApp
-    ? renderWhatsAppLinks(whatsappLinks, displayValue, children, locale)
+  const phoneNode = canReplaceWithPhoneLink
+    ? renderPhoneLinks(phoneLinks, displayValue, children, locale)
     : children;
 
   if (ddd === null) {

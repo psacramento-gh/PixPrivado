@@ -1,10 +1,12 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Phone } from "lucide-react";
+import type { PhoneLinkKind } from "@/lib/br/phone-link";
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
 
-type LookupWhatsAppLinkProps = {
+type LookupPhoneLinkProps = {
   displayValue: string;
   href: string;
+  kind: PhoneLinkKind;
   locale: Locale;
 };
 
@@ -19,14 +21,31 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-export function LookupWhatsAppLink({ displayValue, href, locale }: LookupWhatsAppLinkProps) {
+export function LookupPhoneLink({ displayValue, href, kind, locale }: LookupPhoneLinkProps) {
+  const ariaLabel =
+    kind === "whatsapp"
+      ? t(locale, "whatsappOpenChat", { phone: displayValue })
+      : t(locale, "phoneCallLandline", { phone: displayValue });
+
+  const linkClassName =
+    "inline-flex max-w-full items-start gap-1 text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground";
+
+  if (kind === "tel") {
+    return (
+      <a href={href} aria-label={ariaLabel} className={linkClassName}>
+        <span className="min-w-0 break-all">{displayValue}</span>
+        <Phone className="mt-0.5 size-3.5 shrink-0 opacity-70" aria-hidden />
+      </a>
+    );
+  }
+
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={t(locale, "whatsappOpenChat", { phone: displayValue })}
-      className="inline-flex max-w-full items-start gap-1 text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
+      aria-label={ariaLabel}
+      className={linkClassName}
     >
       <span className="min-w-0 break-all">{displayValue}</span>
       <WhatsAppIcon className="mt-0.5 size-3.5 shrink-0" />
