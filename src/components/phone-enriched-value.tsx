@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, type ReactNode } from "react";
-import { LookupWhatsAppLink } from "@/components/lookup/lookup-whatsapp-link";
+import { LookupPhoneLink } from "@/components/lookup/lookup-phone-link";
 import { PhoneDddBadges } from "@/components/phone-ddd-badges";
 import { extractDddFromPhone } from "@/lib/br/extract-ddd";
 import { getWhatsAppLinksFromValue } from "@/lib/br/whatsapp-link";
@@ -30,14 +30,14 @@ function renderWhatsAppLinks(
     const label =
       displayValue ?? (typeof children === "string" ? children : link.display);
     return (
-      <LookupWhatsAppLink displayValue={label} href={link.url} locale={locale} />
+      <LookupPhoneLink displayValue={label} href={link.url} locale={locale} />
     );
   }
 
   return links.map((link, index) => (
     <Fragment key={link.e164}>
       {index > 0 ? <span>, </span> : null}
-      <LookupWhatsAppLink displayValue={link.display} href={link.url} locale={locale} />
+      <LookupPhoneLink displayValue={link.display} href={link.url} locale={locale} />
     </Fragment>
   ));
 }

@@ -2,7 +2,7 @@ import { ExternalLink } from "lucide-react";
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
 
-type LookupWhatsAppLinkProps = {
+type LookupPhoneLinkProps = {
   displayValue: string;
   href: string;
   locale: Locale;
@@ -19,7 +19,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-export function LookupWhatsAppLink({ displayValue, href, locale }: LookupWhatsAppLinkProps) {
+export function LookupPhoneLink({ displayValue, href, locale }: LookupPhoneLinkProps) {
   return (
     <a
       href={href}
