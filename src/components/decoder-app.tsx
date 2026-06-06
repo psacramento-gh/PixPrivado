@@ -889,14 +889,15 @@ function StructuredDataValue({
     }
   }
 
-  const inner = badgeKind ? (
-    <span className="inline-flex flex-wrap items-center gap-2">
-      {valueNode}
-      <PixKeyTypeBadge kind={badgeKind} locale={locale} />
-    </span>
-  ) : (
-    <>{valueNode}</>
-  );
+  const inner =
+    badgeKind && badgeKind !== "phone" ? (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        {valueNode}
+        <PixKeyTypeBadge kind={badgeKind} locale={locale} />
+      </span>
+    ) : (
+      <>{valueNode}</>
+    );
 
   return (
     <MerchantCityEnrichedValue
@@ -904,7 +905,11 @@ function StructuredDataValue({
       locale={locale}
       active={row.id === "60" && row.parentId === null}
     >
-      <PhoneEnrichedValue rawValue={row.value} locale={locale}>
+      <PhoneEnrichedValue
+        rawValue={row.value}
+        locale={locale}
+        displayValue={displayValue}
+      >
         <CepEnrichedValue
           rawValue={row.value}
           locale={locale}
