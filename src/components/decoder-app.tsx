@@ -750,9 +750,10 @@ export function DecoderApp() {
               <Button
                 type="button"
                 size="lg"
-                className="w-full shrink-0 sm:w-auto"
+                className="w-full shrink-0 gap-1.5 sm:w-auto"
                 onClick={resetDecoder}
               >
+                <RotateCcw className="size-4 shrink-0" aria-hidden />
                 {t(locale, "submitAnotherImage")}
               </Button>
               {showSanitizeControls ? (
