@@ -41,6 +41,7 @@ export const messages = {
     dropOrClick: "Drop an image or click to browse",
     submitAnotherImage: "Make new submission",
     makeSaferToShare: "Make safer to share",
+    makeSaferToShareShort: "Make safe to share",
     makeSaferToShareEvpOnly:
       "Only random Pix keys can be made safe to share. Enter a QR code or Copia e Cola string associated with a random key if you want to unlock this feature.",
     makeSaferToShareStaticOnly:
@@ -224,6 +225,7 @@ export const messages = {
     dropOrClick: "Solte uma imagem ou clique para selecionar",
     submitAnotherImage: "Nova submissão",
     makeSaferToShare: "Torne mais seguro para compartilhar",
+    makeSaferToShareShort: "Tornar seguro",
     makeSaferToShareEvpOnly:
       "Somente chaves Pix aleatórias podem ser tornadas seguras para compartilhar. Envie um QR code ou uma string Copia e Cola associada a uma chave aleatória para desbloquear este recurso.",
     makeSaferToShareStaticOnly:

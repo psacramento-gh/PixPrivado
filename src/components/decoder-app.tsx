@@ -94,7 +94,20 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { Camera, ClipboardCopy, ClipboardPaste, ImageUp, ShieldAlert } from "lucide-react";
+import {
+  Camera,
+  ClipboardCopy,
+  ClipboardPaste,
+  ImageUp,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   buildDecoderSharePath,
   parseDecoderPayloadFromSearch,
@@ -743,16 +756,11 @@ export function DecoderApp() {
               </Button>
               {showSanitizeControls ? (
                 <div className="flex w-full flex-col items-stretch gap-2 sm:max-w-md sm:items-end">
-                  <Button
-                    type="button"
-                    size="lg"
-                    variant="secondary"
-                    className="w-full shrink-0 sm:w-auto"
+                  <MakeSaferToShareButton
+                    locale={locale}
                     disabled={!canSanitize}
                     onClick={handleSanitize}
-                  >
-                    {t(locale, "makeSaferToShare")}
-                  </Button>
+                  />
                   {!canSanitize && sanitizeDisabledMessage ? (
                     <p className="text-xs text-muted-foreground sm:text-right">
                       {sanitizeDisabledMessage}
@@ -773,6 +781,49 @@ export function DecoderApp() {
       ) : null}
     </AppFrame>
     </LookupPanelsProvider>
+  );
+}
+
+const makeSaferToShareButtonClass =
+  "w-full shrink-0 gap-1.5 border-emerald-500/60 bg-emerald-500/10 text-emerald-950 hover:bg-emerald-500/20 hover:text-emerald-950 sm:w-auto dark:border-emerald-500/50 dark:bg-emerald-500/10 dark:text-emerald-50 dark:hover:bg-emerald-500/20 dark:hover:text-emerald-50";
+
+function MakeSaferToShareButton({
+  locale,
+  disabled,
+  onClick,
+}: {
+  locale: Locale;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const fullLabel = t(locale, "makeSaferToShare");
+  const shortLabel = t(locale, "makeSaferToShareShort");
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              className={makeSaferToShareButtonClass}
+              disabled={disabled}
+              onClick={onClick}
+              aria-label={fullLabel}
+            />
+          }
+        >
+          <ShieldCheck className="size-4 shrink-0" aria-hidden />
+          <span className="sm:hidden">{shortLabel}</span>
+          <span className="hidden sm:inline">{fullLabel}</span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-center sm:hidden">
+          {fullLabel}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
