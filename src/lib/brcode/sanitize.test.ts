@@ -53,6 +53,24 @@ test("isPayloadAlreadySanitized is true after sanitization", () => {
   assert.equal(isPayloadAlreadySanitized(sanitized), true);
 });
 
+test("sanitizeStaticPixPayload drops non-txid tag 62 subfields", () => {
+  const payloadWithTag62Extras =
+    "00020101021126580014br.gov.bcb.pix0136" +
+    EVP_KEY +
+    "5204549953039865406100.005802BR5913Fulano de Tal6009SAO PAULO61080131010062460112INV-2024-0010214+55119999999990508abc123456304768C";
+
+  const sanitized = sanitizeStaticPixPayload(payloadWithTag62Extras);
+  const rows = flattenNodes(parseBrCode(sanitized).nodes);
+  const tag62Rows = rows.filter((row) => row.path.startsWith("62."));
+
+  assert.equal(tag62Rows.length, 1);
+  assert.equal(tag62Rows[0]?.path, "62.05");
+  assert.equal(tag62Rows[0]?.value, "***");
+  assert.ok(!sanitized.includes("INV-2024"));
+  assert.ok(!sanitized.includes("5511999999999"));
+  assert.ok(!sanitized.includes("abc12345"));
+});
+
 test("getSanitizeEligibility rejects CPF key payloads", () => {
   const cpfPayload =
     "00020101021126330014br.gov.bcb.pix0111123456789015204000053039865802BR5910JOAO SILVA6009SAO PAULO62070503***6304437E";

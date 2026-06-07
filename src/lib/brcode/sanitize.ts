@@ -42,14 +42,8 @@ function sanitizePixMerchantChildren(children: TlvNode[]): TlvNode[] {
   return filtered;
 }
 
-function sanitizeTag62Children(children: TlvNode[]): TlvNode[] {
-  const mapped = children.map((child) =>
-    child.id === "05" ? { ...child, value: TXID_PLACEHOLDER } : child,
-  );
-  if (!mapped.some((child) => child.id === "05")) {
-    mapped.push({ id: "05", length: 3, value: TXID_PLACEHOLDER });
-  }
-  return mapped;
+function sanitizeTag62Children(): TlvNode[] {
+  return [{ id: "05", length: 3, value: TXID_PLACEHOLDER }];
 }
 
 function isPixMerchantNode(node: TlvNode): boolean {
@@ -89,7 +83,7 @@ function sanitizeNodes(nodes: TlvNode[]): TlvNode[] {
         children = sanitizePixMerchantChildren(children);
       } else if (node.id === "62") {
         hasTag62 = true;
-        children = sanitizeTag62Children(children);
+        children = sanitizeTag62Children();
       }
 
       sanitized.push({ ...node, children });
