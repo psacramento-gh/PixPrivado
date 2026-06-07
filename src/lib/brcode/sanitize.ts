@@ -6,6 +6,7 @@ import { parseBrCode, type TlvNode } from "./parse";
 
 const MERCHANT_NAME = "Pix";
 const MERCHANT_CITY = "Brasil";
+const MERCHANT_CATEGORY_CODE = "0000";
 const TXID_PLACEHOLDER = "***";
 
 const REMOVED_ROOT_TAGS = new Set(["54", "61", "63"]);
@@ -70,6 +71,15 @@ function sanitizeNodes(nodes: TlvNode[]): TlvNode[] {
 
     if (node.id === "60") {
       sanitized.push({ ...node, value: MERCHANT_CITY, length: MERCHANT_CITY.length });
+      continue;
+    }
+
+    if (node.id === "52") {
+      sanitized.push({
+        ...node,
+        value: MERCHANT_CATEGORY_CODE,
+        length: MERCHANT_CATEGORY_CODE.length,
+      });
       continue;
     }
 

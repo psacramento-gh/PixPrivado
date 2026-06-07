@@ -13,7 +13,7 @@ const EVP_KEY = "123e4567-e12b-12d1-a456-426655440000";
 const SAMPLE_STATIC_PAYLOAD =
   "00020101021126580014br.gov.bcb.pix0136" +
   EVP_KEY +
-  "5204000053039865406100.005802BR5913Fulano de Tal6009SAO PAULO61080131010062070503***630495B9";
+  "5204549953039865406100.005802BR5913Fulano de Tal6009SAO PAULO61080131010062070503***6304CDBC";
 
 test("getSanitizeEligibility accepts static PIX with EVP key", () => {
   assert.deepEqual(getSanitizeEligibility(SAMPLE_STATIC_PAYLOAD), {
@@ -32,6 +32,7 @@ test("sanitizeStaticPixPayload removes personal fields and keeps EVP key", () =>
   const rows = flattenNodes(parsed.nodes);
   const byPath = Object.fromEntries(rows.map((row) => [row.path, row.value]));
 
+  assert.equal(byPath["52"], "0000");
   assert.equal(byPath["59"], "Pix");
   assert.equal(byPath["60"], "Brasil");
   assert.equal(byPath["62.05"], "***");
