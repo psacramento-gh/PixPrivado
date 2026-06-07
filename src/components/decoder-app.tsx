@@ -737,11 +737,6 @@ export function DecoderApp() {
               </Button>
               {showSanitizeControls ? (
                 <div className="flex w-full flex-col items-stretch gap-2 sm:max-w-md sm:items-end">
-                  {!canSanitize && sanitizeDisabledMessage ? (
-                    <p className="text-xs text-muted-foreground sm:text-right">
-                      {sanitizeDisabledMessage}
-                    </p>
-                  ) : null}
                   <Button
                     type="button"
                     size="lg"
@@ -752,6 +747,11 @@ export function DecoderApp() {
                   >
                     {t(locale, "makeSaferToShare")}
                   </Button>
+                  {!canSanitize && sanitizeDisabledMessage ? (
+                    <p className="text-xs text-muted-foreground sm:text-right">
+                      {sanitizeDisabledMessage}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </div>
