@@ -99,6 +99,7 @@ import {
   ClipboardCopy,
   ClipboardPaste,
   ImageUp,
+  RotateCcw,
   ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
