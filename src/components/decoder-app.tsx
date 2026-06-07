@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   clearPersistedDecoderState,
@@ -30,6 +37,7 @@ import {
 } from "@/lib/brcode/analyze";
 import {
   getSanitizeEligibility,
+  isPayloadAlreadySanitized,
   sanitizeStaticPixPayload,
   type SanitizeEligibility,
 } from "@/lib/brcode/sanitize";
@@ -159,7 +167,6 @@ export function DecoderApp() {
   );
   const [decodingFileName, setDecodingFileName] = useState<string | null>(null);
   const [lookupPanels, setLookupPanels] = useState<LookupPanelRecord[]>([]);
-  const [isSanitized, setIsSanitized] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const decodeAbortRef = useRef<AbortController | null>(null);
@@ -185,7 +192,6 @@ export function DecoderApp() {
       setImageSubmitted(false);
       setImagePhase("none");
       setLookupPanels([]);
-      setIsSanitized(false);
       processPayload(payload);
     },
     [clearImageSession, processPayload],
@@ -226,7 +232,6 @@ export function DecoderApp() {
       clearDecodingPreview();
       setImageSubmitted(false);
       setLookupPanels([]);
-      setIsSanitized(false);
       setDecodingFileName(file.name);
       setImagePhase("loading");
       const url = URL.createObjectURL(file);
@@ -301,7 +306,6 @@ export function DecoderApp() {
     setError(null);
     setImageSubmitted(false);
     setLookupPanels([]);
-    setIsSanitized(false);
     clearPersistedDecoderState();
     if (pathname === "/" && searchParams.has("p")) {
       router.replace("/", { scroll: false });
@@ -314,8 +318,12 @@ export function DecoderApp() {
   const sanitizeEligibility = rawPayload
     ? getSanitizeEligibility(rawPayload)
     : ({ eligible: false, reason: "parse_error" } as const);
-  const canSanitize = sanitizeEligibility.eligible && !isSanitized;
-  const showSanitizeControls = isPix && !isSanitized;
+  const isSanitizedPayload = useMemo(
+    () => (rawPayload.trim() ? isPayloadAlreadySanitized(rawPayload) : false),
+    [rawPayload],
+  );
+  const canSanitize = sanitizeEligibility.eligible && !isSanitizedPayload;
+  const showSanitizeControls = isPix && !isSanitizedPayload;
   const sanitizeDisabledMessage = getSanitizeDisabledMessage(
     sanitizeEligibility,
     locale,
@@ -329,7 +337,6 @@ export function DecoderApp() {
     setImageSubmitted(false);
     setImagePhase("none");
     setLookupPanels([]);
-    setIsSanitized(true);
     setRawPayload(sanitized);
     setCopiaCola(sanitized);
     setError(null);
@@ -362,8 +369,7 @@ export function DecoderApp() {
         setRawPayload(bundle.rawPayload);
         setCopiaCola(bundle.copiaCola);
         setError(null);
-        setIsSanitized(bundle.sanitized === true);
-        if (bundle.sanitized) {
+        if (bundle.sanitized || isPayloadAlreadySanitized(bundle.rawPayload)) {
           setImageSession(null);
           setImageSubmitted(false);
           setImagePhase("none");
@@ -417,11 +423,11 @@ export function DecoderApp() {
       {
         rawPayload,
         copiaCola,
-        imageSubmitted: isSanitized ? false : persistImageSubmitted,
+        imageSubmitted: isSanitizedPayload ? false : persistImageSubmitted,
         locale,
-        sanitized: isSanitized || undefined,
+        sanitized: isSanitizedPayload || undefined,
       },
-      isSanitized ? null : persistImageSubmitted ? imageSession : null,
+      isSanitizedPayload ? null : persistImageSubmitted ? imageSession : null,
     );
   }, [
     restoreDone,
@@ -430,7 +436,7 @@ export function DecoderApp() {
     imageSubmitted,
     locale,
     imageSession,
-    isSanitized,
+    isSanitizedPayload,
   ]);
 
   useEffect(() => {
@@ -604,7 +610,7 @@ export function DecoderApp() {
 
         {phase === "results" ? (
         <div className="flex flex-col gap-6">
-          {isSanitized ? (
+          {isSanitizedPayload ? (
             <SafeQrPreview
               payload={rawPayload}
               caption={t(locale, "safeQrCaption")}
@@ -634,8 +640,8 @@ export function DecoderApp() {
 
           <Separator />
           <motion.div
-            key={isSanitized ? "sanitized-payload" : "raw-payload"}
-            initial={isSanitized ? { opacity: 0.7 } : false}
+            key={isSanitizedPayload ? "sanitized-payload" : "raw-payload"}
+            initial={isSanitizedPayload ? { opacity: 0.7 } : false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
@@ -646,8 +652,8 @@ export function DecoderApp() {
             <>
               <Separator />
               <motion.div
-                key={isSanitized ? "sanitized-structured" : "raw-structured"}
-                initial={isSanitized ? { opacity: 0.7, y: 6 } : false}
+                key={isSanitizedPayload ? "sanitized-structured" : "raw-structured"}
+                initial={isSanitizedPayload ? { opacity: 0.7, y: 6 } : false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
                 className="flex flex-col gap-2"
@@ -691,7 +697,7 @@ export function DecoderApp() {
                               row={row}
                               rows={rows}
                               locale={locale}
-                              sanitized={isSanitized}
+                              sanitized={isSanitizedPayload}
                             />
                           )}
                         </TableCell>
@@ -717,7 +723,7 @@ export function DecoderApp() {
             </>
           ) : null}
 
-          {!isSanitized ? (
+          {!isSanitizedPayload ? (
             <LookupPanelStack
               locale={locale}
               panels={lookupPanels}

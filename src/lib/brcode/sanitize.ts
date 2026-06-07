@@ -107,6 +107,17 @@ export function buildPayloadWithCrc(nodes: TlvNode[]): string {
   return `${encoded}6304${crc}`;
 }
 
+/** True when the payload already matches the sanitized static EVP template. */
+export function isPayloadAlreadySanitized(raw: string): boolean {
+  const eligibility = getSanitizeEligibility(raw);
+  if (!eligibility.eligible) return false;
+  try {
+    return sanitizeStaticPixPayload(raw) === raw.trim();
+  } catch {
+    return false;
+  }
+}
+
 /** Strips personal data from a static PIX payload while keeping the EVP key. */
 export function sanitizeStaticPixPayload(raw: string): string {
   const eligibility = getSanitizeEligibility(raw);

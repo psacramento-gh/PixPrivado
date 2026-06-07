@@ -5,6 +5,7 @@ import { validateCrc } from "./crc.ts";
 import { flattenNodes, parseBrCode } from "./parse.ts";
 import {
   getSanitizeEligibility,
+  isPayloadAlreadySanitized,
   sanitizeStaticPixPayload,
 } from "./sanitize.ts";
 
@@ -40,6 +41,15 @@ test("sanitizeStaticPixPayload removes personal fields and keeps EVP key", () =>
   assert.ok(!sanitized.includes("SAO PAULO"));
   assert.ok(!sanitized.includes("01310100"));
   assert.ok(!sanitized.includes("100.00"));
+});
+
+test("isPayloadAlreadySanitized is false before sanitization", () => {
+  assert.equal(isPayloadAlreadySanitized(SAMPLE_STATIC_PAYLOAD), false);
+});
+
+test("isPayloadAlreadySanitized is true after sanitization", () => {
+  const sanitized = sanitizeStaticPixPayload(SAMPLE_STATIC_PAYLOAD);
+  assert.equal(isPayloadAlreadySanitized(sanitized), true);
 });
 
 test("getSanitizeEligibility rejects CPF key payloads", () => {
