@@ -40,6 +40,13 @@ export const messages = {
     notPix: "Not a PIX BR Code — showing raw content only.",
     dropOrClick: "Drop an image or click to browse",
     submitAnotherImage: "Make new submission",
+    makeSaferToShare: "Make safer to share",
+    makeSaferToShareEvpOnly:
+      "Only random Pix keys can be made safe to share. Enter a QR code or Copia e Cola string associated with a random key if you want to unlock this feature.",
+    makeSaferToShareStaticOnly:
+      "Only static Pix QR codes can be made safe to share.",
+    safeQrCaption: "Safe-to-share QR code",
+    downloadQr: "Download PNG",
     decodedFromImage: "QR region in uploaded image",
     sourceFileNameAria: "Source image file: {name}",
     decodingImage: "Reading image…",
@@ -216,6 +223,13 @@ export const messages = {
     notPix: "Não é BR Code Pix — exibindo apenas o conteúdo bruto.",
     dropOrClick: "Solte uma imagem ou clique para selecionar",
     submitAnotherImage: "Nova submissão",
+    makeSaferToShare: "Torne mais seguro para compartilhar",
+    makeSaferToShareEvpOnly:
+      "Somente chaves Pix aleatórias podem ser tornadas seguras para compartilhar. Envie um QR code ou uma string Copia e Cola associada a uma chave aleatória para desbloquear este recurso.",
+    makeSaferToShareStaticOnly:
+      "Somente QR codes Pix estáticos podem ser tornados seguros para compartilhar.",
+    safeQrCaption: "QR code seguro para compartilhar",
+    downloadQr: "Baixar PNG",
     decodedFromImage: "Região do QR na imagem enviada",
     sourceFileNameAria: "Arquivo de imagem de origem: {name}",
     decodingImage: "Lendo imagem…",

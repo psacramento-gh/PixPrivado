@@ -24,6 +24,7 @@ type PersistedDecoderState = {
   copiaCola: string;
   imageSubmitted: boolean;
   locale: Locale;
+  sanitized?: boolean;
   image?: PersistedImagePayload;
 };
 
@@ -32,6 +33,7 @@ export type PersistedDecoderBundle = {
   copiaCola: string;
   imageSubmitted: boolean;
   locale: Locale;
+  sanitized?: boolean;
 };
 
 export type RestoredDecoderBundle = PersistedDecoderBundle & {
@@ -49,12 +51,14 @@ export async function loadPersistedDecoderBundle(): Promise<RestoredDecoderBundl
       return null;
     }
 
+    const sanitized = parsed.sanitized === true;
     const bundle: PersistedDecoderBundle = {
       rawPayload: parsed.rawPayload,
       copiaCola:
         typeof parsed.copiaCola === "string" ? parsed.copiaCola : parsed.rawPayload,
-      imageSubmitted: Boolean(parsed.imageSubmitted),
+      imageSubmitted: sanitized ? false : Boolean(parsed.imageSubmitted),
       locale: parsed.locale === "pt" ? "pt" : "en",
+      sanitized: sanitized || undefined,
     };
 
     let imagePayload = parsed.image;
@@ -63,7 +67,7 @@ export async function loadPersistedDecoderBundle(): Promise<RestoredDecoderBundl
     }
 
     const imageSession =
-      bundle.imageSubmitted && imagePayload
+      !sanitized && bundle.imageSubmitted && imagePayload
         ? await imagePayloadToSession(imagePayload)
         : null;
 

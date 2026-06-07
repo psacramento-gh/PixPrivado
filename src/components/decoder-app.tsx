@@ -29,6 +29,11 @@ import {
   hasPixGui,
 } from "@/lib/brcode/analyze";
 import {
+  getSanitizeEligibility,
+  sanitizeStaticPixPayload,
+  type SanitizeEligibility,
+} from "@/lib/brcode/sanitize";
+import {
   formatDisplayValue,
   getTagDescription,
   getTagLabel,
@@ -48,6 +53,8 @@ import {
 } from "@/components/decoder-phase-transition";
 import { QrDecodeOverlay } from "@/components/qr-decode-overlay";
 import { QrImagePreview } from "@/components/qr-image-preview";
+import { SafeQrPreview } from "@/components/safe-qr-preview";
+import { motion } from "motion/react";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { LookupPanelStack } from "@/components/lookup/lookup-panel-stack";
@@ -121,6 +128,20 @@ function isImageFile(file: File): boolean {
   return /\.(png|jpe?g|webp|gif)$/i.test(file.name);
 }
 
+function getSanitizeDisabledMessage(
+  eligibility: SanitizeEligibility,
+  locale: Locale,
+): string | null {
+  if (eligibility.eligible) return null;
+  if (eligibility.reason === "not_evp") {
+    return t(locale, "makeSaferToShareEvpOnly");
+  }
+  if (eligibility.reason === "not_static") {
+    return t(locale, "makeSaferToShareStaticOnly");
+  }
+  return null;
+}
+
 export function DecoderApp() {
   const router = useRouter();
   const pathname = usePathname();
@@ -138,6 +159,7 @@ export function DecoderApp() {
   );
   const [decodingFileName, setDecodingFileName] = useState<string | null>(null);
   const [lookupPanels, setLookupPanels] = useState<LookupPanelRecord[]>([]);
+  const [isSanitized, setIsSanitized] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const decodeAbortRef = useRef<AbortController | null>(null);
@@ -163,6 +185,7 @@ export function DecoderApp() {
       setImageSubmitted(false);
       setImagePhase("none");
       setLookupPanels([]);
+      setIsSanitized(false);
       processPayload(payload);
     },
     [clearImageSession, processPayload],
@@ -203,6 +226,7 @@ export function DecoderApp() {
       clearDecodingPreview();
       setImageSubmitted(false);
       setLookupPanels([]);
+      setIsSanitized(false);
       setDecodingFileName(file.name);
       setImagePhase("loading");
       const url = URL.createObjectURL(file);
@@ -277,6 +301,7 @@ export function DecoderApp() {
     setError(null);
     setImageSubmitted(false);
     setLookupPanels([]);
+    setIsSanitized(false);
     clearPersistedDecoderState();
     if (pathname === "/" && searchParams.has("p")) {
       router.replace("/", { scroll: false });
@@ -286,8 +311,29 @@ export function DecoderApp() {
   const parsed = rawPayload ? parseBrCode(rawPayload) : null;
   const isPix = parsed ? hasPixGui(parsed.nodes) : false;
   const canSharePayload = parsed ? detectQrKind(parsed.nodes) === "static" : false;
+  const sanitizeEligibility = rawPayload
+    ? getSanitizeEligibility(rawPayload)
+    : ({ eligible: false, reason: "parse_error" } as const);
+  const canSanitize = sanitizeEligibility.eligible && !isSanitized;
+  const showSanitizeControls = isPix && !isSanitized;
+  const sanitizeDisabledMessage = getSanitizeDisabledMessage(
+    sanitizeEligibility,
+    locale,
+  );
   const rows = parsed ? flattenNodes(parsed.nodes) : [];
   const locations = parsed && isPix ? extractLocationUrls(parsed.nodes) : [];
+
+  const handleSanitize = useCallback(() => {
+    const sanitized = sanitizeStaticPixPayload(rawPayload);
+    clearImageSession();
+    setImageSubmitted(false);
+    setImagePhase("none");
+    setLookupPanels([]);
+    setIsSanitized(true);
+    setRawPayload(sanitized);
+    setCopiaCola(sanitized);
+    setError(null);
+  }, [rawPayload, clearImageSession]);
 
   const decodeDisabled = !copiaCola.trim();
   const phase = getDecoderPhase(imagePhase, rawPayload);
@@ -316,7 +362,12 @@ export function DecoderApp() {
         setRawPayload(bundle.rawPayload);
         setCopiaCola(bundle.copiaCola);
         setError(null);
-        if (bundle.imageSession) {
+        setIsSanitized(bundle.sanitized === true);
+        if (bundle.sanitized) {
+          setImageSession(null);
+          setImageSubmitted(false);
+          setImagePhase("none");
+        } else if (bundle.imageSession) {
           setImageSession(bundle.imageSession);
           setImageSubmitted(true);
           setImagePhase("done");
@@ -366,12 +417,21 @@ export function DecoderApp() {
       {
         rawPayload,
         copiaCola,
-        imageSubmitted: persistImageSubmitted,
+        imageSubmitted: isSanitized ? false : persistImageSubmitted,
         locale,
+        sanitized: isSanitized || undefined,
       },
-      persistImageSubmitted ? imageSession : null,
+      isSanitized ? null : persistImageSubmitted ? imageSession : null,
     );
-  }, [restoreDone, rawPayload, copiaCola, imageSubmitted, locale, imageSession]);
+  }, [
+    restoreDone,
+    rawPayload,
+    copiaCola,
+    imageSubmitted,
+    locale,
+    imageSession,
+    isSanitized,
+  ]);
 
   useEffect(() => {
     if (!isDesktop || phase !== "input") return;
@@ -544,7 +604,13 @@ export function DecoderApp() {
 
         {phase === "results" ? (
         <div className="flex flex-col gap-6">
-          {imageSubmitted && imageSession ? (
+          {isSanitized ? (
+            <SafeQrPreview
+              payload={rawPayload}
+              caption={t(locale, "safeQrCaption")}
+              locale={locale}
+            />
+          ) : imageSubmitted && imageSession ? (
             <QrImagePreview
               url={imageSession.url}
               normalizedCorners={imageSession.normalizedCorners}
@@ -567,12 +633,25 @@ export function DecoderApp() {
           ) : null}
 
           <Separator />
-          <RawPayloadSection payload={rawPayload} locale={locale} />
+          <motion.div
+            key={isSanitized ? "sanitized-payload" : "raw-payload"}
+            initial={isSanitized ? { opacity: 0.7 } : false}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            <RawPayloadSection payload={rawPayload} locale={locale} />
+          </motion.div>
 
           {isPix && rows.length > 0 ? (
             <>
               <Separator />
-              <div className="flex flex-col gap-2">
+              <motion.div
+                key={isSanitized ? "sanitized-structured" : "raw-structured"}
+                initial={isSanitized ? { opacity: 0.7, y: 6 } : false}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                className="flex flex-col gap-2"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-medium text-muted-foreground">
                     {t(locale, "structuredView")}
@@ -612,6 +691,7 @@ export function DecoderApp() {
                               row={row}
                               rows={rows}
                               locale={locale}
+                              sanitized={isSanitized}
                             />
                           )}
                         </TableCell>
@@ -619,7 +699,7 @@ export function DecoderApp() {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
+              </motion.div>
             </>
           ) : null}
 
@@ -637,21 +717,44 @@ export function DecoderApp() {
             </>
           ) : null}
 
-          <LookupPanelStack
-            locale={locale}
-            panels={lookupPanels}
-            onPanelsChange={setLookupPanels}
-          />
+          {!isSanitized ? (
+            <LookupPanelStack
+              locale={locale}
+              panels={lookupPanels}
+              onPanelsChange={setLookupPanels}
+            />
+          ) : null}
 
-          <div className="flex flex-col gap-2 pb-4 sm:flex-row sm:justify-start">
-            <Button
-              type="button"
-              size="lg"
-              className="w-full shrink-0 sm:w-auto"
-              onClick={resetDecoder}
-            >
-              {t(locale, "submitAnotherImage")}
-            </Button>
+          <div className="flex flex-col gap-2 pb-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <Button
+                type="button"
+                size="lg"
+                className="w-full shrink-0 sm:w-auto"
+                onClick={resetDecoder}
+              >
+                {t(locale, "submitAnotherImage")}
+              </Button>
+              {showSanitizeControls ? (
+                <div className="flex w-full flex-col items-stretch gap-2 sm:max-w-md sm:items-end">
+                  {!canSanitize && sanitizeDisabledMessage ? (
+                    <p className="text-xs text-muted-foreground sm:text-right">
+                      {sanitizeDisabledMessage}
+                    </p>
+                  ) : null}
+                  <Button
+                    type="button"
+                    size="lg"
+                    variant="secondary"
+                    className="w-full shrink-0 sm:w-auto"
+                    disabled={!canSanitize}
+                    onClick={handleSanitize}
+                  >
+                    {t(locale, "makeSaferToShare")}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
         ) : null}
@@ -850,6 +953,7 @@ function StructuredDataValue({
   row,
   rows,
   locale,
+  sanitized = false,
 }: {
   row: {
     id: string;
@@ -858,6 +962,7 @@ function StructuredDataValue({
   };
   rows: Array<{ id: string; parentId: string | null; value: string }>;
   locale: Locale;
+  sanitized?: boolean;
 }) {
   const displayValue = formatDisplayValue(
     row.id,
@@ -865,6 +970,20 @@ function StructuredDataValue({
     row.parentId,
     locale,
   );
+
+  if (sanitized) {
+    const badgeKind = getStructuredValueBadgeKind(row, rows);
+    if (badgeKind && badgeKind !== "phone") {
+      return (
+        <span className="inline-flex flex-wrap items-center gap-2">
+          {displayValue}
+          <PixKeyTypeBadge kind={badgeKind} locale={locale} />
+        </span>
+      );
+    }
+    return <>{displayValue}</>;
+  }
+
   const badgeKind = getStructuredValueBadgeKind(row, rows);
 
   let valueNode: ReactNode = displayValue;
