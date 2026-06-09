@@ -58,6 +58,17 @@ export function detectQrKind(nodes: TlvNode[]): QrKind {
   return "unknown";
 }
 
+export function extractPixKey(nodes: TlvNode[]): string | null {
+  let key: string | null = null;
+  walk(nodes, (node, parent) => {
+    if (node.id !== "01" || !parent || node.children?.length) return;
+    const gui = parent.children?.find((child) => child.id === "00");
+    if (gui?.value.toLowerCase() !== PIX_GUI) return;
+    key = node.value;
+  });
+  return key;
+}
+
 export function extractLocationUrls(nodes: TlvNode[]): string[] {
   const urls: string[] = [];
   walk(nodes, (node, parent) => {
