@@ -3,7 +3,6 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { LookupCpfBody } from "@/components/lookup/lookup-cpf-body";
 import { LookupDehashedBody } from "@/components/lookup/lookup-dehashed-body";
 import { useLookupPanels } from "@/components/lookup/lookup-panels-context";
 import { LookupReceitaBody } from "@/components/lookup/lookup-receita-body";
@@ -12,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import type { Locale } from "@/lib/brcode/labels";
 import { resolveLookupKind, type LookupKind } from "@/lib/lookup/kind";
 import type { LookupApiResponse, LookupPanelRecord } from "@/lib/lookup/panel-types";
-import type { CpfHubLookupResult } from "@/lib/cpfhub/types";
 import type { DehashedSearchResult } from "@/lib/dehashed/api-search";
 import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
 import { t, type MessageKey } from "@/lib/i18n";
@@ -23,8 +21,6 @@ import {
 
 function panelTitleKey(kind: LookupKind): MessageKey {
   switch (kind) {
-    case "cpf":
-      return "cpfhubResults";
     case "cnpj":
       return "lookupReceitaResults";
     case "dehashed":
@@ -54,10 +50,6 @@ function LookupPanelBody({
   }
 
   switch (panel.kind) {
-    case "cpf":
-      return (
-        <LookupCpfBody locale={locale} result={panel.result as CpfHubLookupResult} />
-      );
     case "cnpj":
       return (
         <LookupReceitaBody locale={locale} result={panel.result as ReceitaFetchResult} />

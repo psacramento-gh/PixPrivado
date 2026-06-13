@@ -1,6 +1,5 @@
 import {
   buildCnpjQuery,
-  buildCpfQuery,
   buildNameQuery,
   buildPixKeyQuery,
   isAllowedDehashedQuery,
@@ -16,14 +15,6 @@ export function buildBreachLookupQuery(value: string): string | null {
 
   const query = buildPixKeyQuery(trimmed);
   if (!query || !isAllowedDehashedQuery(query)) return null;
-  return query;
-}
-
-export function buildCpfBreachLookupQuery(cpfDigits: string): string | null {
-  const digits = cpfDigits.replace(/\D/g, "");
-  if (digits.length !== 11) return null;
-  const query = buildCpfQuery(digits);
-  if (!isAllowedDehashedQuery(query)) return null;
   return query;
 }
 

@@ -16,6 +16,7 @@ import type { Locale } from "@/lib/brcode/labels";
 import {
   extractTrailingCpfFromText,
   formatCnpj,
+  formatCpf,
   isReceitaCnpjField,
   isReceitaDehashedNameField,
   isReceitaRazaoSocialField,
@@ -135,6 +136,14 @@ export function ReceitaCellValue({ fieldPath, value, locale }: ReceitaCellValueP
     const digits = value.replace(/\D/g, "");
     if (digits.length === 14) {
       content = <>{formatCnpj(digits)}</>;
+    } else if (digits.length === 11) {
+      const display = formatCpf(digits);
+      const portalUrl = buildPessoaFisicaPortalUrlFromCpfDigits(digits);
+      content = portalUrl ? (
+        <LookupPortalLink displayValue={display} href={portalUrl} locale={locale} />
+      ) : (
+        <>{display}</>
+      );
     } else {
       content = <>{value}</>;
     }

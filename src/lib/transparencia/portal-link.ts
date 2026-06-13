@@ -1,3 +1,4 @@
+import { isValidCpf } from "@/lib/br/cpf-candidates";
 import { formatCnpj, formatCpf } from "@/lib/br/format-document";
 import {
   buildMerchantNameQuery,
@@ -6,7 +7,6 @@ import {
 } from "@/lib/dehashed/build-query";
 import {
   buildCnpjBreachLookupQuery,
-  buildCpfBreachLookupQuery,
   buildNameBreachLookupQuery,
 } from "@/lib/receita/breach-link";
 import {
@@ -53,9 +53,15 @@ export function buildPessoaFisicaPortalUrlFromName(name: string): string | null 
   return buildPessoaFisicaSearchUrl(name.trim());
 }
 
+export function isValidCpfForPortalLookup(cpfDigits: string): boolean {
+  const digits = cpfDigits.replace(/\D/g, "");
+  return digits.length === 11 && isValidCpf(digits);
+}
+
 export function buildPessoaFisicaPortalUrlFromCpfDigits(cpfDigits: string): string | null {
-  if (!buildCpfBreachLookupQuery(cpfDigits)) return null;
-  return buildPessoaFisicaSearchUrl(formatCpf(cpfDigits.replace(/\D/g, "")));
+  const digits = cpfDigits.replace(/\D/g, "");
+  if (!isValidCpfForPortalLookup(digits)) return null;
+  return buildPessoaFisicaSearchUrl(formatCpf(digits));
 }
 
 export function buildPessoaJuridicaPortalUrlFromName(name: string): string | null {

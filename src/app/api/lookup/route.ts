@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchCpfHub, normalizeCpfDigits } from "@/lib/cpfhub/api-fetch";
-import { isCpfSearchQuery } from "@/lib/cpfhub/is-cpf-query";
+import { isCpfSearchQuery } from "@/lib/br/cpf-query";
 import { searchDehashed } from "@/lib/dehashed/api-search";
 import { dehashedPageExceedsTotal, dehashedTotalPages } from "@/lib/dehashed/pagination";
 import { DEHASHED_PAGE_SIZE } from "@/lib/dehashed/constants";
@@ -21,21 +20,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (isCpfSearchQuery(query)) {
-    const digits = normalizeCpfDigits(query);
-    if (!isCpfSearchQuery(digits)) {
-      return NextResponse.json({
-        kind: "cpf",
-        query,
-        result: {
-          ok: false,
-          cpf: digits,
-          error: "CPF must be 11 digits.",
-          status: 400,
-        },
-      });
-    }
-    const result = await fetchCpfHub(digits);
-    return NextResponse.json({ kind: "cpf", query: digits, result });
+    return NextResponse.json(
+      { error: "CPF values open Portal da Transparência links in the app." },
+      { status: 400 },
+    );
   }
 
   if (isCnpjSearchQuery(query)) {

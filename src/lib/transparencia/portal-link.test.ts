@@ -6,6 +6,7 @@ import {
   buildPessoaFisicaPortalUrlFromName,
   buildPessoaJuridicaPortalUrlFromCnpjDigits,
   buildPessoaJuridicaPortalUrlFromName,
+  isValidCpfForPortalLookup,
   termoFromDehashedQuery,
 } from "./portal-link";
 import { buildPessoaFisicaSearchUrl, buildPessoaJuridicaSearchUrl } from "./search-url";
@@ -29,6 +30,11 @@ test("buildPessoaJuridicaSearchUrl", () => {
 test("buildPessoaFisicaPortalUrlFromCpfDigits", () => {
   const url = buildPessoaFisicaPortalUrlFromCpfDigits("02563732131");
   assert.ok(url?.includes("termo=025.637.321-31"));
+});
+
+test("buildPessoaFisicaPortalUrlFromCpfDigits rejects invalid check digits", () => {
+  assert.equal(buildPessoaFisicaPortalUrlFromCpfDigits("11111111111"), null);
+  assert.equal(isValidCpfForPortalLookup("11111111111"), false);
 });
 
 test("termoFromDehashedQuery", () => {

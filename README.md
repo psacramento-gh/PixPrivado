@@ -80,14 +80,6 @@ npx vercel env pull .env.local
 
 Never commit `.env.local` or paste the API key into Git, issues, or chat logs.
 
-## CPFHub API key
+## CPF and Portal da Transparência
 
-CPF lookups (11-digit CPF from PIX keys or registry fields) use **`CPFHUB_API_KEY`** from [app.cpfhub.io](https://app.cpfhub.io). Breach searches use DeHashed for **email only** (phone numbers are not sent to the DeHashed API).
-
-Add to `.env.local`:
-
-```bash
-CPFHUB_API_KEY=paste_your_cpfhub_api_key_here
-```
-
-On Vercel, add `CPFHUB_API_KEY` for **Preview** and **Production**, then redeploy. CPF results load at `/cpf/search` via a server-side fetch (`cache: no-store`); the key never reaches the browser.
+CPF values (PIX keys, partner fields, and masked socio CPF candidates) open **Portal da Transparência** search links on [portaldatransparencia.gov.br](https://portaldatransparencia.gov.br). Breach searches use DeHashed for **email only** (phone numbers are not sent to the DeHashed API).
