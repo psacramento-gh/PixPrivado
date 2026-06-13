@@ -78,6 +78,7 @@ export const messages = {
     breachHibpContentNote:
       "Breach titles and descriptions are provided by Have I Been Pwned in English.",
     breachShowDescription: "View description (English)",
+    breachAlertIconAria: "Data exposed in this breach",
     breachPreviewHint:
       "Branch URLs like …git-…vercel.app are Preview — the variable must be enabled for Preview, not Production only.",
     breachEnvHint:
@@ -251,6 +252,7 @@ export const messages = {
     breachHibpContentNote:
       "Títulos e descrições dos vazamentos são fornecidos pelo Have I Been Pwned em inglês.",
     breachShowDescription: "Ver descrição (inglês)",
+    breachAlertIconAria: "Dados expostos neste vazamento",
     breachPreviewHint:
       "URLs de branch como …git-…vercel.app são Preview — a variável precisa estar habilitada em Preview, não só em Production.",
     breachEnvHint:
