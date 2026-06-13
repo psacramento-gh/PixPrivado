@@ -2,20 +2,20 @@ import { isValidCpf } from "@/lib/br/cpf-candidates";
 import { formatCnpj, formatCpf } from "@/lib/br/format-document";
 import {
   buildMerchantNameQuery,
-  isAllowedDehashedQuery,
+  isAllowedMerchantLookupQuery,
   isMerchantNameIdentifier,
-} from "@/lib/dehashed/build-query";
+} from "@/lib/lookup/merchant-query";
 import {
-  buildCnpjBreachLookupQuery,
-  buildNameBreachLookupQuery,
+  buildCnpjPortalGateQuery,
+  buildNamePortalGateQuery,
 } from "@/lib/receita/breach-link";
 import {
   buildPessoaFisicaSearchUrl,
   buildPessoaJuridicaSearchUrl,
 } from "./search-url";
 
-/** Maps a validated Dehashed-style query to the portal `termo` search text. */
-export function termoFromDehashedQuery(
+/** Maps a validated lookup query to the portal `termo` search text. */
+export function termoFromLookupQuery(
   query: string,
   displayFallback: string,
 ): string {
@@ -49,7 +49,7 @@ export function termoFromDehashedQuery(
 }
 
 export function buildPessoaFisicaPortalUrlFromName(name: string): string | null {
-  if (!buildNameBreachLookupQuery(name)) return null;
+  if (!buildNamePortalGateQuery(name)) return null;
   return buildPessoaFisicaSearchUrl(name.trim());
 }
 
@@ -65,14 +65,14 @@ export function buildPessoaFisicaPortalUrlFromCpfDigits(cpfDigits: string): stri
 }
 
 export function buildPessoaJuridicaPortalUrlFromName(name: string): string | null {
-  if (!buildNameBreachLookupQuery(name)) return null;
+  if (!buildNamePortalGateQuery(name)) return null;
   return buildPessoaJuridicaSearchUrl(name.trim());
 }
 
 export function buildPessoaJuridicaPortalUrlFromCnpjDigits(
   cnpjDigits: string,
 ): string | null {
-  if (!buildCnpjBreachLookupQuery(cnpjDigits)) return null;
+  if (!buildCnpjPortalGateQuery(cnpjDigits)) return null;
   return buildPessoaJuridicaSearchUrl(
     formatCnpj(cnpjDigits.replace(/\D/g, "")),
   );
@@ -87,9 +87,9 @@ export function buildMerchantNameIdentifierPortalUrl(
   if (!trimmed || !isMerchantNameIdentifier(trimmed)) return null;
 
   const query = buildMerchantNameQuery(rawValue);
-  if (!query || !isAllowedDehashedQuery(query)) return null;
+  if (!query || !isAllowedMerchantLookupQuery(query)) return null;
 
-  const termo = termoFromDehashedQuery(query, displayValue);
+  const termo = termoFromLookupQuery(query, displayValue);
   if (!termo) return null;
 
   if (/^\d{14}$/.test(query)) {

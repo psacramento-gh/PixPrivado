@@ -175,6 +175,19 @@ const aboutEn: AboutPageContent = {
       ],
     },
     {
+      heading: "Breach lookups",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "When you click an email address in the decoded payload, the app can check whether that address appears in known data breaches using the Have I Been Pwned (HIBP) API.",
+        },
+        {
+          kind: "paragraph",
+          text: "These lookups are proxied through this app's server so your API key stays private, but the full email address is sent to HIBP for each search, in line with their terms of use. A clean result does not guarantee the address was never exposed — sensitive or retired breaches are not returned by the public email API.",
+        },
+      ],
+    },
+    {
       heading: "Responsible use",
       blocks: [
         {
@@ -355,6 +368,19 @@ const aboutPt: AboutPageContent = {
         {
           kind: "paragraph",
           text: "É uma ferramenta de interesse público para conscientização, educação e autodefesa digital.",
+        },
+      ],
+    },
+    {
+      heading: "Consultas de vazamentos",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Ao clicar em um endereço de e-mail no payload decodificado, o app pode verificar se esse endereço aparece em vazamentos conhecidos usando a API do Have I Been Pwned (HIBP).",
+        },
+        {
+          kind: "paragraph",
+          text: "Essas consultas passam pelo servidor deste app para manter a chave de API privada, mas o endereço de e-mail completo é enviado ao HIBP em cada busca, conforme os termos de uso deles. Um resultado limpo não garante que o endereço nunca foi exposto — vazamentos sensíveis ou retirados não são retornados pela API pública de e-mail.",
         },
       ],
     },

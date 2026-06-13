@@ -64,7 +64,7 @@ export function isReceitaNomeSocioField(fieldPath: string): boolean {
   return fieldPath === "nome_socio" || fieldPath.endsWith(".nome_socio");
 }
 
-/** Person or company names that should link to a Dehashed name search. */
-export function isReceitaDehashedNameField(fieldPath: string): boolean {
+/** Person or company names that should link to a portal search. */
+export function isReceitaPortalNameField(fieldPath: string): boolean {
   return isReceitaRazaoSocialField(fieldPath) || isReceitaNomeSocioField(fieldPath);
 }

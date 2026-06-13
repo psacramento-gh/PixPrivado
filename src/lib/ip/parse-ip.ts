@@ -74,8 +74,8 @@ export function parseIpAddress(value: string): string | null {
   return normalizeIpCandidate(value);
 }
 
-/** Splits Dehashed list values (comma, semicolon, pipe, or newline). */
-export function splitDehashedListValues(value: string): string[] {
+/** Splits delimited list values (comma, semicolon, pipe, or newline). */
+function splitDelimitedListValues(value: string): string[] {
   if (!/[,;|\n\r]/.test(value)) return [value];
   return value
     .split(/[,;|\n\r]+/)
@@ -83,47 +83,15 @@ export function splitDehashedListValues(value: string): string[] {
     .filter(Boolean);
 }
 
-/** Unique IPs from a Dehashed field value (comma-separated arrays). */
+/** Unique IPs from a delimited field value (comma-separated arrays). */
 export function parseIpAddressesFromValue(rawValue: string): string[] {
   const seen = new Set<string>();
   const result: string[] = [];
-  for (const part of splitDehashedListValues(rawValue)) {
+  for (const part of splitDelimitedListValues(rawValue)) {
     const ip = parseIpAddress(part);
     if (ip === null || seen.has(ip)) continue;
     seen.add(ip);
     result.push(ip);
   }
   return result;
-}
-
-export function isDehashedEmailField(field: string): boolean {
-  const normalized = field.toLowerCase().replace(/-/g, "_");
-  if (normalized === "email" || normalized === "emails") {
-    return true;
-  }
-  return normalized.endsWith("_email");
-}
-
-export function isDehashedPhoneField(field: string): boolean {
-  const normalized = field.toLowerCase().replace(/-/g, "_");
-  if (normalized === "phone" || normalized === "phones") {
-    return true;
-  }
-  return normalized.endsWith("_phone") && !normalized.includes("iphone");
-}
-
-export function isDehashedIpField(field: string): boolean {
-  const normalized = field.toLowerCase().replace(/-/g, "_");
-  if (
-    normalized === "ip" ||
-    normalized === "ip_address" ||
-    normalized === "ip_addresses" ||
-    normalized === "ipaddress"
-  ) {
-    return true;
-  }
-  if (normalized.endsWith("_ip") || normalized.endsWith("_ip_address")) {
-    return true;
-  }
-  return false;
 }

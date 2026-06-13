@@ -1,10 +1,5 @@
-import { buildDehashedResultsPageUrl } from "@/lib/dehashed/results-url";
-
-/** Breach search (DeHashed) or CNPJ registry lookup, based on query shape. */
-export function buildLookupResultsPageUrl(
-  query: string,
-  page = 1,
-  options?: { returnTo?: string | null },
-): string {
-  return buildDehashedResultsPageUrl(query, page, options);
+/** @deprecated Legacy results page removed; lookups open in-panel on the decoder. */
+export function buildLookupResultsPageUrl(query: string): string {
+  const params = new URLSearchParams({ q: query.trim() });
+  return `/?${params.toString()}`;
 }

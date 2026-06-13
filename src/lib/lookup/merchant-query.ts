@@ -1,4 +1,7 @@
-import { classifyPixKey, normalizePhoneForSearch } from "./classify-pix-key";
+import {
+  classifyPixKey,
+  normalizePhoneForSearch,
+} from "@/lib/pix/classify-pix-key";
 
 /** EMV tag 59 (Merchant Name) max length in PIX BR Codes. */
 export const MERCHANT_NAME_MAX_LENGTH = 25;
@@ -6,7 +9,7 @@ export const MERCHANT_NAME_MAX_LENGTH = 25;
 /** Portuguese name particles; excluded from AND queries to reduce noise. */
 const NAME_STOP_WORDS = new Set(["de", "da", "do", "dos", "das", "e"]);
 
-/** Quote multi-word values for Dehashed exact-phrase matching. */
+/** Quote multi-word values for exact-phrase matching. */
 function escapePhraseTerm(value: string): string {
   const trimmed = value.trim();
   if (/\s/.test(trimmed)) {
@@ -27,13 +30,13 @@ export function buildNameQuery(name: string): string {
   return `name:${escapePhraseTerm(name)}`;
 }
 
-/** Search across all Dehashed fields (web UI “All” category). */
+/** Search across all fields (web UI “All” category). */
 export function buildAllFieldsPhraseQuery(value: string): string {
   return escapePhraseTerm(value.trim());
 }
 
 /**
- * Distinctive tokens for truncated merchant names (Dehashed v2 wildcard is unreliable).
+ * Distinctive tokens for truncated merchant names.
  * Drops stop words and an incomplete final token at the EMV 25-character limit.
  */
 export function distinctiveNameTokens(raw: string): string[] {
@@ -49,8 +52,8 @@ export function distinctiveNameTokens(raw: string): string[] {
 }
 
 /**
- * Truncated merchant name search without wildcards (v2 wildcard is unreliable).
- * Uses a single name:"…" phrase; the API rejects repeated name: clauses (HTTP 400).
+ * Truncated merchant name search.
+ * Uses a single name:"…" phrase.
  * Example: ROMOALDO CLOVIS DE ALBUQU → name:"romoaldo clovis"
  */
 export function buildTruncatedMerchantNameQuery(raw: string): string {
@@ -130,12 +133,14 @@ function isAllowedNameToken(term: string): boolean {
   return /^[\p{L}\p{N}][\p{L}\p{N} .,'-]*$/u.test(term);
 }
 
-/** Allowed queries the API route will forward (abuse guard). */
-export function isAllowedDehashedQuery(query: string): boolean {
+/** Allowed merchant/portal lookup query shapes (abuse guard for portal and Google links). */
+export function isAllowedMerchantLookupQuery(query: string): boolean {
   if (!query || query.length > 512) return false;
   if (/^email:[^\s&]+@[^\s&]+\.[^\s&]+$/.test(query)) return true;
   if (/^name:"[^"]{1,500}"$/.test(query)) return true;
-  if (/^name:[^\s"\\]{2,200}$/.test(query) && isAllowedNameToken(query.slice(5))) return true;
+  if (/^name:[^\s"\\]{2,200}$/.test(query) && isAllowedNameToken(query.slice(5))) {
+    return true;
+  }
   if (/^\d{14}$/.test(query)) return true;
   if (isAllowedAllFieldsPhraseQuery(query)) return true;
   return false;

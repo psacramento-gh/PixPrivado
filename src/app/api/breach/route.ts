@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchDehashed } from "@/lib/dehashed/api-search";
-import { isAllowedDehashedQuery } from "@/lib/dehashed/build-query";
+import { searchBreaches } from "@/lib/breach/api-search";
+import { isAllowedBreachQuery } from "@/lib/breach/build-query";
 
 export async function POST(request: NextRequest) {
   let body: { query?: string };
@@ -11,11 +11,11 @@ export async function POST(request: NextRequest) {
   }
 
   const query = typeof body.query === "string" ? body.query.trim() : "";
-  if (!query || !isAllowedDehashedQuery(query)) {
+  if (!query || !isAllowedBreachQuery(query)) {
     return NextResponse.json({ error: "Invalid or disallowed query" }, { status: 400 });
   }
 
-  const result = await searchDehashed(query, { size: 1 });
+  const result = await searchBreaches(query);
 
   if (!result.ok) {
     return NextResponse.json(
@@ -25,6 +25,6 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    total: result.total,
+    total: result.breaches.length,
   });
 }
