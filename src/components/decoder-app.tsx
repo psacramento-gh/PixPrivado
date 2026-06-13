@@ -75,10 +75,12 @@ import {
   buildDehashedQueryForRow,
   buildGoogleSearchUrlForMerchantNameRow,
   buildPortalUrlForMerchantNameIdentifierRow,
+  buildPortalUrlForPixKeyRow,
   getStructuredValueBadgeKind,
   rowHasDehashedLink,
   rowHasMerchantNameGoogleLink,
   rowHasMerchantNamePortalLink,
+  rowHasPixKeyPortalLink,
 } from "@/lib/dehashed/searchable-rows";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { MerchantCityEnrichedValue } from "@/components/merchant-city-enriched-value";
@@ -1055,6 +1057,13 @@ function StructuredDataValue({
     }
   } else if (rowHasMerchantNamePortalLink(row, displayValue)) {
     const portalUrl = buildPortalUrlForMerchantNameIdentifierRow(row, displayValue);
+    if (portalUrl) {
+      valueNode = (
+        <LookupPortalLink displayValue={displayValue} href={portalUrl} locale={locale} />
+      );
+    }
+  } else if (rowHasPixKeyPortalLink(row, rows)) {
+    const portalUrl = buildPortalUrlForPixKeyRow(row, rows);
     if (portalUrl) {
       valueNode = (
         <LookupPortalLink displayValue={displayValue} href={portalUrl} locale={locale} />

@@ -9,7 +9,6 @@ export function sanitizeSearchReturnPath(path: string | null | undefined): strin
   if (trimmed.length > 2048) return null;
   if (trimmed === "/") return "/";
   if (trimmed.startsWith("/dehashed/search")) return trimmed;
-  if (trimmed.startsWith("/cpf/search")) return trimmed;
   return null;
 }
 

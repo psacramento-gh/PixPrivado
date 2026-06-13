@@ -1,4 +1,4 @@
-/** Lookup URLs use a bare 11-digit CPF (PIX key or registry field). */
+/** Bare 11-digit CPF strings (PIX keys, registry fields). */
 export function isCpfSearchQuery(query: string): boolean {
   return /^\d{11}$/.test(query.trim());
 }

@@ -1,7 +1,7 @@
-import { normalizeCpfDigits } from "@/lib/cpfhub/is-cpf-query";
+import { normalizeCpfDigits } from "@/lib/br/cpf-query";
 import { normalizeCnpjDigits } from "@/lib/receita/is-cnpj-query";
 
-/** Stable key for matching lookup panels that refer to the same CPF or CNPJ. */
+/** Stable key for matching lookup panels that refer to the same CNPJ. */
 export function normalizeLookupQueryKey(query: string): string {
   const trimmed = query.trim();
   const cpfDigits = normalizeCpfDigits(trimmed);
