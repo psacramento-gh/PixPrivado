@@ -6,7 +6,7 @@ import { PhoneDddBadges } from "@/components/phone-ddd-badges";
 import { extractDddFromPhone } from "@/lib/br/extract-ddd";
 import { getWhatsAppLinksFromValue } from "@/lib/br/whatsapp-link";
 import type { Locale } from "@/lib/brcode/labels";
-import { classifyPixKey } from "@/lib/dehashed/classify-pix-key";
+import { classifyPixKey } from "@/lib/pix/classify-pix-key";
 import { parseIpAddress } from "@/lib/ip/parse-ip";
 
 type PhoneEnrichedValueProps = {

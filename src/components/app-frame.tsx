@@ -13,7 +13,7 @@ import {
 const footerLinkClass =
   "font-medium text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground";
 
-/** Shared shell width for decoder, About, Dehashed, and other AppFrame screens. */
+/** Shared shell width for decoder, About, and other AppFrame screens. */
 export const APP_FRAME_MAX_WIDTH_CLASS = "max-w-2xl";
 
 export function AppFrame({

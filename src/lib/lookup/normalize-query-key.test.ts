@@ -18,7 +18,7 @@ test("normalizeLookupQueryKey normalizes formatted CNPJ to digits", () => {
   assert.equal(normalizeLookupQueryKey("12.345.678/0001-99"), "12345678000199");
 });
 
-test("normalizeLookupQueryKey leaves dehashed queries unchanged", () => {
+test("normalizeLookupQueryKey leaves breach queries unchanged", () => {
   assert.equal(
     normalizeLookupQueryKey("email:user@example.com"),
     "email:user@example.com",

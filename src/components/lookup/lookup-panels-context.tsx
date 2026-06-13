@@ -27,7 +27,6 @@ type LookupPanelsContextValue = {
   panels: LookupPanelRecord[];
   openLookup: (query: string) => void;
   toggleCollapsed: (id: string) => void;
-  setPanelPage: (id: string, page: number) => void;
   clearPanels: () => void;
   registerPanelElement: (id: string, element: HTMLElement | null) => void;
   scrollPanelIntoView: (id: string) => void;
@@ -158,7 +157,6 @@ export function LookupPanelsProvider({
       const nextPanel: LookupPanelRecord = {
         id,
         query: trimmed,
-        page: 1,
         collapsed: false,
         status: "loading",
       };
@@ -189,26 +187,6 @@ export function LookupPanelsProvider({
     [onPanelsChange, panels, requestPanelScroll],
   );
 
-  const setPanelPage = useCallback(
-    (id: string, page: number) => {
-      onPanelsChange((prev) =>
-        prev.map((panel) =>
-          panel.id === id
-            ? {
-                ...panel,
-                page,
-                status: "loading",
-                result: undefined,
-                errorMessage: undefined,
-              }
-            : panel,
-        ),
-      );
-      queueMicrotask(() => requestPanelScroll(id, false));
-    },
-    [onPanelsChange, requestPanelScroll],
-  );
-
   const clearPanels = useCallback(() => {
     clearScrollRetries();
     pendingScrollRef.current = null;
@@ -221,7 +199,6 @@ export function LookupPanelsProvider({
       panels,
       openLookup,
       toggleCollapsed,
-      setPanelPage,
       clearPanels,
       registerPanelElement,
       scrollPanelIntoView,
@@ -234,7 +211,6 @@ export function LookupPanelsProvider({
       panels,
       registerPanelElement,
       scrollPanelIntoView,
-      setPanelPage,
       toggleCollapsed,
     ],
   );

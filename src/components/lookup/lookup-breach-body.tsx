@@ -1,0 +1,191 @@
+"use client";
+
+import { ChevronRight, ShieldAlert } from "lucide-react";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import type { Locale } from "@/lib/brcode/labels";
+import type { BreachSearchResult, HibpBreach } from "@/lib/breach/api-search";
+import { translateDataClasses } from "@/lib/breach/data-class-labels";
+import { t } from "@/lib/i18n";
+
+function formatBreachDate(value: string, locale: Locale): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (!match) return value;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "en-US", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function formatPwnCount(count: number, locale: Locale): string {
+  return new Intl.NumberFormat(locale === "pt" ? "pt-BR" : "en-US").format(count);
+}
+
+function BreachAlertIcon({ locale }: { locale: Locale }) {
+  return (
+    <span
+      className="flex size-12 shrink-0 items-center justify-center rounded-md border border-destructive/30 bg-destructive/10 text-destructive"
+      role="img"
+      aria-label={t(locale, "breachAlertIconAria")}
+    >
+      <ShieldAlert className="size-6" strokeWidth={2.25} aria-hidden />
+    </span>
+  );
+}
+
+function BreachDescription({
+  description,
+  locale,
+}: {
+  description: string;
+  locale: Locale;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (locale !== "pt") {
+    return (
+      <div
+        className="text-xs leading-relaxed text-muted-foreground [&_a]:text-primary [&_a]:underline"
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        className="flex w-fit items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((open) => !open)}
+      >
+        <ChevronRight
+          className={`size-3.5 shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`}
+          aria-hidden
+        />
+        {t(locale, "breachShowDescription")}
+      </button>
+      {expanded ? (
+        <div
+          className="text-xs leading-relaxed text-muted-foreground [&_a]:text-primary [&_a]:underline"
+          lang="en"
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function BreachCard({ breach, locale }: { breach: HibpBreach; locale: Locale }) {
+  return (
+    <article className="flex flex-col gap-3 rounded-lg border border-destructive/20 bg-background p-4">
+      <div className="flex items-start gap-3">
+        <BreachAlertIcon locale={locale} />
+        <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+          <h3 className="text-sm font-semibold text-foreground">{breach.Title}</h3>
+          <p className="text-xs text-muted-foreground">
+            {breach.Domain ? `${breach.Domain} · ` : null}
+            {t(locale, "breachDate", {
+              date: formatBreachDate(breach.BreachDate, locale),
+            })}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t(locale, "breachAccounts", {
+              count: formatPwnCount(breach.PwnCount, locale),
+            })}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {!breach.IsVerified ? (
+          <Badge variant="outline" className="text-xs">
+            {t(locale, "breachUnverified")}
+          </Badge>
+        ) : null}
+        {breach.IsFabricated ? (
+          <Badge variant="outline" className="text-xs">
+            {t(locale, "breachFabricated")}
+          </Badge>
+        ) : null}
+        {breach.IsSpamList ? (
+          <Badge variant="outline" className="text-xs">
+            {t(locale, "breachSpamList")}
+          </Badge>
+        ) : null}
+        {breach.IsMalware ? (
+          <Badge variant="outline" className="text-xs">
+            {t(locale, "breachMalware")}
+          </Badge>
+        ) : null}
+      </div>
+
+      {breach.DataClasses.length > 0 ? (
+        <p className="text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">
+            {t(locale, "breachDataClasses")}:
+          </span>{" "}
+          {translateDataClasses(breach.DataClasses, locale).join(", ")}
+        </p>
+      ) : null}
+
+      {breach.Description ? (
+        <BreachDescription description={breach.Description} locale={locale} />
+      ) : null}
+    </article>
+  );
+}
+
+export function LookupBreachBody({
+  locale,
+  result,
+}: {
+  locale: Locale;
+  result: BreachSearchResult;
+}) {
+  if (!result.ok) {
+    return (
+      <div className="flex flex-col gap-2" role="alert">
+        <p className="text-sm text-destructive">
+          {result.error}
+          {result.status ? ` (HTTP ${result.status})` : null}
+        </p>
+        {result.status === 503 ? (
+          <ul className="list-inside list-disc text-sm text-muted-foreground">
+            <li>{t(locale, "breachPreviewHint")}</li>
+            <li>{t(locale, "breachEnvHint")}</li>
+          </ul>
+        ) : null}
+        {result.status === 429 ? (
+          <p className="text-sm text-muted-foreground">{t(locale, "breachRateLimit")}</p>
+        ) : null}
+      </div>
+    );
+  }
+
+  const showingText =
+    result.breaches.length === 0
+      ? t(locale, "breachNoResults")
+      : t(locale, "breachShowing", { total: String(result.breaches.length) });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground">{showingText}</p>
+      {result.breaches.length > 0 && locale === "pt" ? (
+        <p className="text-xs text-muted-foreground">{t(locale, "breachHibpContentNote")}</p>
+      ) : null}
+      {result.breaches.length > 0 ? (
+        <div className="flex flex-col gap-4">
+          {result.breaches.map((breach, index) => (
+            <div key={breach.Name} className="flex flex-col gap-4">
+              {index > 0 ? <Separator /> : null}
+              <BreachCard breach={breach} locale={locale} />
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}

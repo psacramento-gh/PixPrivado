@@ -89,7 +89,7 @@ export function ReceitaFederalResultsView({ query, result }: ReceitaFederalResul
           {t(locale, "backToDecoder")}
         </Link>
         {!query ? (
-          <p className="text-sm text-muted-foreground">{t(locale, "dehashedMissingQuery")}</p>
+          <p className="text-sm text-muted-foreground">{t(locale, "breachMissingQuery")}</p>
         ) : null}
       </header>
 

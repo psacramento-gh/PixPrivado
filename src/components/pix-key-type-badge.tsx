@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { PixKeyKind } from "@/lib/dehashed/classify-pix-key";
+import type { PixKeyKind } from "@/lib/pix/classify-pix-key";
 import { t, type MessageKey } from "@/lib/i18n";
 import type { Locale } from "@/lib/brcode/labels";
 

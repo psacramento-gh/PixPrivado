@@ -72,16 +72,16 @@ import { LookupPortalLink } from "@/components/lookup/lookup-portal-link";
 import { LookupValueButton } from "@/components/lookup/lookup-value-button";
 import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
 import {
-  buildDehashedQueryForRow,
+  buildLookupQueryForRow,
   buildGoogleSearchUrlForMerchantNameRow,
   buildPortalUrlForMerchantNameIdentifierRow,
   buildPortalUrlForPixKeyRow,
   getStructuredValueBadgeKind,
-  rowHasDehashedLink,
+  rowHasLookupLink,
   rowHasMerchantNameGoogleLink,
   rowHasMerchantNamePortalLink,
   rowHasPixKeyPortalLink,
-} from "@/lib/dehashed/searchable-rows";
+} from "@/lib/breach/searchable-rows";
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { MerchantCityEnrichedValue } from "@/components/merchant-city-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
@@ -1069,8 +1069,8 @@ function StructuredDataValue({
         <LookupPortalLink displayValue={displayValue} href={portalUrl} locale={locale} />
       );
     }
-  } else if (rowHasDehashedLink(row, rows)) {
-    const query = buildDehashedQueryForRow(row, rows);
+  } else if (rowHasLookupLink(row, rows)) {
+    const query = buildLookupQueryForRow(row, rows);
     if (query) {
       valueNode = <LookupValueButton displayValue={displayValue} query={query} />;
     }

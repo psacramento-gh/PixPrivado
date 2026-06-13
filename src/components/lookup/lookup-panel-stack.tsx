@@ -3,15 +3,15 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { LookupDehashedBody } from "@/components/lookup/lookup-dehashed-body";
+import { LookupBreachBody } from "@/components/lookup/lookup-breach-body";
 import { useLookupPanels } from "@/components/lookup/lookup-panels-context";
 import { LookupReceitaBody } from "@/components/lookup/lookup-receita-body";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Locale } from "@/lib/brcode/labels";
+import type { BreachSearchResult } from "@/lib/breach/api-search";
 import { resolveLookupKind, type LookupKind } from "@/lib/lookup/kind";
 import type { LookupApiResponse, LookupPanelRecord } from "@/lib/lookup/panel-types";
-import type { DehashedSearchResult } from "@/lib/dehashed/api-search";
 import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
 import { t, type MessageKey } from "@/lib/i18n";
 import {
@@ -23,19 +23,17 @@ function panelTitleKey(kind: LookupKind): MessageKey {
   switch (kind) {
     case "cnpj":
       return "lookupReceitaResults";
-    case "dehashed":
-      return "dehashedResults";
+    case "breach":
+      return "breachResults";
   }
 }
 
 function LookupPanelBody({
   locale,
   panel,
-  onPageChange,
 }: {
   locale: Locale;
   panel: LookupPanelRecord;
-  onPageChange: (page: number) => void;
 }) {
   if (panel.status === "loading") {
     return <p className="text-sm text-muted-foreground">{t(locale, "lookupLoading")}</p>;
@@ -54,13 +52,11 @@ function LookupPanelBody({
       return (
         <LookupReceitaBody locale={locale} result={panel.result as ReceitaFetchResult} />
       );
-    case "dehashed":
+    case "breach":
       return (
-        <LookupDehashedBody
+        <LookupBreachBody
           locale={locale}
-          result={panel.result as DehashedSearchResult}
-          page={panel.page}
-          onPageChange={onPageChange}
+          result={panel.result as BreachSearchResult}
         />
       );
   }
@@ -69,14 +65,12 @@ function LookupPanelBody({
 function LookupPanelCard({
   locale,
   panel,
-  onPageChange,
   onToggleCollapsed,
   registerPanelElement,
   onPanelBodyExpanded,
 }: {
   locale: Locale;
   panel: LookupPanelRecord;
-  onPageChange: (page: number) => void;
   onToggleCollapsed: () => void;
   registerPanelElement: (id: string, element: HTMLElement | null) => void;
   onPanelBodyExpanded: (id: string) => void;
@@ -160,11 +154,7 @@ function LookupPanelCard({
         }}
       >
         <div className="flex flex-col gap-4 pt-1">
-          <LookupPanelBody
-            locale={locale}
-            panel={panel}
-            onPageChange={onPageChange}
-          />
+          <LookupPanelBody locale={locale} panel={panel} />
         </div>
       </motion.div>
     </motion.section>
@@ -182,7 +172,6 @@ export function LookupPanelStack({
 }) {
   const {
     toggleCollapsed,
-    setPanelPage,
     registerPanelElement,
     scrollPanelIntoView,
     notifyPanelBodyExpanded,
@@ -194,7 +183,7 @@ export function LookupPanelStack({
     const newest = panels.at(-1);
     if (!newest || newest.collapsed || newest.status !== "ready") return;
 
-    const readyKey = `${newest.id}:${newest.page}:ready`;
+    const readyKey = `${newest.id}:ready`;
     if (scrolledReadyPanelRef.current === readyKey) return;
     scrolledReadyPanelRef.current = readyKey;
 
@@ -206,16 +195,12 @@ export function LookupPanelStack({
     if (loadingPanels.length === 0) return;
 
     for (const panel of loadingPanels) {
-      const fetchKey = `${panel.id}:${panel.page}`;
-      if (inFlightRef.current.has(fetchKey)) continue;
-      inFlightRef.current.add(fetchKey);
+      if (inFlightRef.current.has(panel.id)) continue;
+      inFlightRef.current.add(panel.id);
 
       void (async () => {
         try {
-          const params = new URLSearchParams({
-            q: panel.query,
-            page: String(panel.page),
-          });
+          const params = new URLSearchParams({ q: panel.query });
           const response = await fetch(`/api/lookup?${params.toString()}`);
           const json = (await response.json()) as LookupApiResponse | { error?: string };
 
@@ -256,7 +241,7 @@ export function LookupPanelStack({
             ),
           );
         } finally {
-          inFlightRef.current.delete(fetchKey);
+          inFlightRef.current.delete(panel.id);
         }
       })();
     }
@@ -275,7 +260,6 @@ export function LookupPanelStack({
           key={panel.id}
           locale={locale}
           panel={panel}
-          onPageChange={(page) => setPanelPage(panel.id, page)}
           onToggleCollapsed={() => toggleCollapsed(panel.id)}
           registerPanelElement={registerPanelElement}
           onPanelBodyExpanded={notifyPanelBodyExpanded}

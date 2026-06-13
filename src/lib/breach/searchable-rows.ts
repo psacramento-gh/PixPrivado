@@ -1,11 +1,12 @@
-import { PIX_GUI } from "./constants";
-import { buildMerchantCnpjQuery, buildPixKeyQuery } from "./build-query";
+import { PIX_GUI } from "@/lib/breach/constants";
+import { buildEmailQuery } from "@/lib/breach/build-query";
+import { buildMerchantCnpjQuery } from "@/lib/lookup/merchant-query";
 import { buildMerchantNameGoogleSearchUrl } from "@/lib/google/merchant-name-link";
 import {
   buildMerchantNameIdentifierPortalUrl,
   buildPessoaFisicaPortalUrlFromCpfDigits,
 } from "@/lib/transparencia/portal-link";
-import { classifyPixKey, type PixKeyKind } from "./classify-pix-key";
+import { classifyPixKey, type PixKeyKind } from "@/lib/pix/classify-pix-key";
 
 export type FlatRow = {
   id: string;
@@ -28,7 +29,7 @@ function isPixMerchantAccount(rows: FlatRow[], parentId: string): boolean {
   );
 }
 
-export function buildDehashedQueryForRow(
+export function buildLookupQueryForRow(
   row: FlatRow,
   allRows: FlatRow[],
 ): string | null {
@@ -39,8 +40,8 @@ export function buildDehashedQueryForRow(
 
   if (row.id === "01") {
     const kind = classifyPixKey(row.value);
-    if (kind === "phone" || kind === "cpf") return null;
-    return buildPixKeyQuery(row.value);
+    if (kind !== "email") return null;
+    return buildEmailQuery(row.value);
   }
 
   if (row.id === "04") {
@@ -50,8 +51,8 @@ export function buildDehashedQueryForRow(
   return null;
 }
 
-export function rowHasDehashedLink(row: FlatRow, allRows: FlatRow[]): boolean {
-  return buildDehashedQueryForRow(row, allRows) !== null;
+export function rowHasLookupLink(row: FlatRow, allRows: FlatRow[]): boolean {
+  return buildLookupQueryForRow(row, allRows) !== null;
 }
 
 function isMerchantNameRow(row: FlatRow): boolean {

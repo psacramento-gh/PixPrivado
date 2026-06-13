@@ -44,7 +44,7 @@ export function parseIsoDate(value: string): ParsedIsoDate | null {
   return null;
 }
 
-/** Splits comma-separated values produced by Dehashed array formatting. */
+/** Splits comma-separated values from multi-value fields. */
 export function splitCommaSeparatedValues(value: string): string[] {
   if (!value.includes(",")) return [value];
   return value.split(/\s*,\s*/).filter(Boolean);

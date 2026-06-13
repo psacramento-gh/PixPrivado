@@ -25,7 +25,7 @@ function digitsOnly(value: string): string {
 }
 
 /**
- * National number for Dehashed (`+55` + DDD + local) when both parts are present and valid.
+ * National number (`+55` + DDD + local) when both parts are present and valid.
  */
 export function buildReceitaTelefoneBreachRaw(ddd: string, numero: string): string | null {
   const dddDigits = digitsOnly(ddd);

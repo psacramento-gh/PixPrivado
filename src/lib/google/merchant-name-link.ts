@@ -1,17 +1,17 @@
 import {
   buildMerchantNameQuery,
-  isAllowedDehashedQuery,
+  isAllowedMerchantLookupQuery,
   isMerchantNameIdentifier,
-} from "@/lib/dehashed/build-query";
+} from "@/lib/lookup/merchant-query";
 import { buildGoogleSearchUrl } from "./search-url";
 
-/** EMV tag 59 plain display names — exact raw value, same gating as Dehashed lookup. */
+/** EMV tag 59 plain display names — exact raw value, same gating as merchant lookup. */
 export function buildMerchantNameGoogleSearchUrl(rawValue: string): string | null {
   const trimmed = rawValue.trim();
   if (!trimmed || isMerchantNameIdentifier(trimmed)) return null;
 
   const query = buildMerchantNameQuery(rawValue);
-  if (!query || !isAllowedDehashedQuery(query)) return null;
+  if (!query || !isAllowedMerchantLookupQuery(query)) return null;
 
   return buildGoogleSearchUrl(trimmed);
 }

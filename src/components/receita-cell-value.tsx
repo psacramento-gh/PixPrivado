@@ -18,7 +18,7 @@ import {
   formatCnpj,
   formatCpf,
   isReceitaCnpjField,
-  isReceitaDehashedNameField,
+  isReceitaPortalNameField,
   isReceitaRazaoSocialField,
 } from "@/lib/br/format-document";
 import { buildBreachLookupQuery } from "@/lib/receita/breach-link";
@@ -147,7 +147,7 @@ export function ReceitaCellValue({ fieldPath, value, locale }: ReceitaCellValueP
     } else {
       content = <>{value}</>;
     }
-  } else if (isReceitaDehashedNameField(fieldPath)) {
+  } else if (isReceitaPortalNameField(fieldPath)) {
     content = renderPortalNameValue(value, fieldPath, locale);
   } else {
     const breachQuery = buildBreachLookupQuery(value);

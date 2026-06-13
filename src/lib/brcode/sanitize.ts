@@ -1,4 +1,4 @@
-import { classifyPixKey } from "@/lib/dehashed/classify-pix-key";
+import { classifyPixKey } from "@/lib/pix/classify-pix-key";
 import { detectQrKind, extractPixKey, hasPixGui } from "./analyze";
 import { computeCrc16 } from "./crc";
 import { encodeBrCode } from "./encode";

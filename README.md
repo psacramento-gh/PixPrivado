@@ -10,6 +10,7 @@ A Next.js microapp to explore **what Pix BR Code (EMV) payloads reveal**—from 
 - CRC16 validation
 - Automatic fetch of dynamic QR **location** payloads (server-side proxy)
 - Summary line for PIX QR codes
+- Email breach lookups via [Have I Been Pwned](https://haveibeenpwned.com/) (HIBP API v3)
 
 ## Development
 
@@ -28,9 +29,9 @@ npx vercel
 
 All QR decoding runs in the browser. Location fetches use `/api/location` on the server to avoid CORS when loading cobrança JSON from PSP domains.
 
-## Dehashed API key
+## HIBP API key
 
-Dehashed search links call `POST /api/dehashed`, which reads **`DEHASHED_API_KEY`** (v2 key from the [Dehashed dashboard](https://app.dehashed.com/)). Refresh the key once if you still use a legacy token.
+Email breach lookups call `GET /api/lookup` (and `POST /api/breach` for total checks), which read **`HIBP_API_KEY`** from the [HIBP API key page](https://haveibeenpwned.com/API/Key). A Core plan (1,000 requests/minute) is sufficient.
 
 ### Local development
 
@@ -38,7 +39,7 @@ Create a file that Next.js loads automatically (gitignored):
 
 ```bash
 # /workspace/.env.local
-DEHASHED_API_KEY=paste_your_v2_api_key_here
+HIBP_API_KEY=paste_your_32_char_hex_key_here
 ```
 
 Restart the dev server after saving:
@@ -47,7 +48,7 @@ Restart the dev server after saving:
 npm run dev
 ```
 
-Quick check: decode a PIX QR with a linked field, click the value, and confirm a new tab opens (no “Dehashed API is not configured” in the network response).
+Quick check: decode a PIX QR with an email PIX key, click the value, and confirm breach results load in the lookup panel (no “HIBP_API_KEY is not available” in the network response).
 
 ### Vercel (production / preview)
 
@@ -56,17 +57,17 @@ Quick check: decode a PIX QR with a linked field, click the value, and confirm a
 1. Open [Vercel Dashboard](https://vercel.com/dashboard) → your **Pix Privacy Explorer** project.
 2. **Settings** → **Environment Variables**.
 3. Add:
-   - **Key:** `DEHASHED_API_KEY`
-   - **Value:** your v2 API key (paste once; it is stored encrypted).
+   - **Key:** `HIBP_API_KEY`
+   - **Value:** your 32-character hex API key (paste once; it is stored encrypted).
    - **Environments:** enable **Production**, **Preview**, and **Development** if you use Vercel’s cloud dev or preview deployments.
 4. **Save**, then **Redeploy** the latest deployment (env vars apply on the next build/runtime, not retroactively to old instances in all cases).
 
 **CLI** (from the repo root, after `vercel link`):
 
 ```bash
-npx vercel env add DEHASHED_API_KEY production
-npx vercel env add DEHASHED_API_KEY preview
-npx vercel env add DEHASHED_API_KEY development
+npx vercel env add HIBP_API_KEY production
+npx vercel env add HIBP_API_KEY preview
+npx vercel env add HIBP_API_KEY development
 ```
 
 Paste the key when prompted. Redeploy with `npx vercel --prod` or push to the connected Git branch.
@@ -82,4 +83,4 @@ Never commit `.env.local` or paste the API key into Git, issues, or chat logs.
 
 ## CPF and Portal da Transparência
 
-CPF values (PIX keys, partner fields, and masked socio CPF candidates) open **Portal da Transparência** search links on [portaldatransparencia.gov.br](https://portaldatransparencia.gov.br). Breach searches use DeHashed for **email only** (phone numbers are not sent to the DeHashed API).
+CPF values (PIX keys, partner fields, and masked socio CPF candidates) open **Portal da Transparência** search links on [portaldatransparencia.gov.br](https://portaldatransparencia.gov.br). Breach searches use HIBP for **email only**.

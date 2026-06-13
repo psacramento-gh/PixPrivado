@@ -7,7 +7,7 @@ import {
   buildPessoaJuridicaPortalUrlFromCnpjDigits,
   buildPessoaJuridicaPortalUrlFromName,
   isValidCpfForPortalLookup,
-  termoFromDehashedQuery,
+  termoFromLookupQuery,
 } from "./portal-link";
 import { buildPessoaFisicaSearchUrl, buildPessoaJuridicaSearchUrl } from "./search-url";
 
@@ -37,10 +37,10 @@ test("buildPessoaFisicaPortalUrlFromCpfDigits rejects invalid check digits", () 
   assert.equal(isValidCpfForPortalLookup("11111111111"), false);
 });
 
-test("termoFromDehashedQuery", () => {
-  assert.equal(termoFromDehashedQuery("email:a@b.co", ""), "a@b.co");
-  assert.equal(termoFromDehashedQuery("02563732131", ""), "025.637.321-31");
-  assert.equal(termoFromDehashedQuery('name:"Joao Silva"', ""), "Joao Silva");
+test("termoFromLookupQuery", () => {
+  assert.equal(termoFromLookupQuery("email:a@b.co", ""), "a@b.co");
+  assert.equal(termoFromLookupQuery("02563732131", ""), "025.637.321-31");
+  assert.equal(termoFromLookupQuery('name:"Joao Silva"', ""), "Joao Silva");
 });
 
 test("buildPessoaJuridicaPortalUrlFromName rejects empty", () => {

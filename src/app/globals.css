@@ -136,7 +136,7 @@
   }
 }
 
-/* Shared shell morph between decoder, Dehashed, and About. */
+/* Shared shell morph between decoder and About. */
 .app-frame-shell {
   view-transition-name: app-frame;
 }
