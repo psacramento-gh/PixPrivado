@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "haveibeenpwned.com",
-        pathname: "/Content/Images/PwnedLogos/**",
+        hostname: "logos.haveibeenpwned.com",
+        pathname: "/**",
       },
     ],
   },

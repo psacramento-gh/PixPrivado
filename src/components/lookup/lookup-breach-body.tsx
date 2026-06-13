@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Locale } from "@/lib/brcode/labels";
 import type { BreachSearchResult, HibpBreach } from "@/lib/breach/api-search";
-import { HIBP_LOGO_BASE_URL } from "@/lib/breach/constants";
+import { buildBreachLogoUrl } from "@/lib/breach/constants";
 import { t } from "@/lib/i18n";
 
 function formatBreachDate(value: string): string {
@@ -18,24 +19,28 @@ function formatPwnCount(count: number, locale: Locale): string {
   return new Intl.NumberFormat(locale === "pt" ? "pt-BR" : "en-US").format(count);
 }
 
-function BreachCard({ breach, locale }: { breach: HibpBreach; locale: Locale }) {
-  const logoUrl = breach.LogoPath
-    ? `${HIBP_LOGO_BASE_URL}/${breach.LogoPath}`
-    : null;
+function BreachLogo({ logoPath }: { logoPath: string }) {
+  const [hidden, setHidden] = useState(false);
+  if (hidden) return null;
 
+  return (
+    <Image
+      src={buildBreachLogoUrl(logoPath)}
+      alt=""
+      width={48}
+      height={48}
+      className="size-12 shrink-0 rounded-md bg-muted object-contain p-1"
+      unoptimized
+      onError={() => setHidden(true)}
+    />
+  );
+}
+
+function BreachCard({ breach, locale }: { breach: HibpBreach; locale: Locale }) {
   return (
     <article className="flex flex-col gap-3 rounded-lg border bg-background p-4">
       <div className="flex items-start gap-3">
-        {logoUrl ? (
-          <Image
-            src={logoUrl}
-            alt=""
-            width={48}
-            height={48}
-            className="size-12 shrink-0 rounded-md bg-muted object-contain p-1"
-            unoptimized
-          />
-        ) : null}
+        {breach.LogoPath ? <BreachLogo logoPath={breach.LogoPath} /> : null}
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold text-foreground">{breach.Title}</h3>
           <p className="text-xs text-muted-foreground">
