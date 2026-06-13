@@ -83,14 +83,15 @@ function BreachCard({ breach, locale }: { breach: HibpBreach; locale: Locale }) 
     <article className="flex flex-col gap-3 rounded-lg border border-destructive/20 bg-background p-4">
       <div className="flex items-start gap-3">
         <BreachAlertIcon locale={locale} />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 flex flex-col gap-0.5">
           <h3 className="text-sm font-semibold text-foreground">{breach.Title}</h3>
           <p className="text-xs text-muted-foreground">
             {breach.Domain ? `${breach.Domain} · ` : null}
             {t(locale, "breachDate", {
               date: formatBreachDate(breach.BreachDate, locale),
             })}
-            {" · "}
+          </p>
+          <p className="text-xs text-muted-foreground">
             {t(locale, "breachAccounts", {
               count: formatPwnCount(breach.PwnCount, locale),
             })}
