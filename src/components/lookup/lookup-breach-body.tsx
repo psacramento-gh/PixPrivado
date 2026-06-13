@@ -7,12 +7,17 @@ import { Separator } from "@/components/ui/separator";
 import type { Locale } from "@/lib/brcode/labels";
 import type { BreachSearchResult, HibpBreach } from "@/lib/breach/api-search";
 import { buildBreachLogoUrl } from "@/lib/breach/constants";
+import { translateDataClasses } from "@/lib/breach/data-class-labels";
 import { t } from "@/lib/i18n";
 
-function formatBreachDate(value: string): string {
+function formatBreachDate(value: string, locale: Locale): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
   if (!match) return value;
-  return `${match[1]}-${match[2]}-${match[3]}`;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "en-US", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 function formatPwnCount(count: number, locale: Locale): string {
@@ -46,7 +51,7 @@ function BreachCard({ breach, locale }: { breach: HibpBreach; locale: Locale }) 
           <p className="text-xs text-muted-foreground">
             {breach.Domain ? `${breach.Domain} · ` : null}
             {t(locale, "breachDate", {
-              date: formatBreachDate(breach.BreachDate),
+              date: formatBreachDate(breach.BreachDate, locale),
             })}
             {" · "}
             {t(locale, "breachAccounts", {
@@ -84,15 +89,23 @@ function BreachCard({ breach, locale }: { breach: HibpBreach; locale: Locale }) 
           <span className="font-medium text-foreground">
             {t(locale, "breachDataClasses")}:
           </span>{" "}
-          {breach.DataClasses.join(", ")}
+          {translateDataClasses(breach.DataClasses, locale).join(", ")}
         </p>
       ) : null}
 
       {breach.Description ? (
-        <div
-          className="text-xs leading-relaxed text-muted-foreground [&_a]:text-primary [&_a]:underline"
-          dangerouslySetInnerHTML={{ __html: breach.Description }}
-        />
+        <div className="flex flex-col gap-1">
+          {locale === "pt" ? (
+            <p className="text-xs font-medium text-muted-foreground">
+              {t(locale, "breachDescriptionEnglish")}
+            </p>
+          ) : null}
+          <div
+            className="text-xs leading-relaxed text-muted-foreground [&_a]:text-primary [&_a]:underline"
+            lang="en"
+            dangerouslySetInnerHTML={{ __html: breach.Description }}
+          />
+        </div>
       ) : null}
     </article>
   );
@@ -133,6 +146,9 @@ export function LookupBreachBody({
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">{showingText}</p>
+      {result.breaches.length > 0 && locale === "pt" ? (
+        <p className="text-xs text-muted-foreground">{t(locale, "breachHibpContentNote")}</p>
+      ) : null}
       {result.breaches.length > 0 ? (
         <div className="flex flex-col gap-4">
           {result.breaches.map((breach, index) => (
