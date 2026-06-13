@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,49 @@ function BreachLogo({ logoPath }: { logoPath: string }) {
       unoptimized
       onError={() => setHidden(true)}
     />
+  );
+}
+
+function BreachDescription({
+  description,
+  locale,
+}: {
+  description: string;
+  locale: Locale;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (locale !== "pt") {
+    return (
+      <div
+        className="text-xs leading-relaxed text-muted-foreground [&_a]:text-primary [&_a]:underline"
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        className="flex w-fit items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((open) => !open)}
+      >
+        <ChevronRight
+          className={`size-3.5 shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`}
+          aria-hidden
+        />
+        {t(locale, "breachShowDescription")}
+      </button>
+      {expanded ? (
+        <div
+          className="text-xs leading-relaxed text-muted-foreground [&_a]:text-primary [&_a]:underline"
+          lang="en"
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -94,18 +138,7 @@ function BreachCard({ breach, locale }: { breach: HibpBreach; locale: Locale }) 
       ) : null}
 
       {breach.Description ? (
-        <div className="flex flex-col gap-1">
-          {locale === "pt" ? (
-            <p className="text-xs font-medium text-muted-foreground">
-              {t(locale, "breachDescriptionEnglish")}
-            </p>
-          ) : null}
-          <div
-            className="text-xs leading-relaxed text-muted-foreground [&_a]:text-primary [&_a]:underline"
-            lang="en"
-            dangerouslySetInnerHTML={{ __html: breach.Description }}
-          />
-        </div>
+        <BreachDescription description={breach.Description} locale={locale} />
       ) : null}
     </article>
   );

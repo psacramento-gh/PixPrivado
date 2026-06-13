@@ -77,7 +77,7 @@ export const messages = {
     breachRateLimit: "The breach lookup service is rate-limited. Please wait and try again.",
     breachHibpContentNote:
       "Breach titles and descriptions are provided by Have I Been Pwned in English.",
-    breachDescriptionEnglish: "Description (English)",
+    breachShowDescription: "View description (English)",
     breachPreviewHint:
       "Branch URLs like …git-…vercel.app are Preview — the variable must be enabled for Preview, not Production only.",
     breachEnvHint:
@@ -250,7 +250,7 @@ export const messages = {
       "O serviço de consulta de vazamentos está com limite de taxa. Aguarde e tente novamente.",
     breachHibpContentNote:
       "Títulos e descrições dos vazamentos são fornecidos pelo Have I Been Pwned em inglês.",
-    breachDescriptionEnglish: "Descrição (inglês)",
+    breachShowDescription: "Ver descrição (inglês)",
     breachPreviewHint:
       "URLs de branch como …git-…vercel.app são Preview — a variável precisa estar habilitada em Preview, não só em Production.",
     breachEnvHint:
