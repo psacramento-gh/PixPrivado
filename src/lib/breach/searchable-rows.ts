@@ -40,8 +40,9 @@ export function buildLookupQueryForRow(
 
   if (row.id === "01") {
     const kind = classifyPixKey(row.value);
-    if (kind !== "email") return null;
-    return buildEmailQuery(row.value);
+    if (kind === "email") return buildEmailQuery(row.value);
+    if (kind === "cnpj") return buildMerchantCnpjQuery(row.value);
+    return null;
   }
 
   if (row.id === "04") {

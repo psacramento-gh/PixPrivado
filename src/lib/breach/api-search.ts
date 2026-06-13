@@ -1,5 +1,6 @@
 import { extractEmailFromQuery, isAllowedBreachQuery } from "./build-query";
 import { HIBP_API_BASE_URL, HIBP_USER_AGENT } from "./constants";
+import { sanitizeBreachDescription } from "./sanitize-description";
 
 const SEARCH_TIMEOUT_MS = 15_000;
 
@@ -40,12 +41,20 @@ export type BreachSearchResult =
 
 function parseBreaches(data: unknown): HibpBreach[] {
   if (!Array.isArray(data)) return [];
-  return data.filter(
-    (breach): breach is HibpBreach =>
-      breach !== null &&
-      typeof breach === "object" &&
-      typeof (breach as HibpBreach).Name === "string",
-  );
+  return data
+    .filter(
+      (breach): breach is HibpBreach =>
+        breach !== null &&
+        typeof breach === "object" &&
+        typeof (breach as HibpBreach).Name === "string",
+    )
+    .map((breach) => ({
+      ...breach,
+      Description:
+        typeof breach.Description === "string"
+          ? sanitizeBreachDescription(breach.Description)
+          : "",
+    }));
 }
 
 export async function searchBreaches(query: string): Promise<BreachSearchResult> {
