@@ -11,7 +11,11 @@ import { Separator } from "@/components/ui/separator";
 import type { Locale } from "@/lib/brcode/labels";
 import type { BreachSearchResult } from "@/lib/breach/api-search";
 import { resolveLookupKind, type LookupKind } from "@/lib/lookup/kind";
-import type { LookupApiResponse, LookupPanelRecord } from "@/lib/lookup/panel-types";
+import {
+  isTopLevelLookupError,
+  normalizeLookupApiResponse,
+} from "@/lib/lookup/parse-api-response";
+import type { LookupPanelRecord } from "@/lib/lookup/panel-types";
 import type { ReceitaFetchResult } from "@/lib/receita/api-fetch";
 import { t, type MessageKey } from "@/lib/i18n";
 import {
@@ -35,19 +39,29 @@ function LookupPanelBody({
   locale: Locale;
   panel: LookupPanelRecord;
 }) {
+  const kind: LookupKind = panel.kind ?? resolveLookupKind(panel.query);
+
   if (panel.status === "loading") {
     return <p className="text-sm text-muted-foreground">{t(locale, "lookupLoading")}</p>;
   }
 
-  if (panel.status === "error" || !panel.result || !panel.kind) {
+  if (panel.status === "error") {
     return (
       <p className="text-sm text-destructive" role="alert">
-        {panel.errorMessage ?? t(locale, "fetchFailed")}
+        {panel.errorMessage ?? t(locale, "lookupFailed")}
       </p>
     );
   }
 
-  switch (panel.kind) {
+  if (!panel.result) {
+    return (
+      <p className="text-sm text-destructive" role="alert">
+        {t(locale, "lookupFailed")}
+      </p>
+    );
+  }
+
+  switch (kind) {
     case "cnpj":
       return (
         <LookupReceitaBody locale={locale} result={panel.result as ReceitaFetchResult} />
@@ -202,23 +216,39 @@ export function LookupPanelStack({
         try {
           const params = new URLSearchParams({ q: panel.query });
           const response = await fetch(`/api/lookup?${params.toString()}`);
-          const json = (await response.json()) as LookupApiResponse | { error?: string };
+          const json: unknown = await response.json();
 
           onPanelsChange((prev) =>
             prev.map((current) => {
               if (current.id !== panel.id) return current;
-              if (!response.ok || "error" in json) {
+
+              if (!response.ok) {
                 return {
                   ...current,
                   status: "error" as const,
-                  errorMessage:
-                    "error" in json && json.error
-                      ? json.error
-                      : t(locale, "fetchFailed"),
+                  errorMessage: isTopLevelLookupError(json)
+                    ? json.error
+                    : t(locale, "lookupFailed"),
                 };
               }
 
-              const data = json as LookupApiResponse;
+              if (isTopLevelLookupError(json)) {
+                return {
+                  ...current,
+                  status: "error" as const,
+                  errorMessage: json.error,
+                };
+              }
+
+              const data = normalizeLookupApiResponse(json);
+              if (!data) {
+                return {
+                  ...current,
+                  status: "error" as const,
+                  errorMessage: t(locale, "lookupFailed"),
+                };
+              }
+
               return {
                 ...current,
                 status: "ready" as const,
@@ -235,7 +265,7 @@ export function LookupPanelStack({
                 ? {
                     ...current,
                     status: "error" as const,
-                    errorMessage: t(locale, "fetchFailed"),
+                    errorMessage: t(locale, "lookupFailed"),
                   }
                 : current,
             ),

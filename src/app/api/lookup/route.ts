@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { isCpfSearchQuery } from "@/lib/br/cpf-query";
 import { searchBreaches } from "@/lib/breach/api-search";
 import { isAllowedBreachQuery } from "@/lib/breach/build-query";
-import { isCnpjSearchQuery } from "@/lib/receita/is-cnpj-query";
 import { fetchReceitaFederal } from "@/lib/receita/api-fetch";
+import { isCnpjSearchQuery, normalizeCnpjDigits } from "@/lib/receita/is-cnpj-query";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
@@ -19,9 +19,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (isCnpjSearchQuery(query)) {
-    const result = await fetchReceitaFederal(query);
-    return NextResponse.json({ kind: "cnpj", query, result });
+  const cnpjDigits = normalizeCnpjDigits(query);
+  if (isCnpjSearchQuery(query) || cnpjDigits.length === 14) {
+    const result = await fetchReceitaFederal(cnpjDigits);
+    return NextResponse.json({ kind: "cnpj", query: cnpjDigits, result });
   }
 
   if (!isAllowedBreachQuery(query)) {
