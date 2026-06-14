@@ -224,10 +224,6 @@ export function formatDisplayValue(
     const cepDigits = parseCepDigits(value);
     if (cepDigits) return formatCepDigits(cepDigits);
   }
-  if (id === "01" && parentId === null) {
-    if (value === "11") return locale === "en" ? "11 (static)" : "11 (estático)";
-    if (value === "12") return locale === "en" ? "12 (dynamic)" : "12 (dinâmico)";
-  }
   if (id === "63" && parentId === null && value.length === 4) {
     return `0x${value.toUpperCase()}`;
   }
