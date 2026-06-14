@@ -71,10 +71,7 @@ export function ShareDecoderLink({
   const displayUrl = truncateShareUrlForDisplay(shareUrl);
 
   return (
-    <div className={cn("flex w-full flex-col gap-2", className)}>
-      <p className="text-center text-xs font-medium text-muted-foreground">
-        {t(locale, "shareLink")}
-      </p>
+    <div className={cn("flex w-full flex-col", className)}>
       <div className="flex h-9 w-full min-w-0 items-stretch overflow-hidden rounded-lg border bg-muted/40">
         <p
           className="flex min-w-0 flex-1 items-center truncate px-4 font-mono text-xs text-muted-foreground"

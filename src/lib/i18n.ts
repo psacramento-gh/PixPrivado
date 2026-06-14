@@ -22,7 +22,6 @@ export const messages = {
       "Could not read from the clipboard. Paste manually or allow clipboard access.",
     decode: "Decode",
     structuredView: "Structured view",
-    shareLink: "Share link",
     shareLinkCopy: "Copy link",
     shareLinkCopied: "Copied",
     rawPayload: "Raw payload",
