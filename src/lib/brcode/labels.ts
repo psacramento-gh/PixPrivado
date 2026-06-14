@@ -224,9 +224,6 @@ export function formatDisplayValue(
     const cepDigits = parseCepDigits(value);
     if (cepDigits) return formatCepDigits(cepDigits);
   }
-  if (id === "53" && value === "986") {
-    return locale === "en" ? "986 (BRL)" : "986 (R$)";
-  }
   if (id === "01" && parentId === null) {
     if (value === "11") return locale === "en" ? "11 (static)" : "11 (estático)";
     if (value === "12") return locale === "en" ? "12 (dynamic)" : "12 (dinâmico)";

@@ -90,7 +90,9 @@ import {
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { MerchantCityEnrichedValue } from "@/components/merchant-city-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
+import { CurrencyBadge } from "@/components/currency-badge";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
+import { isTransactionCurrencyRow } from "@/lib/currency/resolve-currency-display";
 import {
   Popover,
   PopoverContent,
@@ -1087,11 +1089,19 @@ function StructuredDataValue({
 
   if (sanitized) {
     const badgeKind = getStructuredValueBadgeKind(row, rows);
-    if (badgeKind && badgeKind !== "phone") {
+    const showPixKeyBadge = badgeKind && badgeKind !== "phone";
+    const showCurrencyBadge = isTransactionCurrencyRow(row);
+
+    if (showPixKeyBadge || showCurrencyBadge) {
       return (
         <span className="inline-flex flex-wrap items-center gap-2">
           {displayValue}
-          <PixKeyTypeBadge kind={badgeKind} locale={locale} />
+          {showPixKeyBadge ? (
+            <PixKeyTypeBadge kind={badgeKind} locale={locale} />
+          ) : null}
+          {showCurrencyBadge ? (
+            <CurrencyBadge numericCode={row.value} locale={locale} />
+          ) : null}
         </span>
       );
     }
@@ -1129,11 +1139,19 @@ function StructuredDataValue({
     }
   }
 
+  const showPixKeyBadge = badgeKind && badgeKind !== "phone";
+  const showCurrencyBadge = isTransactionCurrencyRow(row);
+
   const inner =
-    badgeKind && badgeKind !== "phone" ? (
+    showPixKeyBadge || showCurrencyBadge ? (
       <span className="inline-flex flex-wrap items-center gap-2">
         {valueNode}
-        <PixKeyTypeBadge kind={badgeKind} locale={locale} />
+        {showPixKeyBadge ? (
+          <PixKeyTypeBadge kind={badgeKind} locale={locale} />
+        ) : null}
+        {showCurrencyBadge ? (
+          <CurrencyBadge numericCode={row.value} locale={locale} />
+        ) : null}
       </span>
     ) : (
       <>{valueNode}</>
