@@ -31,7 +31,10 @@ export function CountryBadge({ alpha2Code, locale }: CountryBadgeProps) {
         className="cursor-pointer rounded-4xl focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         aria-label={display.ariaLabel}
       >
-        <Badge variant="secondary" className="font-sans">
+        <Badge
+          variant="secondary"
+          className="[font-family:'Apple_Color_Emoji','Segoe_UI_Emoji','Segoe_UI_Symbol','Noto_Color_Emoji',emoji] text-base leading-none"
+        >
           {display.flag}
         </Badge>
       </PopoverTrigger>
