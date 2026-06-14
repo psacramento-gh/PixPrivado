@@ -143,6 +143,25 @@ export function LookupPanelsProvider({
         (panel) => normalizeLookupQueryKey(panel.query) === queryKey,
       );
       if (existing) {
+        if (existing.status === "error") {
+          onPanelsChange((prev) =>
+            prev.map((panel) =>
+              panel.id === existing.id
+                ? {
+                    ...panel,
+                    collapsed: false,
+                    status: "loading" as const,
+                    kind: undefined,
+                    result: undefined,
+                    errorMessage: undefined,
+                  }
+                : { ...panel, collapsed: true },
+            ),
+          );
+          queueMicrotask(() => requestPanelScroll(existing.id, true));
+          return;
+        }
+
         onPanelsChange((prev) =>
           prev.map((panel) => ({
             ...panel,
