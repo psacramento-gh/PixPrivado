@@ -48,6 +48,11 @@ import {
   type Locale,
 } from "@/lib/brcode/labels";
 import { flattenNodes, parseBrCode } from "@/lib/brcode/parse";
+import {
+  buildStructuredTableTsv,
+  type StructuredTableRow,
+} from "@/lib/brcode/structured-table-tsv";
+import { copyTextToClipboard } from "@/lib/copy-to-clipboard";
 import { flattenJson } from "@/lib/json-flatten";
 import { t, type MessageKey } from "@/lib/i18n";
 import {
@@ -674,46 +679,11 @@ export function DecoderApp() {
                 transition={{ duration: 0.45, ease: "easeOut" }}
                 className="flex flex-col gap-2"
               >
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t(locale, "structuredView")}
-                </p>
-                <Table className="table-fixed w-full">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[34%] max-w-28 whitespace-normal align-top text-xs sm:max-w-none sm:w-[38%] sm:text-sm">
-                        {t(locale, "label")}
-                      </TableHead>
-                      <TableHead className="whitespace-normal align-top text-xs sm:text-sm">
-                        {t(locale, "value")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rows.map((row) => (
-                      <TableRow key={row.path}>
-                        <TableCell className="w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal text-muted-foreground sm:max-w-none sm:w-[38%] sm:text-sm">
-                          <StructuredDataLabel
-                            id={row.id}
-                            parentId={row.parentId}
-                            locale={locale}
-                          />
-                        </TableCell>
-                        <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
-                          {row.isTemplate ? (
-                            "—"
-                          ) : (
-                            <StructuredDataValue
-                              row={row}
-                              rows={rows}
-                              locale={locale}
-                              sanitized={isSanitizedPayload}
-                            />
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <StructuredViewSection
+                  rows={rows}
+                  locale={locale}
+                  sanitized={isSanitizedPayload}
+                />
               </motion.div>
             </>
           ) : null}
@@ -957,25 +927,7 @@ function RawPayloadSection({
   }, []);
 
   const handleCopy = useCallback(async () => {
-    let success = false;
-    try {
-      await navigator.clipboard.writeText(payload);
-      success = true;
-    } catch {
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = payload;
-        textarea.setAttribute("readonly", "");
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        success = document.execCommand("copy");
-        document.body.removeChild(textarea);
-      } catch {
-        success = false;
-      }
-    }
+    const success = await copyTextToClipboard(payload);
     if (!success) return;
 
     setCopied(true);
@@ -1006,6 +958,106 @@ function RawPayloadSection({
       </pre>
       <span className="sr-only" aria-live="polite">
         {copied ? t(locale, "copyPayloadCopied") : ""}
+      </span>
+    </div>
+  );
+}
+
+function StructuredViewSection({
+  rows,
+  locale,
+  sanitized = false,
+}: {
+  rows: StructuredTableRow[];
+  locale: Locale;
+  sanitized?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
+
+  const tableTsv = useMemo(
+    () =>
+      buildStructuredTableTsv(rows, locale, {
+        labelHeader: t(locale, "label"),
+        valueHeader: t(locale, "value"),
+      }),
+    [rows, locale],
+  );
+
+  const handleCopy = useCallback(async () => {
+    const success = await copyTextToClipboard(tableTsv);
+    if (!success) return;
+
+    setCopied(true);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => setCopied(false), 2000);
+  }, [tableTsv]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-medium text-muted-foreground">
+          {t(locale, "structuredView")}
+        </p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          className="h-auto shrink-0 py-0.5"
+          onClick={() => void handleCopy()}
+          aria-label={t(locale, "copyStructuredTable")}
+        >
+          <ClipboardCopy className="size-3.5 shrink-0" aria-hidden />
+          {copied
+            ? t(locale, "copyStructuredTableCopied")
+            : t(locale, "copyStructuredTable")}
+        </Button>
+      </div>
+      <Table className="table-fixed w-full">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[34%] max-w-28 whitespace-normal align-top text-xs sm:max-w-none sm:w-[38%] sm:text-sm">
+              {t(locale, "label")}
+            </TableHead>
+            <TableHead className="whitespace-normal align-top text-xs sm:text-sm">
+              {t(locale, "value")}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.path}>
+              <TableCell className="w-[34%] max-w-28 align-top text-xs leading-snug break-words whitespace-normal text-muted-foreground sm:max-w-none sm:w-[38%] sm:text-sm">
+                <StructuredDataLabel
+                  id={row.id}
+                  parentId={row.parentId}
+                  locale={locale}
+                />
+              </TableCell>
+              <TableCell className="align-top font-mono text-xs break-all whitespace-normal">
+                {row.isTemplate ? (
+                  "—"
+                ) : (
+                  <StructuredDataValue
+                    row={row}
+                    rows={rows}
+                    locale={locale}
+                    sanitized={sanitized}
+                  />
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <span className="sr-only" aria-live="polite">
+        {copied ? t(locale, "copyStructuredTableCopied") : ""}
       </span>
     </div>
   );
