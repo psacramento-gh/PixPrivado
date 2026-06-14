@@ -71,20 +71,20 @@ export function ShareDecoderLink({
   const displayUrl = truncateShareUrlForDisplay(shareUrl);
 
   return (
-    <div className={cn("flex w-full flex-col gap-1.5", className)}>
-      <p className="text-xs font-medium text-muted-foreground sm:text-right">
+    <div className={cn("flex w-full flex-col gap-2", className)}>
+      <p className="text-center text-xs font-medium text-muted-foreground">
         {t(locale, "shareLink")}
       </p>
       <div className="flex h-9 w-full min-w-0 items-stretch overflow-hidden rounded-lg border bg-muted/40">
         <p
-          className="flex min-w-0 flex-1 items-center truncate px-3.5 font-mono text-xs text-muted-foreground"
+          className="flex min-w-0 flex-1 items-center truncate px-4 font-mono text-xs text-muted-foreground"
           title={shareUrl}
         >
           {displayUrl}
         </p>
         <button
           type="button"
-          className="inline-flex shrink-0 items-center gap-1.5 border-l border-border px-3.5 text-sm font-medium whitespace-nowrap text-foreground transition-colors hover:bg-muted/80 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="inline-flex shrink-0 items-center gap-1.5 border-l border-border px-4 text-sm font-medium whitespace-nowrap text-foreground transition-colors hover:bg-muted/80 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           onClick={() => void handleCopy()}
           aria-label={t(locale, "shareLinkCopy")}
         >
