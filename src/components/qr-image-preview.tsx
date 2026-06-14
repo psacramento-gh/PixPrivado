@@ -11,6 +11,7 @@ import {
 } from "@/lib/qr/decode-image";
 import { computeQrCropRect, mapPointIntoCrop } from "@/lib/qr/crop-region";
 import { loadOrientedBitmapFromUrl } from "@/lib/qr/load-oriented-bitmap";
+import { UNSAFE_FRAME_CLASS } from "@/lib/safety-frame-styles";
 
 const MAX_PREVIEW_HEIGHT_PX = 420;
 
@@ -193,7 +194,7 @@ export function QrImagePreview({
       </figcaption>
       <div
         ref={containerRef}
-        className="flex w-full justify-center overflow-hidden rounded-lg border bg-muted/30"
+        className={`flex w-full justify-center overflow-hidden ${UNSAFE_FRAME_CLASS}`}
       >
         <canvas
           ref={canvasRef}

@@ -67,7 +67,7 @@ import {
 import { QrDecodeOverlay } from "@/components/qr-decode-overlay";
 import { QrImagePreview } from "@/components/qr-image-preview";
 import { SafeQrPreview } from "@/components/safe-qr-preview";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { LookupPanelStack } from "@/components/lookup/lookup-panel-stack";
@@ -127,6 +127,11 @@ import {
   parseDecoderPayloadFromSearch,
 } from "@/lib/decoder/share-url";
 import { ShareDecoderLink } from "@/components/share-decoder-link";
+import {
+  SAFE_FRAME_CLASS,
+  SAFETY_FRAME_TRANSITION_CLASS,
+  UNSAFE_FRAME_CLASS,
+} from "@/lib/safety-frame-styles";
 
 type LocationFetch = {
   url: string;
@@ -637,21 +642,39 @@ export function DecoderApp() {
 
         {phase === "results" ? (
         <div className="flex flex-col gap-6">
-          {isSanitizedPayload ? (
-            <SafeQrPreview
-              payload={rawPayload}
-              caption={t(locale, "safeQrCaption")}
-              locale={locale}
-            />
-          ) : imageSubmitted && imageSession ? (
-            <QrImagePreview
-              url={imageSession.url}
-              normalizedCorners={imageSession.normalizedCorners}
-              caption={t(locale, "decodedFromImage")}
-              fileName={imageSession.file.name}
-              locale={locale}
-            />
-          ) : null}
+          <AnimatePresence mode="wait" initial={false}>
+            {isSanitizedPayload ? (
+              <motion.div
+                key="safe-qr"
+                initial={{ opacity: 0.7 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0.7 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+              >
+                <SafeQrPreview
+                  payload={rawPayload}
+                  caption={t(locale, "safeQrCaption")}
+                  locale={locale}
+                />
+              </motion.div>
+            ) : imageSubmitted && imageSession ? (
+              <motion.div
+                key="unsafe-qr"
+                initial={{ opacity: 0.7 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0.7 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+              >
+                <QrImagePreview
+                  url={imageSession.url}
+                  normalizedCorners={imageSession.normalizedCorners}
+                  caption={t(locale, "decodedFromImage")}
+                  fileName={imageSession.file.name}
+                  locale={locale}
+                />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
 
           {!isPix ? (
             <p className="text-sm text-muted-foreground" role="note">
@@ -667,12 +690,15 @@ export function DecoderApp() {
 
           <Separator />
           <motion.div
-            key={isSanitizedPayload ? "sanitized-payload" : "raw-payload"}
-            initial={isSanitizedPayload ? { opacity: 0.7 } : false}
             animate={{ opacity: 1 }}
+            initial={false}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            <RawPayloadSection payload={rawPayload} locale={locale} />
+            <RawPayloadSection
+              payload={rawPayload}
+              locale={locale}
+              sanitized={isSanitizedPayload}
+            />
           </motion.div>
 
           {isPix && rows.length > 0 ? (
@@ -919,9 +945,11 @@ function CopiaColaInputSection({
 function RawPayloadSection({
   payload,
   locale,
+  sanitized = false,
 }: {
   payload: string;
   locale: Locale;
+  sanitized?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -945,7 +973,7 @@ function RawPayloadSection({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">
-          {t(locale, "rawPayload")}
+          {t(locale, sanitized ? "safePayload" : "unsafePayload")}
         </p>
         <Button
           type="button"
@@ -959,7 +987,11 @@ function RawPayloadSection({
           {copied ? t(locale, "copyPayloadCopied") : t(locale, "copyPayload")}
         </Button>
       </div>
-      <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+      <pre
+        className={`overflow-x-auto p-3 font-mono text-xs break-all whitespace-pre-wrap ${SAFETY_FRAME_TRANSITION_CLASS} ${
+          sanitized ? SAFE_FRAME_CLASS : UNSAFE_FRAME_CLASS
+        }`}
+      >
         {payload}
       </pre>
       <span className="sr-only" aria-live="polite">

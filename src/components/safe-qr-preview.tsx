@@ -6,6 +6,7 @@ import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
+import { SAFE_FRAME_CLASS } from "@/lib/safety-frame-styles";
 
 const MAX_PREVIEW_SIZE_PX = 280;
 
@@ -60,7 +61,7 @@ export function SafeQrPreview({ payload, caption, locale }: SafeQrPreviewProps) 
       </figcaption>
       <div
         ref={containerRef}
-        className="relative flex w-full justify-center overflow-hidden rounded-lg border-2 border-emerald-500/60 bg-emerald-500/5 p-4"
+        className={`relative flex w-full justify-center overflow-hidden p-4 ${SAFE_FRAME_CLASS}`}
       >
         <canvas
           ref={canvasRef}
