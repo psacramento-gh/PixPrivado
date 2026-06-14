@@ -31,11 +31,16 @@ export function CountryBadge({ alpha2Code, locale }: CountryBadgeProps) {
         className="cursor-pointer rounded-4xl focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         aria-label={display.ariaLabel}
       >
-        <Badge
-          variant="secondary"
-          className="[font-family:'Apple_Color_Emoji','Segoe_UI_Emoji','Segoe_UI_Symbol','Noto_Color_Emoji',emoji] text-base leading-none"
-        >
-          {display.flag}
+        <Badge variant="secondary" className="px-1.5 font-sans">
+          <img
+            src={display.flagSvgUrl}
+            alt=""
+            aria-hidden
+            width={21}
+            height={14}
+            draggable={false}
+            className="block h-3.5 w-auto rounded-[2px]"
+          />
         </Badge>
       </PopoverTrigger>
       <PopoverContent

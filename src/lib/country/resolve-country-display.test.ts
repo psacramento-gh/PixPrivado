@@ -25,14 +25,14 @@ test("lookupIso3166EnglishName resolves active ISO 3166-1 alpha-2 codes", () => 
 test("resolveCountryDisplay uses localized labels for BR", () => {
   const en = resolveCountryDisplay("BR", "en");
   assert.ok(en);
-  assert.equal(en!.flag, "🇧🇷");
+  assert.equal(en!.alpha2, "BR");
   assert.equal(en!.name, "Brazil");
   assert.match(en!.ariaLabel, /Brazil/);
   assert.match(en!.ariaLabel, /BR/);
 
   const pt = resolveCountryDisplay("BR", "pt");
   assert.ok(pt);
-  assert.equal(pt!.flag, "🇧🇷");
+  assert.equal(pt!.alpha2, "BR");
   assert.equal(pt!.name, "Brasil");
   assert.match(pt!.ariaLabel, /Brasil/);
 });
@@ -42,7 +42,6 @@ test("resolveCountryDisplay falls back to ISO reference data for English", () =>
   assert.ok(display);
   assert.equal(display!.alpha2, "JP");
   assert.equal(display!.name, "Japan");
-  assert.equal(display!.flag, "🇯🇵");
 });
 
 test("resolveCountryDisplay returns null for unknown country codes", () => {

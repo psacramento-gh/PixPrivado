@@ -1,7 +1,8 @@
 import type { Locale } from "@/lib/brcode/labels";
+import { hasFlag } from "country-flag-icons";
 import { t } from "@/lib/i18n";
+import { countryCodeToFlagSvgUrl } from "./country-code-to-flag-url";
 import { getManualCountryLabel } from "./country-labels";
-import { countryCodeToFlagEmoji } from "./country-code-to-flag";
 import {
   lookupIso3166EnglishName,
   normalizeIso3166Alpha2,
@@ -9,7 +10,7 @@ import {
 
 export type CountryDisplay = {
   alpha2: string;
-  flag: string;
+  flagSvgUrl: string;
   name: string;
   ariaLabel: string;
 };
@@ -22,10 +23,10 @@ export function resolveCountryDisplay(
   if (!alpha2) return null;
 
   const englishName = lookupIso3166EnglishName(alpha2);
-  if (!englishName) return null;
+  if (!englishName || !hasFlag(alpha2)) return null;
 
-  const flag = countryCodeToFlagEmoji(alpha2);
-  if (!flag) return null;
+  const flagSvgUrl = countryCodeToFlagSvgUrl(alpha2);
+  if (!flagSvgUrl) return null;
 
   const manual = getManualCountryLabel(alpha2, locale);
   const name =
@@ -36,7 +37,7 @@ export function resolveCountryDisplay(
 
   return {
     alpha2,
-    flag,
+    flagSvgUrl,
     name,
     ariaLabel: t(locale, "countryAriaLabel", { name, alpha2 }),
   };
