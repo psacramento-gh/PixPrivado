@@ -21,7 +21,7 @@ export const messages = {
     pasteCodeFailed:
       "Could not read from the clipboard. Paste manually or allow clipboard access.",
     decode: "Decode",
-    structuredView: "Structured view",
+    structuredView: "Detailed view",
     shareLinkCopy: "Copy link",
     shareLinkCopied: "Copied",
     rawPayload: "Raw payload",
@@ -201,7 +201,7 @@ export const messages = {
     pasteCodeFailed:
       "Não foi possível ler a área de transferência. Cole manualmente ou permita o acesso.",
     decode: "Decodificar",
-    structuredView: "Visualização estruturada",
+    structuredView: "Visão detalhada",
     shareLink: "Compartilhar link",
     shareLinkCopy: "Copiar link",
     shareLinkCopied: "Copiado",
