@@ -92,7 +92,9 @@ import { MerchantCityEnrichedValue } from "@/components/merchant-city-enriched-v
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
 import { CountryBadge } from "@/components/country-badge";
 import { CurrencyBadge } from "@/components/currency-badge";
+import { PoiMethodBadge } from "@/components/poi-method-badge";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
+import { isPointOfInitiationRow } from "@/lib/brcode/resolve-poi-display";
 import { isCountryCodeRow } from "@/lib/country/resolve-country-display";
 import { isTransactionCurrencyRow } from "@/lib/currency/resolve-currency-display";
 import {
@@ -1094,8 +1096,9 @@ function StructuredDataValue({
     const showPixKeyBadge = badgeKind && badgeKind !== "phone";
     const showCurrencyBadge = isTransactionCurrencyRow(row);
     const showCountryBadge = isCountryCodeRow(row);
+    const showPoiBadge = isPointOfInitiationRow(row);
 
-    if (showPixKeyBadge || showCurrencyBadge || showCountryBadge) {
+    if (showPixKeyBadge || showCurrencyBadge || showCountryBadge || showPoiBadge) {
       return (
         <span className="inline-flex flex-wrap items-center gap-2">
           {displayValue}
@@ -1107,6 +1110,9 @@ function StructuredDataValue({
           ) : null}
           {showCountryBadge ? (
             <CountryBadge alpha2Code={row.value} locale={locale} />
+          ) : null}
+          {showPoiBadge ? (
+            <PoiMethodBadge value={row.value} locale={locale} />
           ) : null}
         </span>
       );
@@ -1148,9 +1154,10 @@ function StructuredDataValue({
   const showPixKeyBadge = badgeKind && badgeKind !== "phone";
   const showCurrencyBadge = isTransactionCurrencyRow(row);
   const showCountryBadge = isCountryCodeRow(row);
+  const showPoiBadge = isPointOfInitiationRow(row);
 
   const inner =
-    showPixKeyBadge || showCurrencyBadge || showCountryBadge ? (
+    showPixKeyBadge || showCurrencyBadge || showCountryBadge || showPoiBadge ? (
       <span className="inline-flex flex-wrap items-center gap-2">
         {valueNode}
         {showPixKeyBadge ? (
@@ -1161,6 +1168,9 @@ function StructuredDataValue({
         ) : null}
         {showCountryBadge ? (
           <CountryBadge alpha2Code={row.value} locale={locale} />
+        ) : null}
+        {showPoiBadge ? (
+          <PoiMethodBadge value={row.value} locale={locale} />
         ) : null}
       </span>
     ) : (
