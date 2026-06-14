@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { lookupMccDescription, parseMccCode } from "./lookup.ts";
+import { lookupMccDescription, parseMccCode } from "./lookup";
 
 test("parseMccCode normalizes digit-only MCC values to four digits", () => {
   assert.equal(parseMccCode("5812"), "5812");
