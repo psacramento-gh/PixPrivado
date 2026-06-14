@@ -90,8 +90,10 @@ import {
 import { CepEnrichedValue } from "@/components/cep-enriched-value";
 import { MerchantCityEnrichedValue } from "@/components/merchant-city-enriched-value";
 import { PhoneEnrichedValue } from "@/components/phone-enriched-value";
+import { CountryBadge } from "@/components/country-badge";
 import { CurrencyBadge } from "@/components/currency-badge";
 import { PixKeyTypeBadge } from "@/components/pix-key-type-badge";
+import { isCountryCodeRow } from "@/lib/country/resolve-country-display";
 import { isTransactionCurrencyRow } from "@/lib/currency/resolve-currency-display";
 import {
   Popover,
@@ -1091,8 +1093,9 @@ function StructuredDataValue({
     const badgeKind = getStructuredValueBadgeKind(row, rows);
     const showPixKeyBadge = badgeKind && badgeKind !== "phone";
     const showCurrencyBadge = isTransactionCurrencyRow(row);
+    const showCountryBadge = isCountryCodeRow(row);
 
-    if (showPixKeyBadge || showCurrencyBadge) {
+    if (showPixKeyBadge || showCurrencyBadge || showCountryBadge) {
       return (
         <span className="inline-flex flex-wrap items-center gap-2">
           {displayValue}
@@ -1101,6 +1104,9 @@ function StructuredDataValue({
           ) : null}
           {showCurrencyBadge ? (
             <CurrencyBadge numericCode={row.value} locale={locale} />
+          ) : null}
+          {showCountryBadge ? (
+            <CountryBadge alpha2Code={row.value} locale={locale} />
           ) : null}
         </span>
       );
@@ -1141,9 +1147,10 @@ function StructuredDataValue({
 
   const showPixKeyBadge = badgeKind && badgeKind !== "phone";
   const showCurrencyBadge = isTransactionCurrencyRow(row);
+  const showCountryBadge = isCountryCodeRow(row);
 
   const inner =
-    showPixKeyBadge || showCurrencyBadge ? (
+    showPixKeyBadge || showCurrencyBadge || showCountryBadge ? (
       <span className="inline-flex flex-wrap items-center gap-2">
         {valueNode}
         {showPixKeyBadge ? (
@@ -1151,6 +1158,9 @@ function StructuredDataValue({
         ) : null}
         {showCurrencyBadge ? (
           <CurrencyBadge numericCode={row.value} locale={locale} />
+        ) : null}
+        {showCountryBadge ? (
+          <CountryBadge alpha2Code={row.value} locale={locale} />
         ) : null}
       </span>
     ) : (
