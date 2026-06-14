@@ -674,16 +674,9 @@ export function DecoderApp() {
                 transition={{ duration: 0.45, ease: "easeOut" }}
                 className="flex flex-col gap-2"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {t(locale, "structuredView")}
-                  </p>
-                  <ShareDecoderLink
-                    payload={rawPayload}
-                    locale={locale}
-                    enabled={canSharePayload}
-                  />
-                </div>
+                <p className="text-xs font-medium text-muted-foreground">
+                  {t(locale, "structuredView")}
+                </p>
                 <Table className="table-fixed w-full">
                   <TableHeader>
                     <TableRow>
@@ -747,8 +740,8 @@ export function DecoderApp() {
             />
           ) : null}
 
-          <div className="flex flex-col gap-2 pb-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-4 pb-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <Button
                 type="button"
                 size="lg"
@@ -759,20 +752,28 @@ export function DecoderApp() {
                 {t(locale, "submitAnotherImage")}
               </Button>
               {showSanitizeControls ? (
-                <div className="flex w-full flex-col items-stretch gap-2 sm:max-w-md sm:items-end">
+                <div className="flex w-full max-w-sm flex-col gap-2.5 sm:ml-auto">
                   <MakeSaferToShareButton
                     locale={locale}
                     disabled={!canSanitize}
                     onClick={handleSanitize}
                   />
                   {!canSanitize && sanitizeDisabledMessage ? (
-                    <p className="text-xs text-muted-foreground sm:text-right">
+                    <p className="text-xs leading-relaxed text-muted-foreground">
                       {sanitizeDisabledMessage}
                     </p>
                   ) : null}
                 </div>
               ) : null}
             </div>
+            {canSharePayload ? (
+              <ShareDecoderLink
+                payload={rawPayload}
+                locale={locale}
+                enabled={canSharePayload}
+                className="mx-auto w-full max-w-lg"
+              />
+            ) : null}
           </div>
         </div>
         ) : null}

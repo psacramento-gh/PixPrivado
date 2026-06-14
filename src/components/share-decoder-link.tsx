@@ -1,19 +1,28 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ClipboardCopy } from "lucide-react";
+import { Check, Link2 } from "lucide-react";
 import type { Locale } from "@/lib/brcode/labels";
-import { buildDecoderShareUrl } from "@/lib/decoder/share-url";
+import {
+  buildDecoderShareUrl,
+  truncateShareUrlForDisplay,
+} from "@/lib/decoder/share-url";
 import { t } from "@/lib/i18n";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ShareDecoderLinkProps = {
   payload: string;
   locale: Locale;
   enabled: boolean;
+  className?: string;
 };
 
-export function ShareDecoderLink({ payload, locale, enabled }: ShareDecoderLinkProps) {
+export function ShareDecoderLink({
+  payload,
+  locale,
+  enabled,
+  className,
+}: ShareDecoderLinkProps) {
   const [copied, setCopied] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -59,23 +68,37 @@ export function ShareDecoderLink({ payload, locale, enabled }: ShareDecoderLinkP
 
   if (!enabled || !shareUrl) return null;
 
+  const displayUrl = truncateShareUrlForDisplay(shareUrl);
+
   return (
-    <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="xs"
-        className="h-auto shrink-0 py-0.5"
-        onClick={() => void handleCopy()}
-        aria-label={t(locale, "shareLinkCopy")}
-        title={shareUrl}
-      >
-        <ClipboardCopy className="size-3.5 shrink-0" aria-hidden />
-        {copied ? t(locale, "shareLinkCopied") : t(locale, "shareLinkCopy")}
-      </Button>
+    <div className={cn("flex w-full flex-col", className)}>
+      <div className="flex h-9 w-full min-w-0 items-stretch overflow-hidden rounded-lg border bg-muted/40">
+        <p
+          className="flex min-w-0 flex-1 items-center truncate px-4 font-mono text-xs text-muted-foreground"
+          title={shareUrl}
+        >
+          {displayUrl}
+        </p>
+        <button
+          type="button"
+          className="inline-flex shrink-0 items-center gap-1.5 border-l border-border px-4 text-sm font-medium whitespace-nowrap text-foreground transition-colors hover:bg-muted/80 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          onClick={() => void handleCopy()}
+          aria-label={t(locale, "shareLinkCopy")}
+        >
+          {copied ? (
+            <Check
+              className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+              aria-hidden
+            />
+          ) : (
+            <Link2 className="size-3.5 shrink-0" aria-hidden />
+          )}
+          {copied ? t(locale, "shareLinkCopied") : t(locale, "shareLinkCopy")}
+        </button>
+      </div>
       <span className="sr-only" aria-live="polite">
         {copied ? t(locale, "shareLinkCopied") : ""}
       </span>
-    </>
+    </div>
   );
 }

@@ -194,6 +194,7 @@ export const messages = {
       "Não foi possível ler a área de transferência. Cole manualmente ou permita o acesso.",
     decode: "Decodificar",
     structuredView: "Visualização estruturada",
+    shareLink: "Compartilhar link",
     shareLinkCopy: "Copiar link",
     shareLinkCopied: "Copiado",
     rawPayload: "Payload bruto",
