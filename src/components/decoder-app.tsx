@@ -672,7 +672,11 @@ export function DecoderApp() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            <RawPayloadSection payload={rawPayload} locale={locale} />
+            <RawPayloadSection
+              payload={rawPayload}
+              locale={locale}
+              sanitized={isSanitizedPayload}
+            />
           </motion.div>
 
           {isPix && rows.length > 0 ? (
@@ -916,12 +920,17 @@ function CopiaColaInputSection({
   );
 }
 
+const safePayloadFrameClass =
+  "rounded-lg border-2 border-emerald-500/60 bg-emerald-500/5";
+
 function RawPayloadSection({
   payload,
   locale,
+  sanitized = false,
 }: {
   payload: string;
   locale: Locale;
+  sanitized?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -945,7 +954,7 @@ function RawPayloadSection({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">
-          {t(locale, "rawPayload")}
+          {t(locale, sanitized ? "safePayload" : "rawPayload")}
         </p>
         <Button
           type="button"
@@ -959,7 +968,13 @@ function RawPayloadSection({
           {copied ? t(locale, "copyPayloadCopied") : t(locale, "copyPayload")}
         </Button>
       </div>
-      <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap">
+      <pre
+        className={
+          sanitized
+            ? `overflow-x-auto p-3 font-mono text-xs break-all whitespace-pre-wrap ${safePayloadFrameClass}`
+            : "overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs break-all whitespace-pre-wrap"
+        }
+      >
         {payload}
       </pre>
       <span className="sr-only" aria-live="polite">
