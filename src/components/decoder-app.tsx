@@ -752,7 +752,7 @@ export function DecoderApp() {
                 {t(locale, "submitAnotherImage")}
               </Button>
               {showSanitizeControls || canSharePayload ? (
-                <div className="flex w-full flex-col items-stretch gap-2 sm:max-w-md sm:items-end">
+                <div className="flex w-full flex-col items-stretch gap-2 sm:w-fit sm:max-w-md sm:items-end">
                   {showSanitizeControls ? (
                     <>
                       <MakeSaferToShareButton

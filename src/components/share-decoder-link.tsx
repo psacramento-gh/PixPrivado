@@ -8,7 +8,6 @@ import {
   truncateShareUrlForDisplay,
 } from "@/lib/decoder/share-url";
 import { t } from "@/lib/i18n";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type ShareDecoderLinkProps = {
@@ -76,28 +75,29 @@ export function ShareDecoderLink({
       <p className="text-xs font-medium text-muted-foreground sm:text-right">
         {t(locale, "shareLink")}
       </p>
-      <div className="flex overflow-hidden rounded-lg border bg-muted/40">
+      <div className="flex h-9 w-full min-w-0 items-stretch overflow-hidden rounded-lg border bg-muted/40">
         <p
-          className="min-w-0 flex-1 truncate px-3 py-2.5 font-mono text-xs text-muted-foreground"
+          className="flex min-w-0 flex-1 items-center truncate px-3.5 font-mono text-xs text-muted-foreground"
           title={shareUrl}
         >
           {displayUrl}
         </p>
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
-          className="h-auto shrink-0 gap-1.5 rounded-none border-l px-3 py-2.5 hover:bg-muted/80"
+          className="inline-flex shrink-0 items-center gap-1.5 border-l border-border px-3.5 text-sm font-medium whitespace-nowrap text-foreground transition-colors hover:bg-muted/80 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           onClick={() => void handleCopy()}
           aria-label={t(locale, "shareLinkCopy")}
         >
           {copied ? (
-            <Check className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+            <Check
+              className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+              aria-hidden
+            />
           ) : (
             <Link2 className="size-3.5 shrink-0" aria-hidden />
           )}
           {copied ? t(locale, "shareLinkCopied") : t(locale, "shareLinkCopy")}
-        </Button>
+        </button>
       </div>
       <span className="sr-only" aria-live="polite">
         {copied ? t(locale, "shareLinkCopied") : ""}
