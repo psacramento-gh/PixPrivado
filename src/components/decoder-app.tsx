@@ -126,6 +126,7 @@ import {
   buildDecoderSharePath,
   parseDecoderPayloadFromSearch,
 } from "@/lib/decoder/share-url";
+import { scrollElementIntoViewWithRetries } from "@/lib/lookup/scroll-to-panel";
 import { ShareDecoderLink } from "@/components/share-decoder-link";
 import {
   SAFE_FRAME_CLASS,
@@ -143,6 +144,7 @@ type LocationFetch = {
 
 
 const IMAGE_DECODE_TIMEOUT_MS = 25_000;
+const SANITIZED_NOTICE_DURATION_MS = 5_000;
 const dropZoneClass =
   "border-input hover:bg-muted/50 flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-5 text-center text-sm text-muted-foreground transition-colors";
 
@@ -199,8 +201,11 @@ export function DecoderApp() {
   );
   const [decodingFileName, setDecodingFileName] = useState<string | null>(null);
   const [lookupPanels, setLookupPanels] = useState<LookupPanelRecord[]>([]);
+  const [showSanitizedNotice, setShowSanitizedNotice] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const resultsTopRef = useRef<HTMLDivElement>(null);
+  const pendingSanitizeScrollRef = useRef(false);
   const decodeAbortRef = useRef<AbortController | null>(null);
   const decodeJobIdRef = useRef(0);
   const isDesktop = useIsDesktop();
@@ -372,7 +377,27 @@ export function DecoderApp() {
     setRawPayload(sanitized);
     setCopiaCola(sanitized);
     setError(null);
+    pendingSanitizeScrollRef.current = true;
+    setShowSanitizedNotice(true);
   }, [rawPayload, clearImageSession]);
+
+  useEffect(() => {
+    if (!showSanitizedNotice) return;
+    const timer = window.setTimeout(
+      () => setShowSanitizedNotice(false),
+      SANITIZED_NOTICE_DURATION_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [showSanitizedNotice]);
+
+  useEffect(() => {
+    if (!isSanitizedPayload || !pendingSanitizeScrollRef.current) return;
+    pendingSanitizeScrollRef.current = false;
+
+    return scrollElementIntoViewWithRetries(resultsTopRef.current, {
+      behavior: "smooth",
+    });
+  }, [isSanitizedPayload]);
 
   const decodeDisabled = !copiaCola.trim();
   const phase = getDecoderPhase(imagePhase, rawPayload);
@@ -641,7 +666,28 @@ export function DecoderApp() {
         ) : null}
 
         {phase === "results" ? (
-        <div className="flex flex-col gap-6">
+        <div
+          ref={resultsTopRef}
+          tabIndex={-1}
+          className="flex scroll-mt-4 flex-col gap-6 outline-none"
+        >
+          {showSanitizedNotice ? (
+            <Alert
+              role="status"
+              className="border-emerald-500/60 bg-emerald-500/10 *:[svg]:text-emerald-700 dark:*:[svg]:text-emerald-300"
+            >
+              <ShieldCheck aria-hidden />
+              <AlertTitle>{t(locale, "sanitizedSuccessTitle")}</AlertTitle>
+              <AlertDescription>
+                {t(locale, "sanitizedSuccessDetail")}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          <span className="sr-only" aria-live="polite">
+            {showSanitizedNotice ? t(locale, "sanitizedSuccessTitle") : ""}
+          </span>
+
           <AnimatePresence mode="wait" initial={false}>
             {isSanitizedPayload ? (
               <motion.div
