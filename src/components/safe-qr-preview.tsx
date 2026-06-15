@@ -56,12 +56,27 @@ export function SafeQrPreview({ payload, caption, locale }: SafeQrPreviewProps) 
 
   return (
     <figure className="flex w-full flex-col gap-2">
-      <figcaption className="text-xs font-medium text-muted-foreground">
-        {caption}
-      </figcaption>
+      <div className="flex items-center justify-between gap-2">
+        <figcaption className="text-xs font-medium text-muted-foreground">
+          {caption}
+        </figcaption>
+        {status === "ready" ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            className="h-auto shrink-0 py-0.5"
+            onClick={handleDownload}
+            aria-label={t(locale, "downloadQr")}
+          >
+            <Download className="size-3.5 shrink-0" aria-hidden />
+            {t(locale, "downloadQr")}
+          </Button>
+        ) : null}
+      </div>
       <div
         ref={containerRef}
-        className={`relative flex w-full justify-center overflow-hidden p-4 ${SAFE_FRAME_CLASS}`}
+        className={`flex w-full justify-center overflow-hidden p-4 ${SAFE_FRAME_CLASS}`}
       >
         <canvas
           ref={canvasRef}
@@ -80,19 +95,6 @@ export function SafeQrPreview({ payload, caption, locale }: SafeQrPreviewProps) 
           <p className="px-3 py-6 text-center text-xs text-muted-foreground" role="status">
             {caption}
           </p>
-        ) : null}
-        {status === "ready" ? (
-          <Button
-            type="button"
-            variant="secondary"
-            size="xs"
-            className="absolute right-3 bottom-3 h-auto gap-1 py-1 shadow-sm"
-            onClick={handleDownload}
-            aria-label={t(locale, "downloadQr")}
-          >
-            <Download className="size-3.5 shrink-0" aria-hidden />
-            {t(locale, "downloadQr")}
-          </Button>
         ) : null}
       </div>
     </figure>
