@@ -52,6 +52,9 @@ export const messages = {
     makeSaferToShareStaticOnly:
       "Only static Pix QR codes can be made safe to share.",
     safeQrCaption: "Safe-to-share QR code",
+    sanitizedSuccessTitle: "Safe to share now",
+    sanitizedSuccessDetail:
+      "Personal details were removed. The green-framed QR code and payload below are safe to share.",
     downloadQr: "Download PNG",
     decodedFromImage: "QR region in uploaded image",
     sourceFileNameAria: "Source image file: {name}",
@@ -233,6 +236,9 @@ export const messages = {
     makeSaferToShareStaticOnly:
       "Somente QR codes Pix estáticos podem ser tornados seguros para compartilhar.",
     safeQrCaption: "QR code seguro para compartilhar",
+    sanitizedSuccessTitle: "Agora é seguro compartilhar",
+    sanitizedSuccessDetail:
+      "Dados pessoais foram removidos. O QR code e o payload com moldura verde abaixo são seguros para compartilhar.",
     downloadQr: "Baixar PNG",
     decodedFromImage: "Região do QR na imagem enviada",
     sourceFileNameAria: "Arquivo de imagem de origem: {name}",
