@@ -67,6 +67,7 @@ import {
 import { QrDecodeOverlay } from "@/components/qr-decode-overlay";
 import { QrImagePreview } from "@/components/qr-image-preview";
 import { SafeQrPreview } from "@/components/safe-qr-preview";
+import { TopToast } from "@/components/top-toast";
 import { motion, AnimatePresence } from "motion/react";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 import { useAppLocale } from "@/lib/use-app-locale";
@@ -382,15 +383,6 @@ export function DecoderApp() {
   }, [rawPayload, clearImageSession]);
 
   useEffect(() => {
-    if (!showSanitizedNotice) return;
-    const timer = window.setTimeout(
-      () => setShowSanitizedNotice(false),
-      SANITIZED_NOTICE_DURATION_MS,
-    );
-    return () => window.clearTimeout(timer);
-  }, [showSanitizedNotice]);
-
-  useEffect(() => {
     if (!isSanitizedPayload || !pendingSanitizeScrollRef.current) return;
     pendingSanitizeScrollRef.current = false;
 
@@ -518,6 +510,15 @@ export function DecoderApp() {
 
   return (
     <LookupPanelsProvider panels={lookupPanels} onPanelsChange={setLookupPanels}>
+    <TopToast
+      open={showSanitizedNotice}
+      onOpenChange={setShowSanitizedNotice}
+      durationMs={SANITIZED_NOTICE_DURATION_MS}
+      title={t(locale, "sanitizedSuccessTitle")}
+      description={t(locale, "sanitizedSuccessDetail")}
+      icon={<ShieldCheck className="text-emerald-700 dark:text-emerald-300" aria-hidden />}
+      className="border-emerald-500/60 bg-emerald-500/10"
+    />
     <AppFrame
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
@@ -671,23 +672,6 @@ export function DecoderApp() {
           tabIndex={-1}
           className="flex scroll-mt-4 flex-col gap-6 outline-none"
         >
-          {showSanitizedNotice ? (
-            <Alert
-              role="status"
-              className="border-emerald-500/60 bg-emerald-500/10 *:[svg]:text-emerald-700 dark:*:[svg]:text-emerald-300"
-            >
-              <ShieldCheck aria-hidden />
-              <AlertTitle>{t(locale, "sanitizedSuccessTitle")}</AlertTitle>
-              <AlertDescription>
-                {t(locale, "sanitizedSuccessDetail")}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          <span className="sr-only" aria-live="polite">
-            {showSanitizedNotice ? t(locale, "sanitizedSuccessTitle") : ""}
-          </span>
-
           <AnimatePresence mode="wait" initial={false}>
             {isSanitizedPayload ? (
               <motion.div
