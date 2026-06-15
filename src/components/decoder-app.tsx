@@ -517,7 +517,7 @@ export function DecoderApp() {
       title={t(locale, "sanitizedSuccessTitle")}
       description={t(locale, "sanitizedSuccessDetail")}
       icon={<ShieldCheck className="text-emerald-700 dark:text-emerald-300" aria-hidden />}
-      className="border-emerald-500/60 bg-emerald-500/10"
+      className="border-emerald-500/60 bg-card dark:border-emerald-500/50"
     />
     <AppFrame
       title={t(locale, "title")}

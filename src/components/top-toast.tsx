@@ -51,7 +51,7 @@ export function TopToast({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
             className={cn(
-              "pointer-events-auto flex w-full max-w-md items-start gap-2 rounded-lg border px-3 py-2.5 text-sm shadow-lg backdrop-blur-sm",
+              "pointer-events-auto flex w-full max-w-md items-start gap-2 rounded-lg border px-3 py-2.5 text-sm text-foreground shadow-lg",
               className,
             )}
           >
@@ -59,9 +59,9 @@ export function TopToast({
               <span className="mt-0.5 shrink-0 [&_svg]:size-4">{icon}</span>
             ) : null}
             <div className="min-w-0">
-              <p className="font-medium text-foreground">{title}</p>
+              <p className="font-medium">{title}</p>
               {description ? (
-                <p className="mt-0.5 text-pretty text-muted-foreground">
+                <p className="mt-0.5 text-pretty text-foreground/85">
                   {description}
                 </p>
               ) : null}
