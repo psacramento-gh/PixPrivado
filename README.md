@@ -1,4 +1,4 @@
-# Pix Privacy Explorer
+# Pix Private
 
 A Next.js microapp to explore **what Pix BR Code (EMV) payloads reveal**—from QR images or **Copia e Cola** text. Deploy-ready for [Vercel](https://vercel.com).
 
@@ -54,7 +54,7 @@ Quick check: decode a PIX QR with an email PIX key, click the value, and confirm
 
 **Dashboard (recommended)**
 
-1. Open [Vercel Dashboard](https://vercel.com/dashboard) → your **Pix Privacy Explorer** project.
+1. Open [Vercel Dashboard](https://vercel.com/dashboard) → your **Pix Private** project.
 2. **Settings** → **Environment Variables**.
 3. Add:
    - **Key:** `HIBP_API_KEY`
