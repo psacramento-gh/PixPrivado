@@ -1,13 +1,14 @@
 import type { Locale } from "./brcode/labels";
 import {
-  APP_DISPLAY_NAME,
+  APP_DISPLAY_NAME_EN,
+  APP_DISPLAY_NAME_PT,
   APP_HOME_ARIA_LABEL_EN,
   APP_HOME_ARIA_LABEL_PT,
 } from "./app-brand";
 
 export const messages = {
   en: {
-    title: APP_DISPLAY_NAME,
+    title: APP_DISPLAY_NAME_EN,
     titleHomeAria: APP_HOME_ARIA_LABEL_EN,
     subtitleLead: "Sharing Pix information publicly?",
     subtitleDetail: "See what people could learn about you.",
@@ -189,7 +190,7 @@ export const messages = {
     about: "About",
   },
   pt: {
-    title: APP_DISPLAY_NAME,
+    title: APP_DISPLAY_NAME_PT,
     titleHomeAria: APP_HOME_ARIA_LABEL_PT,
     subtitleLead: "Vai compartilhar Pix publicamente?",
     subtitleDetail:
