@@ -40,7 +40,7 @@ const aboutEn: AboutPageContent = {
     },
     {
       kind: "paragraph",
-      text: "Pix Private was created to make that hidden layer visible. It allows people to inspect Pix QR codes, Copia e Cola payment strings, and related Pix metadata in a readable way. The goal is not only to decode technical data, but to help people understand the privacy and security implications of sharing payment information with others.",
+      text: "Pix Privado was created to make that hidden layer visible. It allows people to inspect Pix QR codes, Copia e Cola payment strings, and related Pix metadata in a readable way. The goal is not only to decode technical data, but to help people understand the privacy and security implications of sharing payment information with others.",
     },
   ],
   sections: [
