@@ -545,7 +545,7 @@ export function DecoderApp() {
           <TabsList className="flex w-full">
             <TabsTrigger value="upload" className="flex-1 gap-1.5">
               <ImageUp className="size-4 shrink-0" aria-hidden />
-              {t(locale, "upload")}
+              {t(locale, "uploadTab")}
             </TabsTrigger>
             <TabsTrigger value="copia-cola" className="flex-1 gap-1.5">
               <ClipboardCopy className="size-4 shrink-0" aria-hidden />
