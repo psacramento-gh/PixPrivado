@@ -823,6 +823,9 @@ export function DecoderApp() {
 
 const makeSaferToShareButtonClass = "w-full shrink-0 gap-1.5 sm:w-auto";
 
+const makeSaferToShareEnabledButtonClass =
+  "border-transparent bg-emerald-600 text-white hover:bg-emerald-600/90 dark:bg-emerald-500 dark:text-white dark:hover:bg-emerald-500/90";
+
 const makeSaferToShareDisabledButtonClass =
   "border-emerald-500/60 bg-emerald-500/10 text-emerald-950 hover:bg-emerald-500/20 hover:text-emerald-950 dark:border-emerald-500/50 dark:bg-emerald-500/10 dark:text-emerald-50 dark:hover:bg-emerald-500/20 dark:hover:text-emerald-50";
 
@@ -850,7 +853,7 @@ function MakeSaferToShareButton({
               variant={isClickable ? "default" : "outline"}
               className={
                 isClickable
-                  ? makeSaferToShareButtonClass
+                  ? `${makeSaferToShareButtonClass} ${makeSaferToShareEnabledButtonClass}`
                   : `${makeSaferToShareButtonClass} ${makeSaferToShareDisabledButtonClass}`
               }
               disabled={disabled}
