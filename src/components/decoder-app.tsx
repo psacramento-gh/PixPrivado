@@ -821,8 +821,10 @@ export function DecoderApp() {
   );
 }
 
-const makeSaferToShareButtonClass =
-  "w-full shrink-0 gap-1.5 border-emerald-500/60 bg-emerald-500/10 text-emerald-950 hover:bg-emerald-500/20 hover:text-emerald-950 sm:w-auto dark:border-emerald-500/50 dark:bg-emerald-500/10 dark:text-emerald-50 dark:hover:bg-emerald-500/20 dark:hover:text-emerald-50";
+const makeSaferToShareButtonClass = "w-full shrink-0 gap-1.5 sm:w-auto";
+
+const makeSaferToShareDisabledButtonClass =
+  "border-emerald-500/60 bg-emerald-500/10 text-emerald-950 hover:bg-emerald-500/20 hover:text-emerald-950 dark:border-emerald-500/50 dark:bg-emerald-500/10 dark:text-emerald-50 dark:hover:bg-emerald-500/20 dark:hover:text-emerald-50";
 
 function MakeSaferToShareButton({
   locale,
@@ -835,6 +837,7 @@ function MakeSaferToShareButton({
 }) {
   const fullLabel = t(locale, "makeSaferToShare");
   const shortLabel = t(locale, "makeSaferToShareShort");
+  const isClickable = !disabled;
 
   return (
     <TooltipProvider>
@@ -844,8 +847,12 @@ function MakeSaferToShareButton({
             <Button
               type="button"
               size="lg"
-              variant="outline"
-              className={makeSaferToShareButtonClass}
+              variant={isClickable ? "default" : "outline"}
+              className={
+                isClickable
+                  ? makeSaferToShareButtonClass
+                  : `${makeSaferToShareButtonClass} ${makeSaferToShareDisabledButtonClass}`
+              }
               disabled={disabled}
               onClick={onClick}
               aria-label={fullLabel}
