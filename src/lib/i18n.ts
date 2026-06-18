@@ -13,7 +13,7 @@ export const messages = {
     subtitleLead: "Sharing Pix information publicly?",
     subtitleDetail: "See what people could learn about you.",
     language: "Language",
-    upload: "Upload image",
+    upload: "Upload image containing Pix QR code",
     uploadHint: "PNG, JPEG, or WebP",
     copiaCola: "Copia e Cola",
     copiaColaHint: "Paste the EMV payload string",
@@ -196,7 +196,7 @@ export const messages = {
     subtitleDetail:
       "Veja o que as pessoas podem descobrir sobre você.",
     language: "Idioma",
-    upload: "Enviar imagem",
+    upload: "Enviar imagem com QR code Pix",
     uploadHint: "PNG, JPEG ou WebP",
     copiaCola: "Copia e Cola",
     copiaColaHint: "Cole a string EMV do payload",
