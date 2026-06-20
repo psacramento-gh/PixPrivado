@@ -189,6 +189,10 @@ export const messages = {
     isoDateFormatYear: "Shown as YYYY (year only)",
     birthFieldTooltip: "Date of birth",
     about: "About",
+    footerBuiltByPrefix: "Built by pSacramento:",
+    footerAuthorLink: "psacramento",
+    footerXProfile: "X profile",
+    footerGitHub: "GitHub",
   },
   pt: {
     title: APP_DISPLAY_NAME_PT,
@@ -377,6 +381,10 @@ export const messages = {
     isoDateFormatYear: "Exibido como AAAA (somente o ano)",
     birthFieldTooltip: "Data de nascimento",
     about: "Sobre",
+    footerBuiltByPrefix: "Criado por pSacramento:",
+    footerAuthorLink: "psacramento",
+    footerXProfile: "Perfil no X",
+    footerGitHub: "GitHub",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 

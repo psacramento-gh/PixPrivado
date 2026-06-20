@@ -9,9 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { Locale } from "@/lib/brcode/labels";
+import { t } from "@/lib/i18n";
 
 const footerLinkClass =
   "font-medium text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground";
+
+const footerSecondaryLinkClass =
+  "text-muted-foreground/70 transition-colors hover:text-foreground";
 
 /** Shared shell width for decoder, About, and other AppFrame screens. */
 export const APP_FRAME_MAX_WIDTH_CLASS = "max-w-2xl";
@@ -21,14 +26,14 @@ export function AppFrame({
   titleAriaLabel,
   onTitleNavigateHome,
   headerActions,
-  aboutLinkLabel,
+  locale,
   children,
 }: {
   title: string;
   titleAriaLabel: string;
   onTitleNavigateHome?: () => void;
   headerActions?: ReactNode;
-  aboutLinkLabel?: string;
+  locale: Locale;
   children: ReactNode;
 }) {
   return (
@@ -58,30 +63,41 @@ export function AppFrame({
         </CardContent>
         <footer
           role="contentinfo"
-          className="flex max-w-full flex-row flex-nowrap items-center justify-center gap-x-1 overflow-x-auto overscroll-x-contain border-border border-t px-4 py-3 text-xs text-muted-foreground sm:gap-x-2"
+          className="flex max-w-full flex-col items-center gap-1 border-border border-t px-4 py-3 text-xs text-muted-foreground"
         >
-          <p className="m-0 shrink-0 whitespace-nowrap leading-relaxed">
-            BR Code (EMV) ·{" "}
+          <p className="m-0 flex max-w-full flex-row flex-nowrap items-center justify-center gap-x-1 overflow-x-auto overscroll-x-contain whitespace-nowrap leading-relaxed sm:gap-x-2">
+            {t(locale, "footerBuiltByPrefix")}{" "}
             <a
-              href="https://www.bcb.gov.br/estabilidadefinanceira/pix"
+              href="https://www.psacramento.com/pix-privado-a-practical-tool-for-inspecting-privacy-risks-in-pix-payment-information/"
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(footerLinkClass, "shrink-0 whitespace-nowrap")}
+              className={cn(footerLinkClass, "shrink-0")}
             >
-              BCB Pix
+              {t(locale, "footerAuthorLink")}
             </a>
-            {aboutLinkLabel ? (
-              <>
-                {" "}
-                ·{" "}
-                <Link
-                  href="/about"
-                  className={cn(footerLinkClass, "shrink-0 whitespace-nowrap")}
-                >
-                  {aboutLinkLabel}
-                </Link>
-              </>
-            ) : null}
+            {" · "}
+            <a
+              href="https://x.com/psacramento_x"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(footerLinkClass, "shrink-0")}
+            >
+              {t(locale, "footerXProfile")}
+            </a>
+            {" · "}
+            <a
+              href="https://github.com/psacramento-gh/PixPrivado"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(footerLinkClass, "shrink-0")}
+            >
+              {t(locale, "footerGitHub")}
+            </a>
+          </p>
+          <p className="m-0 leading-relaxed">
+            <Link href="/about" className={footerSecondaryLinkClass}>
+              {t(locale, "about")}
+            </Link>
           </p>
         </footer>
       </Card>
