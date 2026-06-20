@@ -523,7 +523,7 @@ export function DecoderApp() {
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
       onTitleNavigateHome={resetDecoder}
-      aboutLinkLabel={t(locale, "about")}
+      locale={locale}
       headerActions={
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }

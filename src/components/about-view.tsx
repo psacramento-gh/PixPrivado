@@ -19,7 +19,7 @@ export function AboutView() {
     <AppFrame
       title={t(locale, "title")}
       titleAriaLabel={t(locale, "titleHomeAria")}
-      aboutLinkLabel={t(locale, "about")}
+      locale={locale}
       headerActions={
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }
