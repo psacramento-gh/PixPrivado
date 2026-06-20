@@ -9,14 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
 
 const footerLinkClass =
   "font-medium text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground";
-
-const footerSecondaryLinkClass =
-  "font-medium text-muted-foreground underline decoration-muted-foreground/60 decoration-dotted underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-foreground hover:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm";
 
 /** Shared shell width for decoder, About, and other AppFrame screens. */
 export const APP_FRAME_MAX_WIDTH_CLASS = "max-w-2xl";
@@ -95,7 +93,13 @@ export function AppFrame({
             </a>
           </p>
           <p className="m-0 leading-relaxed">
-            <Link href="/about" className={footerSecondaryLinkClass}>
+            <Link
+              href="/about"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "xs" }),
+                "text-muted-foreground",
+              )}
+            >
               {t(locale, "about")}
             </Link>
           </p>
