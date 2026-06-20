@@ -189,6 +189,12 @@ export const messages = {
     isoDateFormatYear: "Shown as YYYY (year only)",
     birthFieldTooltip: "Date of birth",
     about: "About",
+    footerBuiltBy: "Built by psacramento",
+    footerX: "X",
+    footerGitHub: "GitHub",
+    footerBuiltByAria: "Article about Pix Privado by psacramento",
+    footerXAria: "psacramento on X",
+    footerGitHubAria: "PixPrivado source code on GitHub",
   },
   pt: {
     title: APP_DISPLAY_NAME_PT,
@@ -377,6 +383,12 @@ export const messages = {
     isoDateFormatYear: "Exibido como AAAA (somente o ano)",
     birthFieldTooltip: "Data de nascimento",
     about: "Sobre",
+    footerBuiltBy: "Feito por psacramento",
+    footerX: "X",
+    footerGitHub: "GitHub",
+    footerBuiltByAria: "Artigo sobre o Pix Privado por psacramento",
+    footerXAria: "psacramento no X",
+    footerGitHubAria: "Código-fonte do PixPrivado no GitHub",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 

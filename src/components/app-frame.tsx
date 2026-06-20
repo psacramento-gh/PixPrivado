@@ -9,9 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import type { Locale } from "@/lib/brcode/labels";
+import { t } from "@/lib/i18n";
 
 const footerLinkClass =
   "font-medium text-foreground underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground";
+
+const FOOTER_BUILT_BY_URL =
+  "https://www.psacramento.com/pix-privado-a-practical-tool-for-inspecting-privacy-risks-in-pix-payment-information/";
+const FOOTER_X_URL = "https://x.com/psacramento_x";
+const FOOTER_GITHUB_URL = "https://github.com/psacramento-gh/PixPrivado";
 
 /** Shared shell width for decoder, About, and other AppFrame screens. */
 export const APP_FRAME_MAX_WIDTH_CLASS = "max-w-2xl";
@@ -21,14 +29,14 @@ export function AppFrame({
   titleAriaLabel,
   onTitleNavigateHome,
   headerActions,
-  aboutLinkLabel,
+  locale,
   children,
 }: {
   title: string;
   titleAriaLabel: string;
   onTitleNavigateHome?: () => void;
   headerActions?: ReactNode;
-  aboutLinkLabel?: string;
+  locale: Locale;
   children: ReactNode;
 }) {
   return (
@@ -58,30 +66,48 @@ export function AppFrame({
         </CardContent>
         <footer
           role="contentinfo"
-          className="flex max-w-full flex-row flex-nowrap items-center justify-center gap-x-1 overflow-x-auto overscroll-x-contain border-border border-t px-4 py-3 text-xs text-muted-foreground sm:gap-x-2"
+          className="flex flex-col gap-3 border-border border-t px-4 py-3 text-xs text-muted-foreground"
         >
-          <p className="m-0 shrink-0 whitespace-nowrap leading-relaxed">
-            BR Code (EMV) ·{" "}
+          <p className="m-0 flex justify-center leading-relaxed">
+            <Link href="/about" className={cn(footerLinkClass, "whitespace-nowrap")}>
+              {t(locale, "about")}
+            </Link>
+          </p>
+          <Separator />
+          <p className="m-0 flex max-w-full flex-row flex-wrap items-center justify-center gap-x-1 leading-relaxed sm:gap-x-2">
             <a
-              href="https://www.bcb.gov.br/estabilidadefinanceira/pix"
+              href={FOOTER_BUILT_BY_URL}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label={t(locale, "footerBuiltByAria")}
               className={cn(footerLinkClass, "shrink-0 whitespace-nowrap")}
             >
-              BCB Pix
+              {t(locale, "footerBuiltBy")}
             </a>
-            {aboutLinkLabel ? (
-              <>
-                {" "}
-                ·{" "}
-                <Link
-                  href="/about"
-                  className={cn(footerLinkClass, "shrink-0 whitespace-nowrap")}
-                >
-                  {aboutLinkLabel}
-                </Link>
-              </>
-            ) : null}
+            <span aria-hidden className="shrink-0">
+              ·
+            </span>
+            <a
+              href={FOOTER_X_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t(locale, "footerXAria")}
+              className={cn(footerLinkClass, "shrink-0 whitespace-nowrap")}
+            >
+              {t(locale, "footerX")}
+            </a>
+            <span aria-hidden className="shrink-0">
+              ·
+            </span>
+            <a
+              href={FOOTER_GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t(locale, "footerGitHubAria")}
+              className={cn(footerLinkClass, "shrink-0 whitespace-nowrap")}
+            >
+              {t(locale, "footerGitHub")}
+            </a>
           </p>
         </footer>
       </Card>
