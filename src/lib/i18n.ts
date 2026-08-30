@@ -400,7 +400,7 @@ export const messages = {
     offlineModeAriaDisable: "Desativar modo offline",
     offlineModeBannerTitle: "Modo offline",
     offlineModeBannerDetail:
-      "A decodificação fica neste dispositivo. Consultas, mapas, busca de location e links externos ficam desligados.",
+      "A decodificação ocorre apenas no dispositivo, sem envio de dados para servidores externos. Consultas, mapas, busca de location e links externos ficam desligados.",
     offlineModeDisconnectedTitle: "Sem conexão com a internet",
     offlineModeDisconnectedDetail:
       "A decodificação local ainda funciona. Consultas, mapas e busca de location precisam de conexão.",
