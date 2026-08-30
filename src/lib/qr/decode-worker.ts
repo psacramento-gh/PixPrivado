@@ -1,4 +1,7 @@
-import jsQR from "jsqr";
+import {
+  decodeJsQrFromRgba,
+  type JsQrLocation,
+} from "./decode-jsqr";
 
 export type WorkerDecodeRequest = {
   id: number;
@@ -12,12 +15,7 @@ export type WorkerDecodePayload = WorkerDecodeRequest & {
   buffer: ArrayBuffer;
 };
 
-export type WorkerQrLocation = {
-  topLeftCorner: { x: number; y: number };
-  topRightCorner: { x: number; y: number };
-  bottomRightCorner: { x: number; y: number };
-  bottomLeftCorner: { x: number; y: number };
-};
+export type WorkerQrLocation = JsQrLocation;
 
 export type WorkerDecodeResponse = {
   id: number;
@@ -28,7 +26,7 @@ export type WorkerDecodeResponse = {
 self.onmessage = (event: MessageEvent<WorkerDecodePayload>) => {
   const { id, buffer, width, height, inversionAttempts } = event.data;
   const pixels = new Uint8ClampedArray(buffer);
-  const result = jsQR(pixels, width, height, { inversionAttempts });
+  const result = decodeJsQrFromRgba(pixels, width, height, inversionAttempts);
   const response: WorkerDecodeResponse = {
     id,
     data: result?.data ?? null,

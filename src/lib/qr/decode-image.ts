@@ -1,5 +1,10 @@
+import {
+  decodeJsQrFromRgba,
+  shouldUseQrWorker,
+  type JsQrLocation,
+} from "@/lib/qr/decode-jsqr";
 import { loadOrientedBitmap } from "@/lib/qr/load-oriented-bitmap";
-import type { WorkerDecodePayload, WorkerQrLocation } from "@/lib/qr/decode-worker";
+import type { WorkerDecodePayload } from "@/lib/qr/decode-worker";
 
 const DESKTOP_DECODE_MAX_DIMS = [1024, 1536, 2048, 2560] as const;
 const MOBILE_DECODE_MAX_DIMS = [768, 1024, 1280, 1536] as const;
@@ -41,7 +46,12 @@ export class QrDecodeAbortedError extends Error {
   }
 }
 
-type JsQrLocation = WorkerQrLocation;
+class QrWorkerUnavailableError extends Error {
+  constructor() {
+    super("QR worker unavailable");
+    this.name = "QrWorkerUnavailableError";
+  }
+}
 
 type DetectedBarcode = {
   rawValue: string;
@@ -225,6 +235,18 @@ async function loadBitmapWithTimeout(
 
 let workerRequestId = 0;
 
+function decodeJsQrOnMainThread(
+  imageData: ImageData,
+  inversionAttempts: "dontInvert" | "attemptBoth",
+): { data: string; location: JsQrLocation } | null {
+  return decodeJsQrFromRgba(
+    imageData.data,
+    imageData.width,
+    imageData.height,
+    inversionAttempts,
+  );
+}
+
 async function jsQrInWorker(
   imageData: ImageData,
   inversionAttempts: "dontInvert" | "attemptBoth",
@@ -232,9 +254,14 @@ async function jsQrInWorker(
 ): Promise<{ data: string; location: JsQrLocation } | null> {
   throwIfAborted(signal);
   const id = ++workerRequestId;
-  const worker = new Worker(new URL("./decode-worker.ts", import.meta.url), {
-    type: "module",
-  });
+  let worker: Worker;
+  try {
+    worker = new Worker(new URL("./decode-worker.ts", import.meta.url), {
+      type: "module",
+    });
+  } catch {
+    throw new QrWorkerUnavailableError();
+  }
 
   const buffer = imageData.data.buffer.slice(0);
   const payload: WorkerDecodePayload = {
@@ -280,12 +307,29 @@ async function jsQrInWorker(
     worker.onerror = () => {
       finish(() => {
         signal?.removeEventListener("abort", onAbort);
-        reject(new QrDecodeAbortedError("QR worker failed"));
+        reject(new QrWorkerUnavailableError());
       });
     };
 
     worker.postMessage(payload, [buffer]);
   });
+}
+
+async function decodeWithJsQr(
+  imageData: ImageData,
+  inversionAttempts: "dontInvert" | "attemptBoth",
+  signal?: AbortSignal,
+): Promise<{ data: string; location: JsQrLocation } | null> {
+  if (shouldUseQrWorker()) {
+    try {
+      return await jsQrInWorker(imageData, inversionAttempts, signal);
+    } catch (error) {
+      if (error instanceof QrDecodeAbortedError) throw error;
+    }
+  }
+
+  throwIfAborted(signal);
+  return decodeJsQrOnMainThread(imageData, inversionAttempts);
 }
 
 function prepareImageData(
@@ -317,7 +361,7 @@ async function decodeQrFromImageSource(
   const imageData = prepareImageData(source, width, height, maxDim);
   if (!imageData) return null;
   const scale = imageData.width / width;
-  const found = await jsQrInWorker(imageData, inversionAttempts, signal);
+  const found = await decodeWithJsQr(imageData, inversionAttempts, signal);
   if (!found) return null;
 
   const { corners, normalizedCorners } = mapLocationToCorners(
