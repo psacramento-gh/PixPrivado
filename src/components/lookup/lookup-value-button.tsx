@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { useLookupPanels } from "@/components/lookup/lookup-panels-context";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 
 type LookupValueButtonProps = {
   displayValue: string;
@@ -10,6 +11,11 @@ type LookupValueButtonProps = {
 
 export function LookupValueButton({ displayValue, query }: LookupValueButtonProps) {
   const { openLookup } = useLookupPanels();
+  const { networkDisabled } = useOfflineMode();
+
+  if (networkDisabled) {
+    return <span className="break-all">{displayValue}</span>;
+  }
 
   return (
     <button

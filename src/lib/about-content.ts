@@ -175,6 +175,23 @@ const aboutEn: AboutPageContent = {
       ],
     },
     {
+      heading: "Offline mode",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Pix Privado can run as a local-only decoder. Use the Wi-Fi control in the header to switch into offline mode.",
+        },
+        {
+          kind: "paragraph",
+          text: "In this mode the app still reads QR images and Copia e Cola strings on your device, parses the payload, and can make a static Pix code safer to share. It does not call lookup services, address or company APIs, or open external search and chat links.",
+        },
+        {
+          kind: "paragraph",
+          text: "If your connection drops, the same local decoder stays available. After you have opened the app once while online, a service worker keeps the explorer loadable without a network.",
+        },
+      ],
+    },
+    {
       heading: "Breach lookups",
       blocks: [
         {
@@ -368,6 +385,23 @@ const aboutPt: AboutPageContent = {
         {
           kind: "paragraph",
           text: "É uma ferramenta de interesse público para conscientização, educação e autodefesa digital.",
+        },
+      ],
+    },
+    {
+      heading: "Modo offline",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "O Pix Privado pode funcionar só como decodificador local. Use o controle de Wi-Fi no cabeçalho para entrar no modo offline.",
+        },
+        {
+          kind: "paragraph",
+          text: "Nesse modo o app ainda lê imagens de QR e strings Copia e Cola no seu dispositivo, analisa o payload e pode tornar um Pix estático mais seguro para compartilhar. Ele não chama serviços de consulta, APIs de endereço ou empresa, nem abre links externos de busca e conversa.",
+        },
+        {
+          kind: "paragraph",
+          text: "Se a conexão cair, o mesmo decodificador local continua disponível. Depois de abrir o app uma vez com internet, um service worker mantém o explorador carregável sem rede.",
         },
       ],
     },

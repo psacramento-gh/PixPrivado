@@ -16,6 +16,8 @@ import {
 } from "@/lib/decoder-persist";
 import { AppFrame } from "@/components/app-frame";
 import { AppHeaderActions } from "@/components/app-header-actions";
+import { OfflineModeBanner } from "@/components/offline-mode-banner";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -210,6 +212,7 @@ export function DecoderApp() {
   const decodeAbortRef = useRef<AbortController | null>(null);
   const decodeJobIdRef = useRef(0);
   const isDesktop = useIsDesktop();
+  const { offline, networkDisabled } = useOfflineMode();
 
   const processPayload = useCallback((payload: string) => {
     setRawPayload(payload);
@@ -488,6 +491,10 @@ export function DecoderApp() {
     isSanitizedPayload,
   ]);
 
+  if (offline && lookupPanels.length > 0) {
+    setLookupPanels([]);
+  }
+
   useEffect(() => {
     if (!isDesktop || phase !== "input") return;
     const onPaste = (e: ClipboardEvent) => {
@@ -528,7 +535,7 @@ export function DecoderApp() {
         <AppHeaderActions locale={locale} onLocaleChange={setLocale} />
       }
     >
-      <header>
+      <header className="flex flex-col gap-3">
         <Alert
           role="note"
           className="border-border bg-muted/40 *:[svg]:text-muted-foreground"
@@ -537,6 +544,7 @@ export function DecoderApp() {
           <AlertTitle>{t(locale, "subtitleLead")}</AlertTitle>
           <AlertDescription>{t(locale, "subtitleDetail")}</AlertDescription>
         </Alert>
+        <OfflineModeBanner locale={locale} />
       </header>
 
       <DecoderPhaseTransition phase={phase}>
@@ -758,13 +766,18 @@ export function DecoderApp() {
                   {t(locale, "cobrancaPayload")}
                 </p>
                 {locations.map((url) => (
-                  <LocationFetcher key={url} url={url} locale={locale} />
+                  <LocationFetcher
+                    key={url}
+                    url={url}
+                    locale={locale}
+                    networkDisabled={networkDisabled}
+                  />
                 ))}
               </div>
             </>
           ) : null}
 
-          {!isSanitizedPayload ? (
+          {!isSanitizedPayload && !offline ? (
             <LookupPanelStack
               locale={locale}
               panels={lookupPanels}
@@ -798,7 +811,7 @@ export function DecoderApp() {
                 </div>
               ) : null}
             </div>
-            {canSharePayload ? (
+            {canSharePayload && !offline ? (
               <ShareDecoderLink
                 payload={rawPayload}
                 locale={locale}
@@ -1307,13 +1320,23 @@ function StructuredDataLabel({
   );
 }
 
-function LocationFetcher({ url, locale }: { url: string; locale: Locale }) {
+function LocationFetcher({
+  url,
+  locale,
+  networkDisabled,
+}: {
+  url: string;
+  locale: Locale;
+  networkDisabled: boolean;
+}) {
   const [result, setResult] = useState<LocationFetch>({
     url,
     status: "loading",
   });
 
   useEffect(() => {
+    if (networkDisabled) return;
+
     let cancelled = false;
 
     void (async () => {
@@ -1349,7 +1372,18 @@ function LocationFetcher({ url, locale }: { url: string; locale: Locale }) {
     return () => {
       cancelled = true;
     };
-  }, [url, locale]);
+  }, [url, locale, networkDisabled]);
+
+  if (networkDisabled) {
+    return (
+      <div className="space-y-2">
+        <p className="font-mono text-xs break-all text-foreground">{url}</p>
+        <p className="text-sm text-muted-foreground">
+          {t(locale, "locationUnavailableOffline")}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">

@@ -2,6 +2,7 @@
 
 import { Fragment, type ReactNode } from "react";
 import { LookupPhoneLink } from "@/components/lookup/lookup-phone-link";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import { PhoneDddBadges } from "@/components/phone-ddd-badges";
 import { extractDddFromPhone } from "@/lib/br/extract-ddd";
 import { getWhatsAppLinksFromValue } from "@/lib/br/whatsapp-link";
@@ -50,7 +51,9 @@ export function PhoneEnrichedValue({
   active = true,
   children,
 }: PhoneEnrichedValueProps) {
-  if (!active || parseIpAddress(rawValue.trim())) {
+  const { networkDisabled } = useOfflineMode();
+
+  if (!active || networkDisabled || parseIpAddress(rawValue.trim())) {
     return <>{children}</>;
   }
 

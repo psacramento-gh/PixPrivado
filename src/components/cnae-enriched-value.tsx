@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { CnaeActivityBadge } from "@/components/cnae-activity-badge";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import { parseCnaeDigits } from "@/lib/br/parse-cnae";
 import type { Locale } from "@/lib/brcode/labels";
 
@@ -19,7 +20,8 @@ export function CnaeEnrichedValue({
   active,
   children,
 }: CnaeEnrichedValueProps) {
-  const cnaeDigits = active ? parseCnaeDigits(rawValue) : null;
+  const { networkDisabled } = useOfflineMode();
+  const cnaeDigits = active && !networkDisabled ? parseCnaeDigits(rawValue) : null;
 
   if (cnaeDigits === null) {
     return <>{children}</>;

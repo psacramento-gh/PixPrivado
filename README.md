@@ -11,6 +11,7 @@ A Next.js microapp to explore **what Pix BR Code (EMV) payloads reveal**—from 
 - Automatic fetch of dynamic QR **location** payloads (server-side proxy)
 - Summary line for PIX QR codes
 - Email breach lookups via [Have I Been Pwned](https://haveibeenpwned.com/) (HIBP API v3)
+- **Offline mode** — local QR / Copia e Cola decoding with lookups and location fetch turned off; after a first online visit the app can load without a network
 
 ## Development
 

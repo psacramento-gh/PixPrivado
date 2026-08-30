@@ -1,5 +1,7 @@
 import { Geist_Mono } from "next/font/google";
 import { ViewTransitions } from "next-view-transitions";
+import { OfflineModeProvider } from "@/components/offline-mode-provider";
+import { OfflineServiceWorker } from "@/components/offline-service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
 import { rootMetadata } from "@/lib/app-metadata";
 import "./globals.css";
@@ -24,7 +26,12 @@ export default function RootLayout({
         className={`${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-dvh flex flex-col bg-background font-sans text-foreground">
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <OfflineModeProvider>
+              <OfflineServiceWorker />
+              {children}
+            </OfflineModeProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ViewTransitions>

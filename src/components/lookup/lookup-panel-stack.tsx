@@ -22,6 +22,7 @@ import {
   appMotionTransition,
   appPanelBodyTransition,
 } from "@/lib/motion-presets";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 
 function panelTitleKey(kind: LookupKind): MessageKey {
   switch (kind) {
@@ -190,6 +191,7 @@ export function LookupPanelStack({
     scrollPanelIntoView,
     notifyPanelBodyExpanded,
   } = useLookupPanels();
+  const { networkDisabled } = useOfflineMode();
   const inFlightRef = useRef(new Set<string>());
   const scrolledReadyPanelRef = useRef<string | null>(null);
 
@@ -205,6 +207,8 @@ export function LookupPanelStack({
   }, [panels, scrollPanelIntoView]);
 
   useEffect(() => {
+    if (networkDisabled) return;
+
     const loadingPanels = panels.filter((panel) => panel.status === "loading");
     if (loadingPanels.length === 0) return;
 
@@ -275,7 +279,7 @@ export function LookupPanelStack({
         }
       })();
     }
-  }, [locale, onPanelsChange, panels]);
+  }, [locale, networkDisabled, onPanelsChange, panels]);
 
   if (panels.length === 0) return null;
 

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { IpLocationBadge } from "@/components/ip-location-badge";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import { parseIpAddressesFromValue } from "@/lib/ip/parse-ip";
 import type { Locale } from "@/lib/brcode/labels";
 
@@ -19,7 +20,9 @@ export function IpEnrichedValue({
   active,
   children,
 }: IpEnrichedValueProps) {
-  const ips = active ? parseIpAddressesFromValue(rawValue) : [];
+  const { networkDisabled } = useOfflineMode();
+  const ips =
+    active && !networkDisabled ? parseIpAddressesFromValue(rawValue) : [];
 
   if (ips.length === 0) {
     return <>{children}</>;

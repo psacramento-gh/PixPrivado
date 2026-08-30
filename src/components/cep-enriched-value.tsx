@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { CepLocationBadge } from "@/components/cep-location-badge";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import { parseCepDigits } from "@/lib/br/normalize-cep";
 import type { Locale } from "@/lib/brcode/labels";
 
@@ -19,7 +20,8 @@ export function CepEnrichedValue({
   active,
   children,
 }: CepEnrichedValueProps) {
-  const cepDigits = active ? parseCepDigits(rawValue) : null;
+  const { networkDisabled } = useOfflineMode();
+  const cepDigits = active && !networkDisabled ? parseCepDigits(rawValue) : null;
 
   if (cepDigits === null) {
     return <>{children}</>;

@@ -1,12 +1,14 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import type { Locale } from "@/lib/brcode/labels";
+import { countryCodeToFlagEmoji } from "@/lib/country/country-code-to-flag-emoji";
 import { resolveCountryDisplay } from "@/lib/country/resolve-country-display";
 import { useIsDesktop } from "@/lib/use-is-desktop";
 
@@ -17,9 +19,14 @@ type CountryBadgeProps = {
 
 export function CountryBadge({ alpha2Code, locale }: CountryBadgeProps) {
   const isDesktop = useIsDesktop();
+  const { networkDisabled } = useOfflineMode();
   const display = resolveCountryDisplay(alpha2Code, locale);
 
   if (!display) return null;
+
+  const flagEmoji = networkDisabled
+    ? countryCodeToFlagEmoji(display.alpha2)
+    : null;
 
   return (
     <Popover>
@@ -32,15 +39,21 @@ export function CountryBadge({ alpha2Code, locale }: CountryBadgeProps) {
         aria-label={display.ariaLabel}
       >
         <Badge variant="secondary" className="px-1.5 font-sans">
-          <img
-            src={display.flagSvgUrl}
-            alt=""
-            aria-hidden
-            width={21}
-            height={14}
-            draggable={false}
-            className="block h-3.5 w-auto rounded-[2px]"
-          />
+          {flagEmoji ? (
+            <span className="text-sm leading-none" aria-hidden>
+              {flagEmoji}
+            </span>
+          ) : (
+            <img
+              src={display.flagSvgUrl}
+              alt=""
+              aria-hidden
+              width={21}
+              height={14}
+              draggable={false}
+              className="block h-3.5 w-auto rounded-[2px]"
+            />
+          )}
         </Badge>
       </PopoverTrigger>
       <PopoverContent

@@ -8,6 +8,11 @@ import {
 export const rootMetadata: Metadata = {
   title: APP_DISPLAY_NAME,
   description: APP_METADATA_DESCRIPTION,
+  appleWebApp: {
+    capable: true,
+    title: APP_DISPLAY_NAME,
+    statusBarStyle: "default",
+  },
 };
 
 export const aboutMetadata: Metadata = {

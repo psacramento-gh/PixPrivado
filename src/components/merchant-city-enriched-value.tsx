@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { IbgeMunicipiosBadge } from "@/components/ibge-municipios-badge";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import { parseMerchantCityQuery } from "@/lib/br/normalize-city-query";
 import type { Locale } from "@/lib/brcode/labels";
 
@@ -19,7 +20,9 @@ export function MerchantCityEnrichedValue({
   active,
   children,
 }: MerchantCityEnrichedValueProps) {
-  const cityQuery = active ? parseMerchantCityQuery(rawValue) : null;
+  const { networkDisabled } = useOfflineMode();
+  const cityQuery =
+    active && !networkDisabled ? parseMerchantCityQuery(rawValue) : null;
 
   if (cityQuery === null) {
     return <>{children}</>;

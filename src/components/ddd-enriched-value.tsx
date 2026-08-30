@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { PhoneDddBadges } from "@/components/phone-ddd-badges";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 import { parseDddValue } from "@/lib/br/parse-ddd";
 import type { Locale } from "@/lib/brcode/labels";
 
@@ -19,7 +20,8 @@ export function DddEnrichedValue({
   active,
   children,
 }: DddEnrichedValueProps) {
-  const ddd = active ? parseDddValue(rawValue) : null;
+  const { networkDisabled } = useOfflineMode();
+  const ddd = active && !networkDisabled ? parseDddValue(rawValue) : null;
 
   if (ddd === null) {
     return <>{children}</>;

@@ -2,6 +2,7 @@
 
 import type { Locale } from "@/lib/brcode/labels";
 import { LocaleToggle } from "@/components/locale-toggle";
+import { OfflineModeToggle } from "@/components/offline-mode-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppHeaderActions({
@@ -14,6 +15,7 @@ export function AppHeaderActions({
   return (
     <>
       <LocaleToggle locale={locale} onLocaleChange={onLocaleChange} />
+      <OfflineModeToggle locale={locale} />
       <ThemeToggle />
     </>
   );
