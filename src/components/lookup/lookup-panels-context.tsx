@@ -17,6 +17,7 @@ import {
   PANEL_SCROLL_RETRY_DELAYS_MS,
   scrollToPanelElement,
 } from "@/lib/lookup/scroll-to-panel";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 
 type PendingPanelScroll = {
   id: string;
@@ -51,6 +52,7 @@ export function LookupPanelsProvider({
   onPanelsChange: Dispatch<SetStateAction<LookupPanelRecord[]>>;
   children: ReactNode;
 }) {
+  const { networkDisabled } = useOfflineMode();
   const panelElementsRef = useRef(new Map<string, HTMLElement>());
   const pendingScrollRef = useRef<PendingPanelScroll | null>(null);
   const scrollRetryTimersRef = useRef<number[]>([]);
@@ -134,6 +136,8 @@ export function LookupPanelsProvider({
 
   const openLookup = useCallback(
     (query: string) => {
+      if (networkDisabled) return;
+
       const trimmed = query.trim();
       if (!trimmed) return;
 
@@ -186,7 +190,7 @@ export function LookupPanelsProvider({
       ]);
       queueMicrotask(() => requestPanelScroll(id, true));
     },
-    [onPanelsChange, panels, requestPanelScroll],
+    [networkDisabled, onPanelsChange, panels, requestPanelScroll],
   );
 
   const toggleCollapsed = useCallback(

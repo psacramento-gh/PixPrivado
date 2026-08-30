@@ -189,6 +189,17 @@ export const messages = {
     isoDateFormatYear: "Shown as YYYY (year only)",
     birthFieldTooltip: "Date of birth",
     about: "About",
+    offlineModeEnable: "Enable offline mode",
+    offlineModeDisable: "Disable offline mode",
+    offlineModeAriaEnable: "Enable offline mode",
+    offlineModeAriaDisable: "Disable offline mode",
+    offlineModeBannerTitle: "Offline mode",
+    offlineModeBannerDetail:
+      "Decoding stays on this device. Lookups, maps, location fetch, and external search links are turned off.",
+    offlineModeDisconnectedTitle: "No internet connection",
+    offlineModeDisconnectedDetail:
+      "Local decoding still works. Lookups, maps, and location fetch need a connection.",
+    locationUnavailableOffline: "Location fetch is unavailable in offline mode.",
     footerBuiltBy: "Built by psacramento",
     footerX: "X",
     footerGitHub: "GitHub",
@@ -383,6 +394,18 @@ export const messages = {
     isoDateFormatYear: "Exibido como AAAA (somente o ano)",
     birthFieldTooltip: "Data de nascimento",
     about: "Sobre",
+    offlineModeEnable: "Ativar modo offline",
+    offlineModeDisable: "Desativar modo offline",
+    offlineModeAriaEnable: "Ativar modo offline",
+    offlineModeAriaDisable: "Desativar modo offline",
+    offlineModeBannerTitle: "Modo offline",
+    offlineModeBannerDetail:
+      "A decodificação fica neste dispositivo. Consultas, mapas, busca de location e links externos ficam desligados.",
+    offlineModeDisconnectedTitle: "Sem conexão com a internet",
+    offlineModeDisconnectedDetail:
+      "A decodificação local ainda funciona. Consultas, mapas e busca de location precisam de conexão.",
+    locationUnavailableOffline:
+      "A busca de location não está disponível no modo offline.",
     footerBuiltBy: "Feito por psacramento",
     footerX: "X",
     footerGitHub: "GitHub",

@@ -1,6 +1,9 @@
+"use client";
+
 import { ExternalLink } from "lucide-react";
 import type { Locale } from "@/lib/brcode/labels";
 import { t } from "@/lib/i18n";
+import { useOfflineMode } from "@/components/offline-mode-provider";
 
 type LookupPhoneLinkProps = {
   displayValue: string;
@@ -20,6 +23,12 @@ function WhatsAppIcon({ className }: { className?: string }) {
 }
 
 export function LookupPhoneLink({ displayValue, href, locale }: LookupPhoneLinkProps) {
+  const { networkDisabled } = useOfflineMode();
+
+  if (networkDisabled) {
+    return <span className="break-all">{displayValue}</span>;
+  }
+
   return (
     <a
       href={href}
