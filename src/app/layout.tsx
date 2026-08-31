@@ -1,6 +1,7 @@
 import { Geist_Mono } from "next/font/google";
 import { ViewTransitions } from "next-view-transitions";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { OfflineModeProvider } from "@/components/offline-mode-provider";
 import { OfflineServiceWorker } from "@/components/offline-service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -34,6 +35,7 @@ export default function RootLayout({
             </OfflineModeProvider>
           </ThemeProvider>
           <Analytics />
+          <SpeedInsights />
         </body>
       </html>
     </ViewTransitions>
